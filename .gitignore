@@ -1,0 +1,34 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+*.log
+
+# Configuración local con credenciales (cuidado!)
+# Descomenta la siguiente linea si quieres NO subir credenciales:
+# src/main/resources/db.properties
+
+# Backups y temporales
+*~
+*.bak
+*.tmp
