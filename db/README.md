@@ -18,7 +18,7 @@ Los scripts deben correrse en orden numérico. Cada uno asume que el anterior se
 | 00 | `00_setup_user.sql` | `SYSTEM @ XEPDB1` | Crea el usuario `BEATIFY` con los privilegios mínimos necesarios. |
 | 01 | `01_schema_beatify.sql` | `BEATIFY @ XEPDB1` | Crea las 25 tablas, secuencias y constraints del modelo. |
 | 02 | `02_seed_data.sql` | `BEATIFY @ XEPDB1` | (Pendiente) Inserta datos de prueba: géneros, artistas, álbumes, canciones, clientes. |
-
+| 03 | `03_cache_apis.sql` | `BEATIFY @ XEPDB1` | Crea tablas de caché para APIs externas (MusicBrainz, Last.fm) y log de llamadas. |
 ## Procedimiento de despliegue
 
 1. Abrir **SQL Developer** y crear conexión `SYSTEM @ XEPDB1`.
