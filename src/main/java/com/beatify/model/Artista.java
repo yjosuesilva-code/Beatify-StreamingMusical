@@ -17,15 +17,16 @@ public class Artista {
     public Artista() {
     }
 
-    public Artista(final String nombre, final String apellido, final String nombreArtistico,  final String pais, final String correo, final String biografia, final String fotoUrl) {
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.nombreArtistico = nombreArtistico;
-        this.pais = pais;
-        this.correo = correo;
-        this.biografia = biografia;
-        this.fotoUrl = fotoUrl;
-    }
+        public Artista(final String nombre, final String apellido, final String nombreArtistico, final LocalDate fechaNacimiento, final String pais, final String correo, final String biografia, final String fotoUrl) {
+            this.nombre = nombre;
+            this.apellido = apellido;
+            this.nombreArtistico = nombreArtistico;
+            this.fechaNacimiento = fechaNacimiento;
+            this.pais = pais;
+            this.correo = correo;
+            this.biografia = biografia;
+            this.fotoUrl = fotoUrl;
+        }
 
     public Artista(final Integer idArtista, final String nombre, final String apellido, final String nombreArtistico, final LocalDate fechaNacimiento, final String pais, final String correo, final String biografia, final String fotoUrl) {
         this.idArtista = idArtista;

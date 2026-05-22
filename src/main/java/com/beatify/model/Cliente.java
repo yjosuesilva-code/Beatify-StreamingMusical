@@ -18,8 +18,7 @@ public class Cliente {
     public Cliente(){
     }
 
-    public Cliente( String nombre,  String apellido,  String correo,  String passwordHash,  
-                    String telefono,  String direccion,  String ciudad,  String pais) {
+    public Cliente(final String nombre, final String apellido, final String correo, final String passwordHash, final String telefono, final String direccion, final String ciudad, final String pais) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.correo = correo;
@@ -30,24 +29,24 @@ public class Cliente {
         this.pais = pais;
     }
 
-    public Cliente( Integer idCliente,  String nombre,  String apellido,  String correo,  String passwordHash,  String telefono,  String direccion,  String ciudad,  String pais,  LocalDate fechaRegistro) {
-        this.idCliente = idCliente;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.correo = correo;
-        this.passwordHash = passwordHash;
-        this.telefono = telefono;
-        this.direccion = direccion;
-        this.ciudad = ciudad;
-        this.pais = pais;
-        this.fechaRegistro = fechaRegistro;
-    }
+        public Cliente(final Integer idCliente, final String nombre, final String apellido, final String correo, final String passwordHash, final String telefono, final String direccion, final String ciudad, final String pais, final LocalDate fechaRegistro) {
+            this.idCliente = idCliente;
+            this.nombre = nombre;
+            this.apellido = apellido;
+            this.correo = correo;
+            this.passwordHash = passwordHash;
+            this.telefono = telefono;
+            this.direccion = direccion;
+            this.ciudad = ciudad;
+            this.pais = pais;
+            this.fechaRegistro = fechaRegistro;
+        }
 
     public Integer getIdCliente() {
         return this.idCliente;
     }
 
-    public void setIdCliente( Integer idCliente) {
+    public void setIdCliente(final Integer idCliente) {
         this.idCliente = idCliente;
     }
 
@@ -55,7 +54,7 @@ public class Cliente {
         return this.nombre;
     }
 
-    public void setNombre( String nombre) {
+    public void setNombre( final String nombre) {
         this.nombre = nombre;
     }
 
@@ -63,7 +62,7 @@ public class Cliente {
         return this.apellido;
     }
 
-    public void setApellido( String apellido) {
+    public void setApellido( final String apellido) {
         this.apellido = apellido;
     }
 
@@ -71,7 +70,7 @@ public class Cliente {
         return this.correo;
     }
 
-    public void setCorreo( String correo) {
+    public void setCorreo( final String correo) {
         this.correo = correo;
     }
 
@@ -79,7 +78,7 @@ public class Cliente {
         return this.passwordHash;
     }
 
-    public void setPasswordHash( String passwordHash) {
+    public void setPasswordHash( final String passwordHash) {
         this.passwordHash = passwordHash;
     }
 
@@ -87,7 +86,7 @@ public class Cliente {
         return this.telefono;
     }
 
-    public void setTelefono( String telefono) {
+    public void setTelefono( final String telefono) {
         this.telefono = telefono;
     }
 
@@ -95,7 +94,7 @@ public class Cliente {
         return this.direccion;
     }
 
-    public void setDireccion( String direccion) {
+    public void setDireccion(final String direccion) {
         this.direccion = direccion;
     }
 
@@ -103,7 +102,7 @@ public class Cliente {
         return this.ciudad;
     }
 
-    public void setCiudad( String ciudad) {
+    public void setCiudad(final String ciudad) {
         this.ciudad = ciudad;
     }
 
@@ -111,7 +110,7 @@ public class Cliente {
         return this.pais;
     }
 
-    public void setPais( String pais) {
+    public void setPais(final String pais) {
         this.pais = pais;
     }
 
@@ -119,12 +118,12 @@ public class Cliente {
         return this.fechaRegistro;
     }
 
-    public void setFechaRegistro( LocalDate fechaRegistro) {
+    public void setFechaRegistro(final LocalDate fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
     }
 
     @Override
-    public boolean equals( Object o) {
+    public boolean equals( final Object o) {
         if (null == o || this.getClass() != o.getClass()) return false;
          Cliente cliente = (Cliente) o;
         return Objects.equals(this.idCliente, cliente.idCliente);
