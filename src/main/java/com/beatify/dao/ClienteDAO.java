@@ -35,12 +35,18 @@ public class ClienteDAO {
          WHERE id_cliente = ?
     """;
 
+    private static final String SQL_SELECT_BY_CORREO = """
+    SELECT id_cliente, nombre, apellido, correo, password_hash,
+           telefono, direccion, ciudad, pais, fecha_registro
+      FROM CLIENTE
+     WHERE correo = ?
+""";
+
     private static final String SQL_UPDATE = """
         UPDATE CLIENTE
             SET nombre = ?, 
             apellido = ?, 
             correo = ?, 
-            password_hash = ?,
             telefono = ?, 
             direccion = ?, 
             ciudad = ?, 
@@ -135,6 +141,27 @@ public class ClienteDAO {
         }
     }
 
+    public Cliente buscarPorCorreo(String correo) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_BY_CORREO)) {
+
+            ps.setString(1, correo);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearResultSet(rs);
+                }
+
+                throw new NotFoundException(
+                        "Cliente no encontrado con correo: " + correo);
+            }
+
+        } catch (SQLException e) {
+            throw new ConexionException(
+                    "Error al buscar cliente por correo: " + e.getMessage(), e);
+        }
+    }
+
 
     public void actualizar(Cliente cliente) {
         try (Connection conn = Conexion.getInstancia().obtenerConexion();
@@ -143,7 +170,6 @@ public class ClienteDAO {
             ps.setString(1, cliente.getNombre());
             ps.setString(2, cliente.getApellido());
             ps.setString(3, cliente.getCorreo());
-            ps.setString(4, cliente.getPasswordHash());
             ps.setString(5, cliente.getTelefono());
             ps.setString(6, cliente.getDireccion());
             ps.setString(7, cliente.getCiudad());
