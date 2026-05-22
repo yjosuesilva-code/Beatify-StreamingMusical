@@ -8,6 +8,7 @@ import com.beatify.util.Conexion;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class LogroDAO {
         String nombre = rs.getString("nombre");
         String descripcion = rs.getString("descripcion");
         String iconoUrl = rs.getString("icono_url");
-        Integer puntos = rs.getInt("puntos");
+        Integer puntos = rs.getObject("puntos", Integer.class);
         return new Logro(idLogro, codigo, nombre, descripcion, iconoUrl, puntos);
     }
 
@@ -62,7 +63,7 @@ public class LogroDAO {
             ps.setString(2, logro.getNombre());
             ps.setString(3, logro.getDescripcion());
             ps.setString(4, logro.getIconoUrl());
-            ps.setInt(5, logro.getPuntos());
+            ps.setObject(5, logro.getPuntos(), Types.INTEGER);
 
             ps.executeUpdate();
 
@@ -114,7 +115,7 @@ public class LogroDAO {
             ps.setString(2, logro.getNombre());
             ps.setString(3, logro.getDescripcion());
             ps.setString(4, logro.getIconoUrl());
-            ps.setInt(5, logro.getPuntos());
+            ps.setObject(5, logro.getPuntos(), Types.INTEGER);
             ps.setInt(6, logro.getIdLogro());
 
             int filasAfectadas = ps.executeUpdate();
