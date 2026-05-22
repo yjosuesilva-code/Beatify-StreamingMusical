@@ -53,10 +53,7 @@ public final class Conexion {
      * Devuelve la conexion JDBC activa. Si no existe o esta cerrada, la abre.
      */
     public Connection obtenerConexion() throws SQLException {
-        if (conexion == null || conexion.isClosed()) {
-            conexion = DriverManager.getConnection(url, usuario, password);
-        }
-        return conexion;
+        return DriverManager.getConnection(url, usuario, password);
     }
 
     /**
