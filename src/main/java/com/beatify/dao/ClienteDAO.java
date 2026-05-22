@@ -42,16 +42,24 @@ public class ClienteDAO {
      WHERE correo = ?
 """;
 
+    // OJO: este UPDATE NO toca password_hash a proposito.
+    // Para cambiar la contrasena se usa actualizarPassword() desde el service.
     private static final String SQL_UPDATE = """
         UPDATE CLIENTE
-            SET nombre = ?, 
-            apellido = ?, 
-            correo = ?, 
-            telefono = ?, 
-            direccion = ?, 
-            ciudad = ?, 
+            SET nombre = ?,
+            apellido = ?,
+            correo = ?,
+            telefono = ?,
+            direccion = ?,
+            ciudad = ?,
             pais = ?
         WHERE id_cliente = ?
+    """;
+
+    private static final String SQL_UPDATE_PASSWORD = """
+        UPDATE CLIENTE
+           SET password_hash = ?
+         WHERE id_cliente = ?
     """;
 
     private static final String SQL_DELETE = """
@@ -170,11 +178,11 @@ public class ClienteDAO {
             ps.setString(1, cliente.getNombre());
             ps.setString(2, cliente.getApellido());
             ps.setString(3, cliente.getCorreo());
-            ps.setString(5, cliente.getTelefono());
-            ps.setString(6, cliente.getDireccion());
-            ps.setString(7, cliente.getCiudad());
-            ps.setString(8, cliente.getPais());
-            ps.setInt(9, cliente.getIdCliente());
+            ps.setString(4, cliente.getTelefono());
+            ps.setString(5, cliente.getDireccion());
+            ps.setString(6, cliente.getCiudad());
+            ps.setString(7, cliente.getPais());
+            ps.setInt(8, cliente.getIdCliente());
 
             int filasAfectadas = ps.executeUpdate();
             if (filasAfectadas == 0) {
@@ -185,6 +193,29 @@ public class ClienteDAO {
         } catch (SQLException e) {
             throw new ConexionException(
                     "Error al actualizar cliente: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Actualiza UNICAMENTE el hash de la contrasena del cliente.
+     * La validacion de la contrasena actual debe hacerla la capa de servicio.
+     */
+    public void actualizarPassword(Integer idCliente, String passwordHash) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_PASSWORD)) {
+
+            ps.setString(1, passwordHash);
+            ps.setInt(2, idCliente);
+
+            int filasAfectadas = ps.executeUpdate();
+            if (filasAfectadas == 0) {
+                throw new NotFoundException(
+                        "Cliente con id " + idCliente + " no encontrado");
+            }
+
+        } catch (SQLException e) {
+            throw new ConexionException(
+                    "Error al actualizar password del cliente: " + e.getMessage(), e);
         }
     }
 

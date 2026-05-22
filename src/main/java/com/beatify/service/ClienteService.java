@@ -81,8 +81,8 @@ public class ClienteService implements IClienteService {
             throw new AutenticacionException("La contraseña actual es incorrecta");
         }
 
-        cliente.setPasswordHash(PasswordUtil.hash(passwordNueva));
-        clienteDAO.actualizar(cliente);
+        // actualizar() ya NO toca password_hash; usamos el metodo dedicado
+        clienteDAO.actualizarPassword(idCliente, PasswordUtil.hash(passwordNueva));
     }
 
     public void eliminar(Integer idCliente) {
