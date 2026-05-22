@@ -42,6 +42,12 @@ public class GeneroDAO {
 
     private static final String SQL_DELETE = "DELETE FROM GENERO WHERE id_genero = ?";
 
+    private static final String SQL_SELECT_BY_NOMBRE = """
+        SELECT id_genero, nombre, descripcion, origen_pais
+          FROM GENERO
+         WHERE LOWER(nombre) = LOWER(?)
+        """;
+
     private Genero mapearResultSet(ResultSet rs) throws SQLException {
         Integer idGenero    = rs.getInt("id_genero");
         String  nombre      = rs.getString("nombre");
@@ -98,6 +104,22 @@ public class GeneroDAO {
             }
         } catch (SQLException e) {
             throw new ConexionException("Error al buscar genero: " + e.getMessage(), e);
+        }
+    }
+
+
+    public Genero buscarPorNombre(String nombre) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_BY_NOMBRE)) {
+            ps.setString(1, nombre);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearResultSet(rs);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new ConexionException("Error al buscar genero por nombre: " + e.getMessage(), e);
         }
     }
 
