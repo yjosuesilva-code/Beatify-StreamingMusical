@@ -195,9 +195,9 @@ CREATE TABLE CLIENTE
      telefono       VARCHAR2 (15 CHAR) , 
      direccion      VARCHAR2 (30 CHAR) , 
      ciudad         VARCHAR2 (15 CHAR) , 
-     pais           VARCHAR2 (15 CHAR) , 
-     fecha_registro DATE 
-    ) 
+     pais           VARCHAR2 (15 CHAR) ,
+     fecha_registro DATE DEFAULT SYSDATE NOT NULL
+    )
 ;
 
 ALTER TABLE CLIENTE 
