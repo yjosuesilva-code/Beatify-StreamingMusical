@@ -53,7 +53,9 @@ public class DispositivoDAO {
         String nombreDispositivo = rs.getString("nombre_dispositivo");
         String tipoDispositivo = rs.getString("tipo_dispositivo");
         String sistemaOperativo = rs.getString("sistema_operativo");
-        LocalDateTime fechaUltimoAcceso = rs.getTimestamp("fecha_ultimo_acceso").toLocalDateTime();
+        // fecha_ultimo_acceso es nullable en el schema; protegemos contra NPE
+        java.sql.Timestamp ts = rs.getTimestamp("fecha_ultimo_acceso");
+        LocalDateTime fechaUltimoAcceso = (ts != null) ? ts.toLocalDateTime() : null;
         Integer idCliente = rs.getInt("CLIENTE_id_cliente");
         return new Dispositivo(idDispositivo, nombreDispositivo, tipoDispositivo, sistemaOperativo, fechaUltimoAcceso, idCliente);
     }
