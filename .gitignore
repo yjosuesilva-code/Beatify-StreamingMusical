@@ -24,9 +24,9 @@ out/
 Thumbs.db
 *.log
 
-# Configuración local con credenciales (cuidado!)
-# Descomenta la siguiente linea si quieres NO subir credenciales:
-# src/main/resources/db.properties
+# Configuración local con credenciales — NUNCA subir a Git
+src/main/resources/db.properties
+src/main/resources/api.properties
 
 # Backups y temporales
 *~
