@@ -55,7 +55,8 @@ public class BusquedaDAO {
         Timestamp tsSql = rs.getTimestamp("fecha_busqueda");
         LocalDateTime fechaBusqueda = (tsSql != null) ? tsSql.toLocalDateTime() : null;
 
-        Integer resultadosObtenidos = rs.getInt("resultados_obtenidos");
+        // resultados_obtenidos es nullable en el schema
+        Integer resultadosObtenidos = rs.getObject("resultados_obtenidos", Integer.class);
         Integer idCliente           = rs.getInt("CLIENTE_id_cliente");
 
         return new Busqueda(idBusqueda, terminoBuscado, fechaBusqueda, resultadosObtenidos, idCliente);
