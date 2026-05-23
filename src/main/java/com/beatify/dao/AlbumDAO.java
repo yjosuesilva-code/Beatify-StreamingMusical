@@ -54,7 +54,7 @@ public class AlbumDAO {
     private Album mapearResultSet(ResultSet rs) throws SQLException {
         Integer idAlbum            = rs.getInt("id_album");
         String  titulo             = rs.getString("titulo");
-        Integer anioLanzamiento    = rs.getObject("año_lanzamiento",Integer.class);
+        Integer anioLanzamiento    = rs.getObject("anio_lanzamiento",Integer.class);
         String  selloDiscografico  = rs.getString("sello_discografico");
         String  tipo               = rs.getString("tipo");
         String  portadaUrl         = rs.getString("portada_url");
