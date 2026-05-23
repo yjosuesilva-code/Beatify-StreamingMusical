@@ -13,9 +13,13 @@ import com.beatify.util.Conexion;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class Main {
+
+    private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
         probarConexion();
@@ -38,8 +42,7 @@ public class Main {
 
             // El try-with-resources cierra la conexion al salir de este bloque
         } catch (SQLException e) {
-            System.err.println("[ERROR] No se pudo conectar a Oracle:");
-            System.err.println("  " + e.getMessage());
+            LOG.log(Level.SEVERE, "No se pudo conectar a Oracle", e);
         }
         System.out.println("[OK] Conexion cerrada correctamente");
     }
@@ -87,8 +90,8 @@ public class Main {
             System.out.println("  - Portada URL : " + album.getPortadaUrl());
 
         } catch (Exception e) {
-            System.err.println("[ERROR] Fallo el enriquecimiento: " + e.getMessage());
-            e.printStackTrace();
+            // Level.SEVERE + excepcion -> imprime mensaje + stack trace al log
+            LOG.log(Level.SEVERE, "Fallo el enriquecimiento", e);
         }
     }
 
