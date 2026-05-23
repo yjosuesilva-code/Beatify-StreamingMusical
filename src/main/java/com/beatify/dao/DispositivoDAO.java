@@ -18,20 +18,20 @@ public class DispositivoDAO {
     private static final String SQL_INSERT = """
         INSERT INTO DISPOSITIVO
             (id_dispositivo, nombre_dispositivo, tipo_dispositivo, sistema_operativo, 
-            fecha_ultimo_acceso, id_cliente)
+            fecha_ultimo_acceso, CLIENTE_id_cliente)
         VALUES (seq_dispositivo.NEXTVAL, ?, ?, ?, SYSDATE, ?)
     """;
 
     private static final String SQL_SELECT_ALL = """
         SELECT id_dispositivo, nombre_dispositivo, tipo_dispositivo, sistema_operativo, 
-               fecha_ultimo_acceso, id_cliente
+               fecha_ultimo_acceso, CLIENTE_id_cliente
           FROM DISPOSITIVO
          ORDER BY id_dispositivo
     """;
 
     private static final String SQL_SELECT_BY_ID = """
         SELECT id_dispositivo, nombre_dispositivo, tipo_dispositivo, sistema_operativo, 
-               fecha_ultimo_acceso, id_cliente
+               fecha_ultimo_acceso, CLIENTE_id_cliente
           FROM DISPOSITIVO
          WHERE id_dispositivo = ?
     """;
@@ -42,7 +42,7 @@ public class DispositivoDAO {
                tipo_dispositivo   = ?,
                sistema_operativo  = ?,
                fecha_ultimo_acceso = SYSDATE,
-               id_cliente        = ?
+               CLIENTE_id_cliente        = ?
          WHERE id_dispositivo = ?
     """;
 
@@ -54,7 +54,7 @@ public class DispositivoDAO {
         String tipoDispositivo = rs.getString("tipo_dispositivo");
         String sistemaOperativo = rs.getString("sistema_operativo");
         LocalDateTime fechaUltimoAcceso = rs.getTimestamp("fecha_ultimo_acceso").toLocalDateTime();
-        Integer idCliente = rs.getInt("id_cliente");
+        Integer idCliente = rs.getInt("CLIENTE_id_cliente");
         return new Dispositivo(idDispositivo, nombreDispositivo, tipoDispositivo, sistemaOperativo, fechaUltimoAcceso, idCliente);
     }
 
