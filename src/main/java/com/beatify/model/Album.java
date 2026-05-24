@@ -15,13 +15,14 @@ public class Album {
     public Album() {
     }
 
-    public Album(final String titulo, final Integer anioLanzamiento, final String selloDiscografico, final String tipo, final String portadaUrl, final String descripcion) {
+    public Album(final String titulo, final Integer anioLanzamiento, final String selloDiscografico, final String tipo, final String portadaUrl, final String descripcion, final Integer idArtista) {
         this.titulo = titulo;
         this.anioLanzamiento = anioLanzamiento;
         this.selloDiscografico = selloDiscografico;
         this.tipo = tipo;
         this.portadaUrl = portadaUrl;
         this.descripcion = descripcion;
+        this.idArtista = idArtista;
     }
 
     public Album(final Integer idAlbum, final String titulo, final Integer anioLanzamiento, final String selloDiscografico, final String tipo, final String portadaUrl, final String descripcion, final Integer idArtista) {

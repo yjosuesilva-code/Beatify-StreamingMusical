@@ -8,8 +8,12 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * Singleton que gestiona la conexion JDBC a Oracle Database XE 18c.
- * Lee las credenciales desde db.properties en src/main/resources.
+ * Singleton que gestiona el ACCESO a la BD Oracle XE 18c.
+ *
+ * Lee las credenciales desde db.properties UNA sola vez y registra el driver.
+ * Cada llamada a {@link #obtenerConexion()} devuelve una conexion NUEVA
+ * (no compartida) para que los DAOs puedan usar try-with-resources con
+ * seguridad y para evitar race conditions entre hilos JavaFX.
  *
  * Patron de diseno aplicado: Singleton (GRASP - Pure Fabrication).
  *
@@ -19,7 +23,6 @@ public final class Conexion {
 
     private static Conexion instancia;
 
-    private Connection conexion;
     private final String url;
     private final String usuario;
     private final String password;
@@ -50,23 +53,18 @@ public final class Conexion {
     }
 
     /**
-     * Devuelve la conexion JDBC activa. Si no existe o esta cerrada, la abre.
+     * Abre y devuelve una conexion JDBC NUEVA cada vez.
+     *
+     * El llamador es responsable de cerrarla, normalmente con try-with-resources:
+     * <pre>
+     * try (Connection conn = Conexion.getInstancia().obtenerConexion();
+     *      PreparedStatement ps = conn.prepareStatement(SQL)) {
+     *     ...
+     * }
+     * </pre>
      */
     public Connection obtenerConexion() throws SQLException {
-        if (conexion == null || conexion.isClosed()) {
-            conexion = DriverManager.getConnection(url, usuario, password);
-        }
-        return conexion;
-    }
-
-    /**
-     * Cierra la conexion JDBC si esta abierta.
-     */
-    public void cerrar() throws SQLException {
-        if (conexion != null && !conexion.isClosed()) {
-            conexion.close();
-            conexion = null;
-        }
+        return DriverManager.getConnection(url, usuario, password);
     }
 
     /**

@@ -18,20 +18,20 @@ public class AlbumDAO {
 
     private static final String SQL_INSERT = """
         INSERT INTO ALBUM
-            (id_album, titulo, año_lanzamiento, sello_discografico,
+            (id_album, titulo, anio_lanzamiento, sello_discografico,
              tipo, portada_url, descripcion, ARTISTA_id_artista)
         VALUES (seq_album.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)
         """;
 
     private static final String SQL_SELECT_ALL = """
-        SELECT id_album, titulo, año_lanzamiento, sello_discografico,
+        SELECT id_album, titulo, anio_lanzamiento, sello_discografico,
                tipo, portada_url, descripcion, ARTISTA_id_artista
           FROM ALBUM
          ORDER BY id_album
         """;
 
     private static final String SQL_SELECT_BY_ID = """
-        SELECT id_album, titulo, año_lanzamiento, sello_discografico,
+        SELECT id_album, titulo, anio_lanzamiento, sello_discografico,
                tipo, portada_url, descripcion, ARTISTA_id_artista
           FROM ALBUM
          WHERE id_album = ?
@@ -40,7 +40,7 @@ public class AlbumDAO {
     private static final String SQL_UPDATE = """
         UPDATE ALBUM
            SET titulo             = ?,
-               año_lanzamiento    = ?,
+               anio_lanzamiento    = ?,
                sello_discografico = ?,
                tipo               = ?,
                portada_url        = ?,
@@ -54,12 +54,12 @@ public class AlbumDAO {
     private Album mapearResultSet(ResultSet rs) throws SQLException {
         Integer idAlbum            = rs.getInt("id_album");
         String  titulo             = rs.getString("titulo");
-        Integer anioLanzamiento    = rs.getInt("año_lanzamiento");
+        Integer anioLanzamiento    = rs.getObject("anio_lanzamiento",Integer.class);
         String  selloDiscografico  = rs.getString("sello_discografico");
         String  tipo               = rs.getString("tipo");
         String  portadaUrl         = rs.getString("portada_url");
         String  descripcion        = rs.getString("descripcion");
-        Integer idArtista          = rs.getInt("ARTISTA_id_artista");
+        Integer idArtista          = rs.getObject("ARTISTA_id_artista", Integer.class);
 
         return new Album(
                 idAlbum, titulo, anioLanzamiento, selloDiscografico,
@@ -73,7 +73,11 @@ public class AlbumDAO {
                      SQL_INSERT, new String[]{"id_album"})) {
 
             ps.setString(1, album.getTitulo());
-            ps.setInt(2, album.getAnioLanzamiento());
+            if (album.getAnioLanzamiento() != null) {
+                ps.setInt(2, album.getAnioLanzamiento());
+            } else {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            }
             ps.setString(3, album.getSelloDiscografico());
             ps.setString(4, album.getTipo());
             ps.setString(5, album.getPortadaUrl());
@@ -140,7 +144,11 @@ public class AlbumDAO {
              PreparedStatement ps = conn.prepareStatement(SQL_UPDATE)) {
 
             ps.setString(1, album.getTitulo());
-            ps.setInt(2, album.getAnioLanzamiento());
+            if (album.getAnioLanzamiento() != null) {
+                ps.setInt(2, album.getAnioLanzamiento());
+            } else {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            }
             ps.setString(3, album.getSelloDiscografico());
             ps.setString(4, album.getTipo());
             ps.setString(5, album.getPortadaUrl());

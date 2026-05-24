@@ -1,0 +1,6 @@
+# Configuracion de conexion a Oracle Database XE 18c
+# Copiar este archivo como db.properties y poner tus credenciales reales
+db.url=jdbc:oracle:thin:@localhost:1521/XEPDB1
+db.user=beatify
+db.password=tu_password_aqui
+db.driver=oracle.jdbc.OracleDriver

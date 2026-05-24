@@ -55,10 +55,8 @@ public class ReproduccionDAO {
         Timestamp ts = rs.getTimestamp("fecha_hora");
         LocalDateTime fechaHora = (ts != null) ? ts.toLocalDateTime() : null;
 
-        Integer duracionEscuchada = rs.getInt("duracion_escuchada");
-        if (rs.wasNull()) {
-            duracionEscuchada = null;
-        }
+        // duracion_escuchada es nullable en el schema
+        Integer duracionEscuchada = rs.getObject("duracion_escuchada", Integer.class);
 
         Integer idCliente = rs.getInt("CLIENTE_id_cliente");
         Integer idCancion = rs.getInt("CANCION_id_cancion");

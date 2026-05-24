@@ -53,6 +53,13 @@ public class ArtistaDAO {
 
     private static final String SQL_DELETE = "DELETE FROM ARTISTA WHERE id_artista = ?";
 
+    private static final String SQL_SELECT_BY_NOMBRE_ARTISTICO = """
+        SELECT id_artista, nombre, apellido, nombre_artistico,
+               fecha_nacimiento, pais, correo, biografia, foto_url
+          FROM ARTISTA
+         WHERE LOWER(nombre_artistico) = LOWER(?)
+        """;
+
     private Artista mapearResultSet(ResultSet rs) throws SQLException {
         Integer idArtista       = rs.getInt("id_artista");
         String  nombre          = rs.getString("nombre");
@@ -128,6 +135,23 @@ public class ArtistaDAO {
         }
 
         return artistas;
+    }
+
+
+    public Artista buscarPorNombreArtistico(String nombreArtistico) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_BY_NOMBRE_ARTISTICO)) {
+            ps.setString(1, nombreArtistico);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearResultSet(rs);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new ConexionException(
+                    "Error al buscar artista por nombre artistico: " + e.getMessage(), e);
+        }
     }
 
     public Artista buscarPorId(Integer idArtista) {

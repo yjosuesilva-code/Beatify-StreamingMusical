@@ -89,44 +89,44 @@ INSERT INTO ARTISTA_GENERO (ARTISTA_id_artista, GENERO_id_genero) VALUES (10, 5)
 -- 4. ALBUM (15)  — IDs 1..15
 -- =====================================================================
 -- Carlos Vives (artista 1)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Clasicos de la Provincia', 1993, 'Sony Music',  'ALBUM', NULL, 'Album que fusiono vallenato con rock.',  1);
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'El Amor de Mi Tierra',     1999, 'EMI Latin',   'ALBUM', NULL, 'Continuacion del estilo vallenato pop.', 1);
 -- Diomedes Diaz (artista 2)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Mi Biografia',             1988, 'CBS',         'ALBUM', NULL, 'Album clasico del Cacique.', 2);
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Tu Eres La Reina',         1990, 'CBS',         'ALBUM', NULL, 'Album de exitos romanticos.', 2);
 -- Shakira (artista 3)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Pies Descalzos',           1995, 'Sony Music',  'ALBUM', NULL, 'Album debut internacional.', 3);
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Donde Estan los Ladrones', 1998, 'Sony Music',  'ALBUM', NULL, 'Album que consolido su carrera.', 3);
 -- Joe Arroyo (artista 4)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Fuego en Mi Mente',        1988, 'Discos Fuent','ALBUM', NULL, 'Album clasico de salsa caribena.', 4);
 -- Silvestre Dangond (artista 5)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Sigo Invicto',             2014, 'Sony Music',  'ALBUM', NULL, 'Album de vallenato moderno.', 5);
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Las Locuras Mias',         2018, 'Sony Music',  'ALBUM', NULL, 'Disco con colaboraciones.', 5);
 -- Bomba Estereo (artista 6)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Elegancia Tropical',       2012, 'Polen',       'ALBUM', NULL, 'Electro-tropical desde Bogota.', 6);
 -- Aterciopelados (artista 7)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'La Pipa de la Paz',        1996, 'BMG',         'ALBUM', NULL, 'Album clasico del rock alternativo bogotano.', 7);
 -- Juanes (artista 8)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Un Dia Normal',            2002, 'Universal',   'ALBUM', NULL, 'Album que catapulto su carrera global.', 8);
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Mi Sangre',                2004, 'Universal',   'ALBUM', NULL, 'Disco con La Camisa Negra.', 8);
 -- Fonseca (artista 9)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'Corazon',                  2005, 'EMI',         'ALBUM', NULL, 'Album debut con vallenato pop.', 9);
 -- Karol G (artista 10)
-INSERT INTO ALBUM (id_album, titulo, año_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
+INSERT INTO ALBUM (id_album, titulo, anio_lanzamiento, sello_discografico, tipo, portada_url, descripcion, ARTISTA_id_artista) VALUES
   (seq_album.NEXTVAL, 'KG0516',                   2021, 'Universal',   'ALBUM', NULL, 'Album consolidado de reggaeton femenino.', 10);
 
 -- =====================================================================

@@ -88,7 +88,7 @@ CREATE TABLE ALBUM
     ( 
      id_album           INTEGER  NOT NULL , 
      titulo             VARCHAR2 (150 CHAR)  NOT NULL , 
-     año_lanzamiento    INTEGER  NOT NULL , 
+     anio_lanzamiento    INTEGER  NOT NULL ,
      sello_discografico VARCHAR2 (25 CHAR) , 
      tipo               VARCHAR2 (20 CHAR) , 
      portada_url        VARCHAR2 (500 CHAR) , 
@@ -99,7 +99,7 @@ CREATE TABLE ALBUM
 
 ALTER TABLE ALBUM 
     ADD CONSTRAINT ALBUM_ANIO_LANZAMIENTO_CK 
-    CHECK (año_lanzamiento BETWEEN 1900 AND 2100) 
+    CHECK (anio_lanzamiento BETWEEN 1900 AND 2100) 
 ;
 
 ALTER TABLE ALBUM 
@@ -195,9 +195,9 @@ CREATE TABLE CLIENTE
      telefono       VARCHAR2 (15 CHAR) , 
      direccion      VARCHAR2 (30 CHAR) , 
      ciudad         VARCHAR2 (15 CHAR) , 
-     pais           VARCHAR2 (15 CHAR) , 
-     fecha_registro DATE 
-    ) 
+     pais           VARCHAR2 (15 CHAR) ,
+     fecha_registro DATE DEFAULT SYSDATE NOT NULL
+    )
 ;
 
 ALTER TABLE CLIENTE 
@@ -954,47 +954,62 @@ CREATE SEQUENCE seq_seguimiento      START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_suscripcion      START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_voto_resena      START WITH 1 INCREMENT BY 1 NOCACHE;
 
-COMMIT;
 
--- Informe de Resumen de Oracle SQL Developer Data Modeler: 
--- 
--- CREATE TABLE                            25
--- CREATE INDEX                             0
--- ALTER TABLE                             82
--- CREATE VIEW                              0
--- ALTER VIEW                               0
--- CREATE PACKAGE                           0
--- CREATE PACKAGE BODY                      0
--- CREATE PROCEDURE                         0
--- CREATE FUNCTION                          0
--- CREATE TRIGGER                           0
--- ALTER TRIGGER                            0
--- CREATE COLLECTION TYPE                   0
--- CREATE STRUCTURED TYPE                   0
--- CREATE STRUCTURED TYPE BODY              0
--- CREATE CLUSTER                           0
--- CREATE CONTEXT                           0
--- CREATE DATABASE                          0
--- CREATE DIMENSION                         0
--- CREATE DIRECTORY                         0
--- CREATE DISK GROUP                        0
--- CREATE ROLE                              0
--- CREATE ROLLBACK SEGMENT                  0
--- CREATE SEQUENCE                          0
--- CREATE MATERIALIZED VIEW                 0
--- CREATE MATERIALIZED VIEW LOG             0
--- CREATE SYNONYM                           0
--- CREATE TABLESPACE                        0
--- CREATE USER                              0
--- 
--- DROP TABLESPACE                          0
--- DROP DATABASE                            0
--- 
--- REDACTION POLICY                         0
--- 
--- ORDS DROP SCHEMA                         0
--- ORDS ENABLE SCHEMA                       0
--- ORDS ENABLE OBJECT                       0
--- 
--- ERRORS                                  10
--- WARNINGS                                 0
+
+-- ==========================================
+-- INDICES en columnas FK
+-- ==========================================
+-- Oracle NO crea indice automatico en columnas FK (a diferencia de MySQL).
+-- Sin indice, los DELETE/UPDATE en la tabla padre lockean la hija completa
+-- y los joins por FK hacen full table scan.
+--
+-- Los UNIQUE/PK compuestos ya crean indice implicito en la TUPLA, pero solo
+-- sirven para la columna que es PREFIJO. Por eso aqui agregamos indice solo
+-- sobre las columnas FK que NO son prefijo de ningun indice existente.
+-- ==========================================
+
+-- ALBUM
+CREATE INDEX IDX_ALBUM_ARTISTA          ON ALBUM(ARTISTA_id_artista);
+-- ARTISTA_GENERO (PK ya cubre artista; falta genero)
+CREATE INDEX IDX_ARTISTA_GENERO_GENERO  ON ARTISTA_GENERO(GENERO_id_genero);
+-- BUSQUEDA
+CREATE INDEX IDX_BUSQUEDA_CLIENTE       ON BUSQUEDA(CLIENTE_id_cliente);
+-- CANCION
+CREATE INDEX IDX_CANCION_ALBUM          ON CANCION(ALBUM_id_album);
+CREATE INDEX IDX_CANCION_GENERO         ON CANCION(GENERO_id_genero);
+-- CANCION_PLAYLIST (UNIQUE(cancion,playlist) ya cubre cancion; falta playlist)
+CREATE INDEX IDX_CANCION_PLAYLIST_PLAYLIST ON CANCION_PLAYLIST(PLAYLIST_id_playlist);
+-- COLABORACION (UNIQUE(cancion,artista,rol) ya cubre cancion; falta artista)
+CREATE INDEX IDX_COLABORACION_ARTISTA   ON COLABORACION(ARTISTA_id_artista);
+-- DISPOSITIVO
+CREATE INDEX IDX_DISPOSITIVO_CLIENTE    ON DISPOSITIVO(CLIENTE_id_cliente);
+-- EPISODIO (UNIQUE(podcast,numero) ya cubre podcast)
+-- LIKE_ALBUM (UNIQUE(cliente,album) ya cubre cliente; falta album)
+CREATE INDEX IDX_LIKE_ALBUM_ALBUM       ON LIKE_ALBUM(ALBUM_id_album);
+-- LIKE_CANCION (UNIQUE(cliente,cancion) ya cubre cliente; falta cancion)
+CREATE INDEX IDX_LIKE_CANCION_CANCION   ON LIKE_CANCION(CANCION_id_cancion);
+-- LIKE_PLAYLIST (UNIQUE(cliente,playlist) ya cubre cliente; falta playlist)
+CREATE INDEX IDX_LIKE_PLAYLIST_PLAYLIST ON LIKE_PLAYLIST(PLAYLIST_id_playlist);
+-- LOGRO_CLIENTE (UNIQUE(cliente,logro) ya cubre cliente; falta logro)
+CREATE INDEX IDX_LOGRO_CLIENTE_LOGRO    ON LOGRO_CLIENTE(LOGRO_id_logro);
+-- NOTIFICACION
+CREATE INDEX IDX_NOTIFICACION_CLIENTE   ON NOTIFICACION(CLIENTE_id_cliente);
+-- PAGO
+CREATE INDEX IDX_PAGO_SUSCRIPCION       ON PAGO(SUSCRIPCION_id_suscripcion);
+-- PLAYLIST
+CREATE INDEX IDX_PLAYLIST_CLIENTE       ON PLAYLIST(CLIENTE_id_cliente);
+-- PODCAST
+CREATE INDEX IDX_PODCAST_ARTISTA        ON PODCAST(ARTISTA_id_artista);
+-- REPRODUCCION
+CREATE INDEX IDX_REPRODUCCION_CLIENTE   ON REPRODUCCION(CLIENTE_id_cliente);
+CREATE INDEX IDX_REPRODUCCION_CANCION   ON REPRODUCCION(CANCION_id_cancion);
+-- RESENA (UNIQUE(cliente,tipo,id_objetivo) ya cubre cliente)
+-- SEGUIMIENTO
+CREATE INDEX IDX_SEGUIMIENTO_CLIENTE    ON SEGUIMIENTO(CLIENTE_id_cliente);
+CREATE INDEX IDX_SEGUIMIENTO_ARTISTA    ON SEGUIMIENTO(ARTISTA_id_artista);
+-- SUSCRIPCION
+CREATE INDEX IDX_SUSCRIPCION_CLIENTE    ON SUSCRIPCION(CLIENTE_id_cliente);
+-- VOTO_RESENA (UNIQUE(resena,cliente) ya cubre resena; falta cliente)
+CREATE INDEX IDX_VOTO_RESENA_CLIENTE    ON VOTO_RESENA(CLIENTE_id_cliente);
+
+COMMIT;

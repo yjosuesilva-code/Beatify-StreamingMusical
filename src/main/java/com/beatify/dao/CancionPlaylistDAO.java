@@ -50,7 +50,8 @@ public class CancionPlaylistDAO {
 
     private CancionPlaylist mapearResultSet(ResultSet rs) throws SQLException {
         Integer idCancionPlaylist = rs.getInt("id_cancion_playlist");
-        Integer orden             = rs.getInt("orden");
+        // orden es nullable en el schema
+        Integer orden             = rs.getObject("orden", Integer.class);
 
         Date fechaSql = rs.getDate("fecha_agregada");
         LocalDate fechaAgregada = (fechaSql != null) ? fechaSql.toLocalDate() : null;
