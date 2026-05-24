@@ -15,8 +15,13 @@ import com.beatify.model.Artista;
 import com.beatify.model.Genero;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EnriquecimientoService implements IEnriquecimientoService {
+
+    private static final Logger LOGGER =
+            Logger.getLogger(EnriquecimientoService.class.getName());
 
     private final LastFmClient lastFmClient;
     private final MusicBrainzClient musicBrainzClient;
@@ -50,8 +55,8 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         try {
             dtoLastFm = lastFmClient.buscarArtista(nombreArtistico);
         } catch (ApiException e) {
-            System.err.println("[EnriquecimientoService] Last.fm fallo para artista '"
-                    + nombreArtistico + "': " + e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "Last.fm fallo para artista: " + nombreArtistico, e);
         }
 
         // --- Llamar MusicBrainz (pais de origen) ---
@@ -59,10 +64,9 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         try {
             dtoMB = musicBrainzClient.buscarArtista(nombreArtistico);
         } catch (ApiException e) {
-            System.err.println("[EnriquecimientoService] MusicBrainz fallo para artista '"
-                    + nombreArtistico + "': " + e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "MusicBrainz fallo para artista: " + nombreArtistico, e);
         }
-
         if (dtoLastFm == null && dtoMB == null) {
             throw new ApiException(
                     "Ninguna API devolvio datos para el artista: " + nombreArtistico);
@@ -80,7 +84,6 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         String[] partes = nombreArtistico.trim().split("\\s+", 2);
         artista.setNombre(partes[0]);
         artista.setApellido(partes.length > 1 ? partes[1] : "-");
-
         if (dtoLastFm != null) {
             artista.setBiografia(dtoLastFm.biografia());
             artista.setFotoUrl(dtoLastFm.fotoUrl());
@@ -88,15 +91,14 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         if (dtoMB != null && dtoMB.pais() != null) {
             artista.setPais(dtoMB.pais());
         }
-
         // --- Persistir artista (evitar duplicados) ---
         Artista existente = artistaDAO.buscarPorNombreArtistico(nombreArtistico);
         if (existente != null) {
             return existente;
         }
+
         Integer idArtista = artistaDAO.insertar(artista);
         artista.setIdArtista(idArtista);
-
         // --- Vincular generos (solo si Last.fm devolvio tags) ---
         if (dtoLastFm != null && dtoLastFm.generos() != null) {
             vincularGenerosArtista(idArtista, dtoLastFm.generos());
@@ -126,8 +128,8 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         try {
             dtoLastFm = lastFmClient.buscarAlbum(nombreArtista, tituloAlbum);
         } catch (ApiException e) {
-            System.err.println("[EnriquecimientoService] Last.fm fallo para album '"
-                    + tituloAlbum + "': " + e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "Last.fm fallo para album: " + tituloAlbum, e);
         }
 
         // --- Llamar MusicBrainz (año, sello, tipo) ---
@@ -135,10 +137,9 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         try {
             dtoMB = musicBrainzClient.buscarAlbum(nombreArtista, tituloAlbum);
         } catch (ApiException e) {
-            System.err.println("[EnriquecimientoService] MusicBrainz fallo para album '"
-                    + tituloAlbum + "': " + e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "MusicBrainz fallo para album: " + tituloAlbum, e);
         }
-
         if (dtoLastFm == null && dtoMB == null) {
             throw new ApiException(
                     "Ninguna API devolvio datos para el album: " + tituloAlbum);
@@ -191,15 +192,10 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         Genero nuevo = new Genero(nombreNormalizado, null, null);
         Integer id = generoDAO.insertar(nuevo);
         nuevo.setIdGenero(id);
+
         return nuevo;
     }
 
-
-    /**
-     * Para cada genero de la lista: busca o crea en BD, luego vincula
-     * con el artista via ARTISTA_GENERO. Ignora errores individuales
-     * para no interrumpir el proceso por un tag invalido.
-     */
     /**
      * Convierte el tipo de release de MusicBrainz al valor permitido
      * por el CHECK constraint ALBUM_TIPO_CK de la BD.
@@ -217,14 +213,23 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         };
     }
 
+    /**
+     * Para cada genero de la lista: busca o crea en BD, luego vincula
+     * con el artista via ARTISTA_GENERO. Ignora errores individuales
+     * para no interrumpir el proceso por un tag invalido.
+     */
     private void vincularGenerosArtista(Integer idArtista, List<String> nombresGeneros) {
         for (String nombreGenero : nombresGeneros) {
             try {
                 Genero genero = buscarOCrearGenero(nombreGenero);
                 artistaGeneroDAO.insertar(idArtista, genero.getIdGenero());
             } catch (Exception e) {
-                System.err.println("[EnriquecimientoService] No se pudo vincular genero '"
-                        + nombreGenero + "' al artista " + idArtista + ": " + e.getMessage());
+                LOGGER.log(Level.WARNING,
+                        "No se pudo vincular genero "
+                                + nombreGenero
+                                + " al artista "
+                                + idArtista,
+                        e);
             }
         }
     }
