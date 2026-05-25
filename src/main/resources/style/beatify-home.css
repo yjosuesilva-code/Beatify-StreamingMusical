@@ -1,0 +1,539 @@
+/*
+ * beatify-home.css
+ * ---------------------------------------------------------------
+ * Estilos de la pantalla principal de la app: sidebar 240px + topbar 56px
+ * + contenido scrollable + mini-player 76px sticky.
+ *
+ * Incluye:
+ *   - Sidebar con items, dividers y lista de playlists
+ *   - Top bar con flechas, search pill, notif y user pill
+ *   - Hero del home (greeting + titulo + sub + 4 stats)
+ *   - Quick row de 6 playlists
+ *   - Section headers (eyebrow + titulo)
+ *   - Cards de media (album/playlist/artista)
+ *   - Row list de canciones (continuar escuchando)
+ *   - Widget Música del Barrio
+ *   - Mini player completo
+ *
+ * Depende de beatify-tokens.css (looked-up colors).
+ * ---------------------------------------------------------------
+ */
+
+/* ================================================================
+   SIDEBAR (240px)
+   ================================================================ */
+.bf-sidebar {
+    -fx-background-color: -bf-bg-2;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 14 8 14 8;
+}
+
+.bf-side-divider {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text-dim;
+    -fx-padding: 14 12 6 12;
+}
+
+.bf-side-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 500;
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+}
+.bf-side-item:hover {
+    -fx-background-color: -bf-border;
+    -fx-text-fill: -bf-text;
+}
+.bf-side-item.is-active {
+    -fx-background-color: rgba(183, 148, 255, 0.16);
+    -fx-text-fill: -bf-text;
+    -fx-border-color: -bf-accent transparent transparent transparent;
+    -fx-border-width: 0 0 0 3;
+}
+
+/* Boton + para agregar nueva playlist */
+.bf-side-plus {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text-muted;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.bf-side-plus:hover {
+    -fx-background-color: -bf-border;
+    -fx-text-fill: -bf-text;
+}
+
+/* Item de playlist (cover + nombre + meta) */
+.bf-side-playlist {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text-muted;
+    -fx-padding: 6 12 6 12;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+.bf-side-playlist:hover {
+    -fx-background-color: -bf-border;
+    -fx-text-fill: -bf-text;
+}
+.bf-side-pl-name {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 500;
+}
+.bf-side-pl-meta {
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* ================================================================
+   TOP BAR (56px)
+   ================================================================ */
+.bf-topbar {
+    -fx-background-color: -bf-bg;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 20 0 20;
+    -fx-pref-height: 56;
+    -fx-min-height: 56;
+}
+
+.bf-tb-arrow {
+    -fx-background-color: -bf-bg-3;
+    -fx-text-fill: -bf-text-muted;
+    -fx-pref-width: 28;
+    -fx-pref-height: 28;
+    -fx-background-radius: 50%;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.bf-tb-arrow:hover {
+    -fx-background-color: -bf-surface-2;
+    -fx-text-fill: -bf-text;
+}
+
+/* Search pill */
+.bf-search {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 0 14 0 14;
+    -fx-pref-height: 36;
+    -fx-min-height: 36;
+}
+.bf-search-input {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text;
+    -fx-prompt-text-fill: -bf-text-dim;
+    -fx-font-size: 13.5px;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.bf-search-hint {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -bf-text-dim;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-padding: 2 6 2 6;
+}
+
+/* Icono de notificaciones */
+.bf-tb-icon {
+    -fx-background-color: -bf-bg-3;
+    -fx-text-fill: -bf-text-muted;
+    -fx-pref-width: 36;
+    -fx-pref-height: 36;
+    -fx-background-radius: 50%;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.bf-tb-icon:hover {
+    -fx-text-fill: -bf-text;
+}
+
+/* Badge con contador de notificaciones */
+.bf-tb-dot {
+    -fx-background-color: -bf-accent;
+    -fx-text-fill: -bf-bg;
+    -fx-background-radius: 999;
+    -fx-font-size: 9.5px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 4 0 4;
+    -fx-min-width: 16;
+    -fx-min-height: 16;
+    -fx-alignment: center;
+    -fx-border-color: -bf-bg;
+    -fx-border-width: 2;
+    -fx-border-radius: 999;
+}
+
+/* User pill */
+.bf-tb-user {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 4 12 4 4;
+    -fx-text-fill: -bf-text;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+}
+.bf-tb-user:hover {
+    -fx-background-color: -bf-surface-2;
+}
+
+/* ================================================================
+   PAGE GENERICO (padding y headers de seccion)
+   ================================================================ */
+.bf-page {
+    -fx-padding: 28 36 28 36;
+}
+
+.bf-page-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}
+
+.bf-page-title {
+    -fx-font-family: "Sora";
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+
+.bf-page-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* Section header (eyebrow + titulo + boton "Ver todo") */
+.bf-section-eyebrow {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text-dim;
+}
+.bf-section-title {
+    -fx-font-family: "Sora";
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-section-action {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.bf-section-action:hover {
+    -fx-text-fill: -bf-accent;
+}
+
+/* ================================================================
+   HOME — HERO
+   ================================================================ */
+.bf-hero-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}
+.bf-hero-title {
+    -fx-font-family: "Sora";
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-hero-title-accent {
+    -fx-font-family: "Sora";
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}
+.bf-hero-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: -bf-text-muted;
+    -fx-wrap-text: true;
+}
+.bf-hero-sub-strong {
+    -fx-font-size: 14px;
+    -fx-text-fill: -bf-text;
+    -fx-font-weight: 600;
+}
+
+/* Stats (4 cifras en linea) */
+.bf-hero-stat-num {
+    -fx-font-family: "Sora";
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-hero-stat-lbl {
+    -fx-font-size: 11px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* ================================================================
+   QUICK ROW (6 playlists recientes en grid 3x2)
+   ================================================================ */
+.bf-quick {
+    -fx-background-color: -bf-bg-2;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+    -fx-min-height: 56;
+    -fx-padding: 0;
+}
+.bf-quick:hover {
+    -fx-background-color: -bf-bg-3;
+}
+.bf-quick-name {
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-text;
+}
+
+/* ================================================================
+   MEDIA CARD (album/playlist/artista)
+   ================================================================ */
+.bf-card {
+    -fx-background-color: -bf-bg-2;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 14;
+    -fx-cursor: hand;
+}
+.bf-card:hover {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border-strong;
+}
+.bf-card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-text;
+}
+.bf-card-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* ================================================================
+   ROW LIST (continuar escuchando)
+   ================================================================ */
+.bf-rowlist-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+}
+.bf-rowlist-item:hover {
+    -fx-background-color: -bf-border;
+}
+.bf-rowlist-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-text;
+}
+.bf-rowlist-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bf-text-dim;
+}
+.bf-rowlist-dur {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* ================================================================
+   MUSICA DEL BARRIO — widget destacado del Home
+   ================================================================ */
+.bf-barrio {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
+                                          -bf-bg-2 0%, -bf-bg-3 100%);
+    -fx-border-color: -bf-border-strong;
+    -fx-border-width: 1;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-padding: 32;
+}
+
+.bf-barrio-tag {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}
+.bf-barrio-title {
+    -fx-font-family: "Sora";
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-barrio-city {
+    -fx-font-size: 13.5px;
+    -fx-text-fill: -bf-text-muted;
+}
+.bf-barrio-city-strong {
+    -fx-font-size: 13.5px;
+    -fx-text-fill: -bf-text;
+    -fx-font-weight: 600;
+}
+.bf-barrio-desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: -bf-text-muted;
+    -fx-wrap-text: true;
+}
+
+/* Items del ranking (5 artistas top) */
+.bf-barrio-item {
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+}
+.bf-barrio-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+.bf-barrio-rank {
+    -fx-font-family: "Sora";
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}
+.bf-barrio-name {
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-text;
+}
+.bf-barrio-meta {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* Trend indicators */
+.bf-trend-up {
+    -fx-background-color: rgba(126, 217, 87, 0.15);
+    -fx-text-fill: -bf-success;
+    -fx-background-radius: 50%;
+    -fx-pref-width: 24;
+    -fx-pref-height: 24;
+    -fx-alignment: center;
+}
+.bf-trend-down {
+    -fx-background-color: rgba(229, 115, 115, 0.15);
+    -fx-text-fill: -bf-danger;
+    -fx-background-radius: 50%;
+    -fx-pref-width: 24;
+    -fx-pref-height: 24;
+    -fx-alignment: center;
+}
+.bf-trend-same {
+    -fx-background-color: rgba(141, 163, 189, 0.15);
+    -fx-text-fill: -bf-text-dim;
+    -fx-background-radius: 50%;
+    -fx-pref-width: 24;
+    -fx-pref-height: 24;
+    -fx-alignment: center;
+}
+
+/* ================================================================
+   MINI PLAYER (76px sticky abajo)
+   ================================================================ */
+.bf-miniplayer {
+    -fx-background-color: -bf-bg-2;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 0 16 0 16;
+    -fx-pref-height: 76;
+    -fx-min-height: 76;
+}
+.bf-mp-title {
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-text;
+}
+.bf-mp-artist {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -bf-text-dim;
+}
+.bf-mp-ctrl {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text-muted;
+    -fx-pref-width: 28;
+    -fx-pref-height: 28;
+    -fx-background-radius: 50%;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.bf-mp-ctrl:hover {
+    -fx-text-fill: -bf-text;
+}
+.bf-mp-play {
+    -fx-background-color: -bf-accent;
+    -fx-text-fill: -bf-bg;
+    -fx-pref-width: 34;
+    -fx-pref-height: 34;
+    -fx-background-radius: 50%;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+.bf-mp-play:hover {
+    -fx-background-color: -bf-accent-deep;
+}
+.bf-mp-time {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -bf-text-dim;
+    -fx-min-width: 32;
+}
+.bf-mp-bar {
+    -fx-background-color: -bf-border-strong;
+    -fx-background-radius: 2;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+}
+.bf-mp-bar-fill {
+    -fx-background-color: -bf-text;
+    -fx-background-radius: 2;
+}
+.bf-mp-vol-bar {
+    -fx-background-color: -bf-border-strong;
+    -fx-background-radius: 2;
+    -fx-pref-width: 90;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+}
+.bf-mp-vol-fill {
+    -fx-background-color: -bf-text;
+    -fx-background-radius: 2;
+}
+.bf-mp-like {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text-muted;
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
+    -fx-background-radius: 50%;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.bf-mp-like:hover {
+    -fx-text-fill: #ff5a78;
+}
