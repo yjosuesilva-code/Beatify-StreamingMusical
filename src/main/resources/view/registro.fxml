@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!--
+    registro.fxml — Wizard de creacion de cuenta de Beatify (3 pasos).
+    Layout split 50/50 igual que Login.
+        - Izquierda: brand + pitch "Tres pasos para escuchar en serio" + lista numerada de pasos
+        - Derecha: form que contiene un StackPane con 3 paneles (solo uno visible)
+            * paso1Pane: datos personales + medidor de fuerza
+            * paso2Pane: ubicacion + chips de generos
+            * paso3Pane: cards de plan de suscripcion
+
+    Controller: com.beatify.view.controller.RegistroController
+-->
+<GridPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="com.beatify.view.controller.RegistroController"
+          prefWidth="1440.0" prefHeight="900.0">
+
+    <columnConstraints>
+        <ColumnConstraints percentWidth="51.2"/>
+        <ColumnConstraints percentWidth="48.8"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints vgrow="ALWAYS"/>
+    </rowConstraints>
+
+    <fx:define>
+        <ToggleGroup fx:id="planGroup"/>
+    </fx:define>
+
+    <!-- =========================================================== -->
+    <!-- LADO IZQUIERDO: brand + wizard de pasos                      -->
+    <!-- =========================================================== -->
+    <VBox GridPane.columnIndex="0" styleClass="bf-auth-side" spacing="20">
+
+        <!-- Brand -->
+        <HBox spacing="14" alignment="CENTER_LEFT">
+            <StackPane styleClass="bf-brand-logo" prefWidth="56" prefHeight="56">
+                <Group>
+                    <Circle centerX="22" centerY="22" radius="20"
+                            stroke="#b794ff" strokeWidth="1.8" fill="transparent"/>
+                    <Circle centerX="22" centerY="22" radius="6" fill="#b794ff"/>
+                    <SVGPath content="M22 4 L22 16 M22 28 L22 40 M4 22 L16 22 M28 22 L40 22"
+                             stroke="#b794ff" strokeWidth="1.8"
+                             strokeLineCap="ROUND" fill="transparent"/>
+                </Group>
+            </StackPane>
+            <Label text="Beatify" styleClass="bf-brand-name"/>
+        </HBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Pitch del wizard -->
+        <VBox spacing="16" maxWidth="480">
+            <Label text="CREA TU CUENTA · 100% GRATIS"
+                   styleClass="bf-auth-pitch-eyebrow"/>
+
+            <!-- Titulo "Tres pasos para escuchar en serio." con "en serio" en accent -->
+            <VBox spacing="0">
+                <Label text="Tres pasos para" styleClass="bf-auth-pitch-title"/>
+                <HBox spacing="0">
+                    <Label text="escuchar " styleClass="bf-auth-pitch-title"/>
+                    <Label text="en serio" styleClass="bf-auth-pitch-title-accent"/>
+                    <Label text="." styleClass="bf-auth-pitch-title"/>
+                </HBox>
+            </VBox>
+
+            <!-- Lista numerada de pasos (los circulos se activan via styleClass desde el Controller) -->
+            <VBox spacing="14">
+                <HBox spacing="14" alignment="TOP_LEFT">
+                    <Label fx:id="lblNum1" text="1" styleClass="bf-step-num, is-active"/>
+                    <VBox spacing="2">
+                        <Label text="Datos personales" styleClass="bf-step-title"/>
+                        <Label text="Nombre, correo y contraseña" styleClass="bf-step-sub"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="14" alignment="TOP_LEFT">
+                    <Label fx:id="lblNum2" text="2" styleClass="bf-step-num"/>
+                    <VBox spacing="2">
+                        <Label text="Tu ubicación" styleClass="bf-step-title"/>
+                        <Label text="Para personalizar Música del Barrio"
+                               styleClass="bf-step-sub"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="14" alignment="TOP_LEFT">
+                    <Label fx:id="lblNum3" text="3" styleClass="bf-step-num"/>
+                    <VBox spacing="2">
+                        <Label text="Plan de suscripción" styleClass="bf-step-title"/>
+                        <Label text="FREE, INDIVIDUAL, DUO, FAMILIAR o ESTUDIANTE"
+                               styleClass="bf-step-sub"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <Label text="Universidad Popular del Cesar · Programación de Computadores III · 2026"
+               styleClass="bf-auth-footnote"/>
+    </VBox>
+
+    <!-- =========================================================== -->
+    <!-- LADO DERECHO: formulario con 3 paneles intercambiables       -->
+    <!-- =========================================================== -->
+    <ScrollPane GridPane.columnIndex="1" fitToWidth="true"
+                styleClass="bf-auth-form-wrap" hbarPolicy="NEVER">
+        <VBox alignment="TOP_CENTER" spacing="18" maxWidth="460" prefWidth="460">
+
+            <!-- Header dinamico (el Controller cambia texto segun paso) -->
+            <VBox spacing="6">
+                <Label fx:id="lblStep" text="PASO 1 DE 3" styleClass="bf-auth-step"/>
+                <Label fx:id="lblTitulo" text="Cuéntanos quién eres"
+                       styleClass="bf-auth-form-title"/>
+                <Label fx:id="lblSub" text="Estos datos quedarán en la tabla CLIENTE."
+                       styleClass="bf-auth-form-sub" wrapText="true"/>
+            </VBox>
+
+            <!-- Banner de error compartido entre pasos -->
+            <VBox fx:id="boxError" styleClass="bf-auth-error" spacing="4"
+                  visible="false" managed="false">
+                <Label fx:id="lblErrorCode" text="ValidacionException"
+                       styleClass="bf-auth-error-code"/>
+                <Label fx:id="lblErrorMsg" text="" styleClass="bf-auth-error-msg"
+                       wrapText="true"/>
+            </VBox>
+
+            <!-- StackPane con los 3 paneles. Solo uno visible a la vez. -->
+            <StackPane>
+
+                <!-- ============================================== -->
+                <!-- PASO 1: Datos personales                        -->
+                <!-- ============================================== -->
+                <VBox fx:id="paso1Pane" spacing="14">
+                    <!-- Nombre + Apellido en una fila -->
+                    <HBox spacing="12">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Nombre" styleClass="bf-field-lbl"/>
+                            <TextField fx:id="txtNombre" promptText="Yilver Josué"
+                                       styleClass="bf-field-input"/>
+                        </VBox>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Apellido" styleClass="bf-field-lbl"/>
+                            <TextField fx:id="txtApellido" promptText="Silva Ospino"
+                                       styleClass="bf-field-input"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Correo -->
+                    <VBox spacing="6">
+                        <Label text="Correo electrónico" styleClass="bf-field-lbl"/>
+                        <TextField fx:id="txtCorreo" promptText="tu@correo.com"
+                                   styleClass="bf-field-input"/>
+                        <Label text="Validado contra UNIQUE en CLIENTE.correo"
+                               styleClass="bf-field-hint"/>
+                    </VBox>
+
+                    <!-- Contraseña + Confirmar en una fila -->
+                    <HBox spacing="12">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Contraseña" styleClass="bf-field-lbl"/>
+                            <PasswordField fx:id="txtPwd" promptText="••••••••"
+                                           styleClass="bf-field-input"/>
+                            <!-- Medidor de fuerza: 4 barras + label -->
+                            <HBox fx:id="pwdStrengthBox" spacing="4" alignment="CENTER_LEFT">
+                                <Region styleClass="bf-pwd-bar"/>
+                                <Region styleClass="bf-pwd-bar"/>
+                                <Region styleClass="bf-pwd-bar"/>
+                                <Region styleClass="bf-pwd-bar"/>
+                                <Label fx:id="lblFuerza" text="" styleClass="bf-pwd-label">
+                                    <HBox.margin>
+                                        <Insets left="6"/>
+                                    </HBox.margin>
+                                </Label>
+                            </HBox>
+                        </VBox>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Confirmar contraseña" styleClass="bf-field-lbl"/>
+                            <PasswordField fx:id="txtPwd2" promptText="••••••••"
+                                           styleClass="bf-field-input"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- ============================================== -->
+                <!-- PASO 2: Ubicacion + generos                     -->
+                <!-- ============================================== -->
+                <VBox fx:id="paso2Pane" spacing="14" visible="false" managed="false">
+
+                    <!-- Ciudad -->
+                    <VBox spacing="6">
+                        <Label text="Ciudad de residencia" styleClass="bf-field-lbl"/>
+                        <ComboBox fx:id="cmbCiudad" styleClass="bf-field-input"
+                                  maxWidth="Infinity" prefHeight="42">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Valledupar"/>
+                                    <String fx:value="Cartagena"/>
+                                    <String fx:value="Barranquilla"/>
+                                    <String fx:value="Santa Marta"/>
+                                    <String fx:value="Bogotá"/>
+                                    <String fx:value="Medellín"/>
+                                    <String fx:value="Cali"/>
+                                    <String fx:value="Mompox"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                        <Label text="Aparecerá en el ranking «Top de tu ciudad»"
+                               styleClass="bf-field-hint"/>
+                    </VBox>
+
+                    <!-- Telefono (opcional) -->
+                    <VBox spacing="6">
+                        <HBox spacing="6" alignment="BASELINE_LEFT">
+                            <Label text="Teléfono" styleClass="bf-field-lbl"/>
+                            <Label text="(opcional)" styleClass="bf-field-lbl-optional"/>
+                        </HBox>
+                        <TextField fx:id="txtTelefono" promptText="+57 300 000 0000"
+                                   styleClass="bf-field-input"/>
+                    </VBox>
+
+                    <!-- Generos que te interesan (chips) -->
+                    <VBox spacing="6">
+                        <Label text="Géneros que te interesan" styleClass="bf-pref-title"/>
+                        <FlowPane fx:id="chipsGeneros" hgap="8" vgap="8" prefWrapLength="460"/>
+                    </VBox>
+                </VBox>
+
+                <!-- ============================================== -->
+                <!-- PASO 3: Eleccion de plan                        -->
+                <!-- ============================================== -->
+                <VBox fx:id="paso3Pane" spacing="8" visible="false" managed="false">
+
+                    <ToggleButton fx:id="tbtnFree" toggleGroup="$planGroup"
+                                  styleClass="bf-plan" maxWidth="Infinity" selected="true"
+                                  userData="FREE">
+                        <graphic>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <RadioButton mouseTransparent="true" focusTraversable="false"
+                                             selected="true"/>
+                                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                    <Label text="FREE" styleClass="bf-plan-name"/>
+                                    <Label text="Con anuncios. 6 saltos/hora."
+                                           styleClass="bf-plan-desc"/>
+                                </VBox>
+                                <Label text="$0" styleClass="bf-plan-price"/>
+                            </HBox>
+                        </graphic>
+                    </ToggleButton>
+
+                    <ToggleButton fx:id="tbtnIndividual" toggleGroup="$planGroup"
+                                  styleClass="bf-plan" maxWidth="Infinity"
+                                  userData="INDIVIDUAL">
+                        <graphic>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <RadioButton mouseTransparent="true" focusTraversable="false"/>
+                                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <Label text="INDIVIDUAL" styleClass="bf-plan-name"/>
+                                        <Label text="Recomendado" styleClass="bf-plan-tag"/>
+                                    </HBox>
+                                    <Label text="Sin anuncios. Saltos ilimitados."
+                                           styleClass="bf-plan-desc"/>
+                                </VBox>
+                                <Label text="$16.900/mes" styleClass="bf-plan-price"/>
+                            </HBox>
+                        </graphic>
+                    </ToggleButton>
+
+                    <ToggleButton fx:id="tbtnEstudiante" toggleGroup="$planGroup"
+                                  styleClass="bf-plan" maxWidth="Infinity"
+                                  userData="ESTUDIANTE">
+                        <graphic>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <RadioButton mouseTransparent="true" focusTraversable="false"/>
+                                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                    <Label text="ESTUDIANTE" styleClass="bf-plan-name"/>
+                                    <Label text="Verificación con .edu"
+                                           styleClass="bf-plan-desc"/>
+                                </VBox>
+                                <Label text="$8.900/mes" styleClass="bf-plan-price"/>
+                            </HBox>
+                        </graphic>
+                    </ToggleButton>
+
+                    <ToggleButton fx:id="tbtnDuo" toggleGroup="$planGroup"
+                                  styleClass="bf-plan" maxWidth="Infinity"
+                                  userData="DUO">
+                        <graphic>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <RadioButton mouseTransparent="true" focusTraversable="false"/>
+                                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                    <Label text="DUO" styleClass="bf-plan-name"/>
+                                    <Label text="Para dos cuentas en el mismo hogar."
+                                           styleClass="bf-plan-desc"/>
+                                </VBox>
+                                <Label text="$22.900/mes" styleClass="bf-plan-price"/>
+                            </HBox>
+                        </graphic>
+                    </ToggleButton>
+
+                    <ToggleButton fx:id="tbtnFamiliar" toggleGroup="$planGroup"
+                                  styleClass="bf-plan" maxWidth="Infinity"
+                                  userData="FAMILIAR">
+                        <graphic>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <RadioButton mouseTransparent="true" focusTraversable="false"/>
+                                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                    <Label text="FAMILIAR" styleClass="bf-plan-name"/>
+                                    <Label text="Hasta 6 cuentas. Control parental."
+                                           styleClass="bf-plan-desc"/>
+                                </VBox>
+                                <Label text="$29.900/mes" styleClass="bf-plan-price"/>
+                            </HBox>
+                        </graphic>
+                    </ToggleButton>
+                </VBox>
+            </StackPane>
+
+            <!-- Botones de navegacion entre pasos -->
+            <HBox spacing="12">
+                <Button fx:id="btnAtras" text="Ya tengo cuenta"
+                        styleClass="bf-btn-ghost" onAction="#onAtras"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnContinuar" text="Continuar →"
+                        styleClass="bf-btn-primary" onAction="#onContinuar"/>
+            </HBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <!-- Debug trace -->
+            <HBox styleClass="bf-auth-debug" spacing="8" alignment="CENTER_LEFT">
+                <Label text="view.VentanaRegistro"/>
+                <Label text="·"/>
+                <Label text="service.ClienteService.registrar()"/>
+                <Label text="·"/>
+                <Label text="util.PasswordUtil.hash()"/>
+            </HBox>
+
+            <padding>
+                <Insets top="40" right="56" bottom="40" left="56"/>
+            </padding>
+        </VBox>
+    </ScrollPane>
+</GridPane>
