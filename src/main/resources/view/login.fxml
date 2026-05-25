@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<!--
+    login.fxml — Pantalla de inicio de sesion de Beatify.
+    Layout split 50/50:
+        - Lado izquierdo (51.2%): branding + pitch + 4 features distintivos + footnote
+        - Lado derecho  (48.8%): formulario + SSO stubs + link a registro + debug trace
+
+    Controller: com.beatify.view.controller.LoginController
+-->
+<GridPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="com.beatify.view.controller.LoginController"
+          prefWidth="1440.0" prefHeight="900.0">
+
+    <columnConstraints>
+        <ColumnConstraints percentWidth="51.2"/>
+        <ColumnConstraints percentWidth="48.8"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints vgrow="ALWAYS"/>
+    </rowConstraints>
+
+    <!-- =========================================================== -->
+    <!-- LADO IZQUIERDO: brand + pitch + features + footnote          -->
+    <!-- =========================================================== -->
+    <VBox GridPane.columnIndex="0" styleClass="bf-auth-side" spacing="20">
+
+        <!-- Brand: logo + nombre -->
+        <HBox spacing="14" alignment="CENTER_LEFT">
+            <StackPane styleClass="bf-brand-logo" prefWidth="56" prefHeight="56">
+                <Group>
+                    <!-- Anillo exterior -->
+                    <Circle centerX="22" centerY="22" radius="20"
+                            stroke="#b794ff" strokeWidth="1.8" fill="transparent"/>
+                    <!-- Punto central -->
+                    <Circle centerX="22" centerY="22" radius="6" fill="#b794ff"/>
+                    <!-- 4 lineas en cruz (norte/sur/este/oeste) -->
+                    <SVGPath content="M22 4 L22 16 M22 28 L22 40 M4 22 L16 22 M28 22 L40 22"
+                             stroke="#b794ff" strokeWidth="1.8"
+                             strokeLineCap="ROUND" fill="transparent"/>
+                </Group>
+            </StackPane>
+            <Label text="Beatify" styleClass="bf-brand-name"/>
+        </HBox>
+
+        <!-- Spacer flexible para empujar el contenido al medio -->
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Pitch: eyebrow + titulo + body + features -->
+        <VBox spacing="16" maxWidth="480">
+            <Label text="PLATAFORMA DE STREAMING MUSICAL · COLOMBIA"
+                   styleClass="bf-auth-pitch-eyebrow"/>
+
+            <!-- Titulo de pitch — "La música que tu región hizo primero."
+                 La parte "tu región" va en acento. Se logra con dos labels
+                 en flujo HBox/TextFlow. Aqui usamos un TextFlow embebido. -->
+            <VBox spacing="0">
+                <Label text="La música que" styleClass="bf-auth-pitch-title"/>
+                <HBox spacing="0">
+                    <Label text="tu región" styleClass="bf-auth-pitch-title-accent"/>
+                    <Label text=" hizo" styleClass="bf-auth-pitch-title"/>
+                </HBox>
+                <Label text="primero." styleClass="bf-auth-pitch-title"/>
+            </VBox>
+
+            <Label styleClass="bf-auth-pitch-body" wrapText="true"
+                   text="Vallenato, cumbia, champeta, bullerengue, salsa colombiana y andina — con el contexto cultural que las plataformas globales nunca te cuentan."/>
+
+            <!-- Features 2x2 (grid de 4 cards) -->
+            <GridPane hgap="14" vgap="14">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+
+                <!-- Feature: Reseñas -->
+                <HBox GridPane.columnIndex="0" GridPane.rowIndex="0"
+                      styleClass="bf-auth-feat" spacing="12">
+                    <StackPane styleClass="bf-auth-feat-icon">
+                        <Label text="★"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label text="Reseñas con calificación" styleClass="bf-auth-feat-title"/>
+                        <Label text="1-5 estrellas, votación de utilidad"
+                               styleClass="bf-auth-feat-sub"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Feature: Música del Barrio -->
+                <HBox GridPane.columnIndex="1" GridPane.rowIndex="0"
+                      styleClass="bf-auth-feat" spacing="12">
+                    <StackPane styleClass="bf-auth-feat-icon">
+                        <Label text="▣"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label text="Música del Barrio" styleClass="bf-auth-feat-title"/>
+                        <Label text="Top de tu ciudad en tiempo real"
+                               styleClass="bf-auth-feat-sub"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Feature: Cápsulas del Tiempo -->
+                <HBox GridPane.columnIndex="0" GridPane.rowIndex="1"
+                      styleClass="bf-auth-feat" spacing="12">
+                    <StackPane styleClass="bf-auth-feat-icon">
+                        <Label text="⌛"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label text="Cápsulas del Tiempo" styleClass="bf-auth-feat-title"/>
+                        <Label text="Tu historial sin restricciones"
+                               styleClass="bf-auth-feat-sub"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Feature: Sistema de logros -->
+                <HBox GridPane.columnIndex="1" GridPane.rowIndex="1"
+                      styleClass="bf-auth-feat" spacing="12">
+                    <StackPane styleClass="bf-auth-feat-icon">
+                        <Label text="♛"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label text="Sistema de logros" styleClass="bf-auth-feat-title"/>
+                        <Label text="Gamificación del descubrimiento"
+                               styleClass="bf-auth-feat-sub"/>
+                    </VBox>
+                </HBox>
+            </GridPane>
+        </VBox>
+
+        <!-- Spacer flexible -->
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Footnote: universidad -->
+        <Label text="Universidad Popular del Cesar · Programación de Computadores III · 2026"
+               styleClass="bf-auth-footnote"/>
+    </VBox>
+
+    <!-- =========================================================== -->
+    <!-- LADO DERECHO: formulario                                     -->
+    <!-- =========================================================== -->
+    <ScrollPane GridPane.columnIndex="1" fitToWidth="true"
+                styleClass="bf-auth-form-wrap" hbarPolicy="NEVER">
+        <VBox alignment="TOP_CENTER" spacing="18" maxWidth="460" prefWidth="460">
+
+            <!-- Header del form -->
+            <VBox spacing="6">
+                <Label text="PASO 1 DE 1" styleClass="bf-auth-step"/>
+                <Label text="Inicia sesión" styleClass="bf-auth-form-title"/>
+                <Label text="Bienvenido de vuelta. Continúa donde lo dejaste."
+                       styleClass="bf-auth-form-sub"/>
+            </VBox>
+
+            <!-- Error banner (oculto por defecto) -->
+            <VBox fx:id="boxError" styleClass="bf-auth-error" spacing="4"
+                  visible="false" managed="false">
+                <Label fx:id="lblErrorCode" text="AutenticacionException"
+                       styleClass="bf-auth-error-code"/>
+                <Label fx:id="lblErrorMsg" text="" styleClass="bf-auth-error-msg"
+                       wrapText="true"/>
+            </VBox>
+
+            <!-- Campo correo -->
+            <VBox spacing="6">
+                <Label text="Correo electrónico" styleClass="bf-field-lbl"/>
+                <TextField fx:id="txtCorreo" promptText="tu@correo.com"
+                           styleClass="bf-field-input"/>
+            </VBox>
+
+            <!-- Campo password con label-link y boton ojo -->
+            <VBox spacing="6">
+                <HBox alignment="BASELINE_LEFT" spacing="8">
+                    <Label text="Contraseña" styleClass="bf-field-lbl"
+                           HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Hyperlink text="¿Olvidaste tu contraseña?" styleClass="bf-field-link"
+                               onAction="#onOlvidoPassword"/>
+                </HBox>
+                <StackPane>
+                    <PasswordField fx:id="txtPassword" promptText="••••••••"
+                                   styleClass="bf-field-input"/>
+                    <TextField fx:id="txtPasswordVisible" promptText="••••••••"
+                               styleClass="bf-field-input"
+                               visible="false" managed="false"/>
+                    <Button fx:id="btnToggleEye" styleClass="bf-field-eye"
+                            StackPane.alignment="CENTER_RIGHT"
+                            onAction="#onToggleShowPassword">
+                        <graphic>
+                            <FontIcon iconLiteral="mtwo-visibility" iconSize="16"
+                                      fx:id="iconEye"/>
+                        </graphic>
+                        <StackPane.margin>
+                            <Insets right="8"/>
+                        </StackPane.margin>
+                    </Button>
+                </StackPane>
+                <Label text="Hash BCrypt almacenado en CLIENTE.password_hash"
+                       styleClass="bf-field-hint"/>
+            </VBox>
+
+            <!-- Checkbox mantener sesion -->
+            <CheckBox fx:id="chkMantenerSesion" text="Mantener sesión iniciada en este dispositivo"
+                      styleClass="bf-check" selected="true"/>
+
+            <!-- Boton primario -->
+            <Button fx:id="btnIngresar" text="Iniciar sesión"
+                    styleClass="bf-btn-primary" maxWidth="Infinity"
+                    onAction="#onIngresar"/>
+
+            <!-- Separador "o continua con" -->
+            <HBox alignment="CENTER" spacing="14">
+                <Region styleClass="bf-auth-sep-line" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Label text="o continúa con" styleClass="bf-auth-sep-text"/>
+                <Region styleClass="bf-auth-sep-line" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            </HBox>
+
+            <!-- 3 botones SSO (stubs deshabilitados) -->
+            <HBox spacing="8">
+                <Button fx:id="btnGoogle" text="Google" styleClass="bf-btn-ghost"
+                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnGitHub" text="GitHub" styleClass="bf-btn-ghost"
+                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnUPC" text="Univ. del Cesar" styleClass="bf-btn-ghost"
+                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <!-- Switch a registro -->
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="¿No tienes cuenta?" styleClass="bf-auth-switch"/>
+                <Hyperlink fx:id="linkRegistro" text="Regístrate gratis"
+                           styleClass="bf-auth-switch-link" onAction="#onIrARegistro"/>
+            </HBox>
+
+            <!-- Spacer -->
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <!-- Debug trace inferior -->
+            <HBox styleClass="bf-auth-debug" spacing="8" alignment="CENTER_LEFT">
+                <Label text="view.VentanaLogin"/>
+                <Label text="·"/>
+                <Label text="service.ClienteService.autenticar()"/>
+                <Label text="·"/>
+                <Label text="dao.ClienteDAO.buscarPorCorreo()"/>
+            </HBox>
+
+            <padding>
+                <Insets top="40" right="56" bottom="40" left="56"/>
+            </padding>
+        </VBox>
+    </ScrollPane>
+</GridPane>
