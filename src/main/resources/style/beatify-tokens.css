@@ -1,0 +1,107 @@
+/*
+ * beatify-tokens.css
+ * ---------------------------------------------------------------
+ * Sistema de diseño base de Beatify.
+ * Define los "looked-up colors" (equivalente a CSS variables) y la
+ * tipografia. TODOS los demas archivos CSS heredan de aqui.
+ *
+ * Paleta del handoff de diseño (2026-05-24):
+ *   - Fondos: azul profundo (#0a1628) en 5 niveles de elevacion
+ *   - Acento: lavanda (#b794ff) en 3 tonos
+ *   - Texto: 3 niveles de jerarquia
+ *   - Bordes: alpha-rgba sobre blanco
+ * ---------------------------------------------------------------
+ */
+
+.root {
+    /* ============================================================
+       LOOKED-UP COLORS — equivalentes a CSS variables en web.
+       Se referencian desde otros archivos como -fx-background-color: -bf-bg;
+       ============================================================ */
+
+    /* Fondos por nivel de elevacion */
+    -bf-bg:         #0a1628;
+    -bf-bg-2:       #0f1f36;
+    -bf-bg-3:       #152841;
+    -bf-surface:    #15263d;
+    -bf-surface-2:  #1c324f;
+
+    /* Texto */
+    -bf-text:       #e8edf3;
+    -bf-text-muted: #8da3bd;
+    -bf-text-dim:   #5c7596;
+
+    /* Acento de marca (lavanda) */
+    -bf-accent:        #b794ff;
+    -bf-accent-deep:   #8b5cf6;
+    -bf-accent-soft:   #e9d8ff;
+
+    /* Bordes sobre fondos oscuros */
+    -bf-border:        rgba(255, 255, 255, 0.07);
+    -bf-border-strong: rgba(255, 255, 255, 0.14);
+
+    /* Estados */
+    -bf-success: #7ed957;
+    -bf-danger:  #e57373;
+
+    /* ============================================================
+       APLICACION POR DEFECTO
+       ============================================================ */
+    -fx-background-color: -bf-bg;
+    -fx-font-family: "Manrope";
+    -fx-text-fill: -bf-text;
+}
+
+/* ================================================================
+   TIPOGRAFIA — clases de utilidad para usar como styleClass
+   ================================================================ */
+
+/* Display (Sora) — hero titles, headings grandes */
+.text-display-xl {
+    -fx-font-family: "Sora";
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+}
+.text-display-lg {
+    -fx-font-family: "Sora";
+    -fx-font-size: 44px;
+    -fx-font-weight: bold;
+}
+.text-display {
+    -fx-font-family: "Sora";
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+}
+.text-section {
+    -fx-font-family: "Sora";
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+/* Body (Manrope) */
+.text-body {
+    -fx-font-size: 13.5px;
+}
+.text-body-sm {
+    -fx-font-size: 12.5px;
+}
+
+/* Colores de texto */
+.text-muted  { -fx-text-fill: -bf-text-muted; }
+.text-dim    { -fx-text-fill: -bf-text-dim; }
+.text-accent { -fx-text-fill: -bf-accent; }
+
+/* Eyebrow — uppercase, accent, small */
+.text-eyebrow {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-accent;
+    /* NOTA: JavaFX no tiene text-transform; el texto debe llegar ya en mayusculas. */
+}
+
+/* Mono — debug traces, hints tecnicos */
+.text-mono {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -bf-text-dim;
+}
