@@ -248,9 +248,9 @@ public class HomeController {
             trendIcon.getStyleClass().add("bf-trend-" + trend);
             trendIcon.getChildren().add(
                     new FontIcon(switch (trend) {
-                        case "up"   -> "mtwo-arrow-upward";
-                        case "down" -> "mtwo-arrow-downward";
-                        default     -> "mtwo-remove";
+                        case "up"   -> "bi-arrow-up";
+                        case "down" -> "bi-arrow-down";
+                        default     -> "bi-dash";
                     }));
 
             item.getChildren().addAll(lblRank, avatar, info, trendIcon);

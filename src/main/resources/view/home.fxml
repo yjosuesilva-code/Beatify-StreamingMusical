@@ -43,12 +43,12 @@
             <HBox spacing="6">
                 <Button styleClass="bf-tb-arrow" onAction="#onAtras">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-arrow-back" iconSize="14"/>
+                        <FontIcon iconLiteral="bi-arrow-left" iconSize="14"/>
                     </graphic>
                 </Button>
                 <Button styleClass="bf-tb-arrow" onAction="#onAdelante">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-arrow-forward" iconSize="14"/>
+                        <FontIcon iconLiteral="bi-arrow-right" iconSize="14"/>
                     </graphic>
                 </Button>
             </HBox>
@@ -56,7 +56,7 @@
             <!-- Search pill -->
             <HBox styleClass="bf-search" spacing="10" alignment="CENTER_LEFT"
                   HBox.hgrow="ALWAYS" maxWidth="480">
-                <FontIcon iconLiteral="mtwo-search" iconSize="14" iconColor="#8da3bd"/>
+                <FontIcon iconLiteral="bi-search" iconSize="14" iconColor="#8da3bd"/>
                 <TextField fx:id="txtBusqueda" styleClass="bf-search-input"
                            promptText="Busca canciones, artistas, álbumes, podcasts..."
                            HBox.hgrow="ALWAYS"/>
@@ -70,7 +70,7 @@
             <StackPane>
                 <Button fx:id="btnNotif" styleClass="bf-tb-icon">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-notifications-none" iconSize="16"/>
+                        <FontIcon iconLiteral="bi-bell" iconSize="16"/>
                     </graphic>
                 </Button>
                 <Label fx:id="lblNotifCount" text="5" styleClass="bf-tb-dot"
@@ -104,19 +104,19 @@
             <Button text="Inicio" styleClass="bf-side-item, is-active"
                     maxWidth="Infinity" onAction="#onIrInicio">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-home" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-house" iconSize="16"/>
                 </graphic>
             </Button>
             <Button text="Explorar" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onIrExplorar">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-search" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-search" iconSize="16"/>
                 </graphic>
             </Button>
             <Button text="Tu biblioteca" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onIrBiblioteca">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-library-music" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-collection" iconSize="16"/>
                 </graphic>
             </Button>
 
@@ -125,25 +125,25 @@
             <Button text="Reseñas" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onIrResenas">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-star-outline" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-star" iconSize="16"/>
                 </graphic>
             </Button>
             <Button text="Música del Barrio" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onIrBarrio">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-location-on" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-geo-alt" iconSize="16"/>
                 </graphic>
             </Button>
             <Button text="Cápsulas del Tiempo" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onIrCapsulas">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-access-time" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-clock" iconSize="16"/>
                 </graphic>
             </Button>
             <Button text="Logros" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onIrLogros">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-emoji-events" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-trophy" iconSize="16"/>
                 </graphic>
             </Button>
 
@@ -152,7 +152,7 @@
                 <Label text="TUS PLAYLISTS" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                 <Button styleClass="bf-side-plus" onAction="#onNuevaPlaylist">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-add" iconSize="14"/>
+                        <FontIcon iconLiteral="bi-plus" iconSize="14"/>
                     </graphic>
                 </Button>
             </HBox>
@@ -168,7 +168,7 @@
             <Button text="Cerrar sesión" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onCerrarSesion">
                 <graphic>
-                    <FontIcon iconLiteral="mtwo-logout" iconSize="16"/>
+                    <FontIcon iconLiteral="bi-box-arrow-right" iconSize="16"/>
                 </graphic>
             </Button>
         </VBox>
@@ -242,7 +242,7 @@
                     <!-- Lado izquierdo del barrio: descripcion -->
                     <VBox GridPane.columnIndex="0" spacing="10">
                         <HBox spacing="6" alignment="CENTER_LEFT">
-                            <FontIcon iconLiteral="mtwo-location-on" iconSize="13" iconColor="#b794ff"/>
+                            <FontIcon iconLiteral="bi-geo-alt" iconSize="13" iconColor="#b794ff"/>
                             <Label text="FUNCIONALIDAD DISTINTIVA" styleClass="bf-barrio-tag"/>
                         </HBox>
                         <Label text="Top de tu ciudad" styleClass="bf-barrio-title"/>
@@ -347,7 +347,7 @@
                 </VBox>
                 <Button styleClass="bf-mp-like">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-favorite-border" iconSize="16"/>
+                        <FontIcon iconLiteral="bi-heart" iconSize="16"/>
                     </graphic>
                 </Button>
             </HBox>
@@ -357,27 +357,27 @@
                 <HBox spacing="12" alignment="CENTER">
                     <Button styleClass="bf-mp-ctrl">
                         <graphic>
-                            <FontIcon iconLiteral="mtwo-shuffle" iconSize="16"/>
+                            <FontIcon iconLiteral="bi-shuffle" iconSize="16"/>
                         </graphic>
                     </Button>
                     <Button styleClass="bf-mp-ctrl">
                         <graphic>
-                            <FontIcon iconLiteral="mtwo-skip-previous" iconSize="20"/>
+                            <FontIcon iconLiteral="bi-skip-start-fill" iconSize="20"/>
                         </graphic>
                     </Button>
                     <Button styleClass="bf-mp-play">
                         <graphic>
-                            <FontIcon iconLiteral="mtwo-play-arrow" iconSize="18" iconColor="#0a1628"/>
+                            <FontIcon iconLiteral="bi-play-fill" iconSize="18" iconColor="#0a1628"/>
                         </graphic>
                     </Button>
                     <Button styleClass="bf-mp-ctrl">
                         <graphic>
-                            <FontIcon iconLiteral="mtwo-skip-next" iconSize="20"/>
+                            <FontIcon iconLiteral="bi-skip-end-fill" iconSize="20"/>
                         </graphic>
                     </Button>
                     <Button styleClass="bf-mp-ctrl">
                         <graphic>
-                            <FontIcon iconLiteral="mtwo-repeat" iconSize="16"/>
+                            <FontIcon iconLiteral="bi-repeat" iconSize="16"/>
                         </graphic>
                     </Button>
                 </HBox>
@@ -396,12 +396,12 @@
             <HBox spacing="8" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                 <Button styleClass="bf-mp-ctrl">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-queue-music" iconSize="16"/>
+                        <FontIcon iconLiteral="bi-list-ul" iconSize="16"/>
                     </graphic>
                 </Button>
                 <Button styleClass="bf-mp-ctrl">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-volume-up" iconSize="16"/>
+                        <FontIcon iconLiteral="bi-volume-up" iconSize="16"/>
                     </graphic>
                 </Button>
                 <StackPane>
@@ -411,7 +411,7 @@
                 </StackPane>
                 <Button styleClass="bf-mp-ctrl">
                     <graphic>
-                        <FontIcon iconLiteral="mtwo-open-in-full" iconSize="16"/>
+                        <FontIcon iconLiteral="bi-arrows-fullscreen" iconSize="16"/>
                     </graphic>
                 </Button>
             </HBox>

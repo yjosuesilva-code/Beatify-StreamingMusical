@@ -16,14 +16,19 @@ import javafx.scene.text.FontWeight;
  * un circulo con gradiente diagonal entre dos colores y las iniciales
  * del nombre centradas en blanco (Sora bold).
  *
+ * Las iniciales se calculan automaticamente del {@code nombreCompleto}:
+ *   - "Diomedes Diaz" -> "DD"
+ *   - "Shakira"       -> "SH"
+ *   - "Los Gaiteros de San Jacinto" -> "LG"
+ *
+ * Si necesitas pasar iniciales ya formateadas, simplemente pasa un nombre
+ * de 1-2 caracteres como cuarto parametro: "DD" se transforma a "DD".
+ *
  * Tamaños tipicos del handoff: 24, 28, 40, 44, 48, 64, 76, 96, 180 px.
  *
  * Uso:
  *   ArtistAvatar a = new ArtistAvatar(44, "#c97a1f", "#3a1a05", "Diomedes Diaz");
  *   contenedor.getChildren().add(a);
- *
- *   // o con iniciales explicitas:
- *   ArtistAvatar a2 = ArtistAvatar.conIniciales(44, "#c97a1f", "#3a1a05", "DD");
  */
 public class ArtistAvatar extends StackPane {
 
@@ -38,12 +43,6 @@ public class ArtistAvatar extends StackPane {
      */
     public ArtistAvatar(final double size, final String color1Hex,
                         final String color2Hex, final String nombreCompleto) {
-        this(size, color1Hex, color2Hex, calcularIniciales(nombreCompleto));
-    }
-
-    /** Constructor privado con iniciales ya calculadas. */
-    private ArtistAvatar(final double size, final String color1Hex,
-                         final String color2Hex, final String iniciales) {
 
         this.setPrefSize(size, size);
         this.setMinSize(size, size);
@@ -64,21 +63,14 @@ public class ArtistAvatar extends StackPane {
         this.getChildren().add(circulo);
 
         // Iniciales centradas (Sora bold, blanco 90%, tamaño proporcional)
-        if (iniciales != null && !iniciales.isBlank()) {
+        final String iniciales = calcularIniciales(nombreCompleto);
+        if (!iniciales.isBlank()) {
             final Label lbl = new Label(iniciales);
             lbl.setFont(Font.font("Sora", FontWeight.BOLD,
                     Math.max(9, size * 0.38)));
             lbl.setTextFill(Color.web("white", 0.9));
             this.getChildren().add(lbl);
         }
-    }
-
-    /** Factory alternativo cuando ya tenes las iniciales precalculadas. */
-    public static ArtistAvatar conIniciales(final double size,
-                                            final String color1Hex,
-                                            final String color2Hex,
-                                            final String iniciales) {
-        return new ArtistAvatar(size, color1Hex, color2Hex, iniciales);
     }
 
     /**

@@ -153,7 +153,7 @@ public class LoginController {
             txtPasswordVisible.setManaged(true);
             txtPassword.setVisible(false);
             txtPassword.setManaged(false);
-            iconEye.setIconLiteral("mtwo-visibility-off");
+            iconEye.setIconLiteral("bi-eye-slash");
         } else {
             // Ocultar
             txtPassword.setText(txtPasswordVisible.getText());
@@ -161,7 +161,7 @@ public class LoginController {
             txtPassword.setManaged(true);
             txtPasswordVisible.setVisible(false);
             txtPasswordVisible.setManaged(false);
-            iconEye.setIconLiteral("mtwo-visibility");
+            iconEye.setIconLiteral("bi-eye");
         }
     }
 

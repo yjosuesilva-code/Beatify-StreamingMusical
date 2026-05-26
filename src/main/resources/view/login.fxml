@@ -205,7 +205,7 @@
                             StackPane.alignment="CENTER_RIGHT"
                             onAction="#onToggleShowPassword">
                         <graphic>
-                            <FontIcon iconLiteral="mtwo-visibility" iconSize="16"
+                            <FontIcon iconLiteral="bi-eye" iconSize="16"
                                       fx:id="iconEye"/>
                         </graphic>
                         <StackPane.margin>
