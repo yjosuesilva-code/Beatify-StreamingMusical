@@ -1,0 +1,450 @@
+/*
+ * beatify-auth.css
+ * ---------------------------------------------------------------
+ * Estilos comunes de Login y Registro.
+ * Cubre: botones (primario / fantasma), inputs, checkbox, banner de
+ * error, separador "o continua con", chips de plan/genero, indicador
+ * de pasos del wizard, medidor de fuerza de contraseña.
+ *
+ * Depende de beatify-tokens.css (looked-up colors).
+ * ---------------------------------------------------------------
+ */
+
+/* ================================================================
+   LAYOUT BASE — split 50/50 (lado izquierdo branding, derecho form)
+   ================================================================ */
+.bf-auth-side {
+    -fx-background-color: linear-gradient(
+        from 100% 0% to 0% 100%,
+        -bf-bg-3 0%, -bf-bg-2 60%, -bf-bg 100%);
+    -fx-padding: 50 56 50 56;
+}
+
+.bf-auth-form-wrap {
+    -fx-background-color: -bf-bg;
+    -fx-padding: 40 56 40 56;
+}
+
+/* Brand: logo + name */
+.bf-brand-logo {
+    -fx-background-color: -bf-bg;
+    -fx-background-radius: 14;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-pref-width: 56;
+    -fx-pref-height: 56;
+    -fx-min-width: 56;
+    -fx-min-height: 56;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 30, 0, 0, 10);
+}
+.bf-brand-name {
+    -fx-font-family: "Sora";
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -bf-text;
+}
+
+/* Pitch — eyebrow + titulo + body */
+.bf-auth-pitch-eyebrow {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}
+.bf-auth-pitch-title {
+    -fx-font-family: "Sora";
+    -fx-font-size: 44px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-auth-pitch-title-accent {
+    -fx-font-family: "Sora";
+    -fx-font-size: 44px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}
+.bf-auth-pitch-body {
+    -fx-font-size: 14px;
+    -fx-text-fill: -bf-text-muted;
+    -fx-wrap-text: true;
+}
+
+/* Feature cards (4 diferenciadores en el Login) */
+.bf-auth-feat {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 12;
+}
+.bf-auth-feat-icon {
+    -fx-background-color: rgba(183, 148, 255, 0.18);
+    -fx-text-fill: -bf-accent;
+    -fx-font-family: "Sora";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-pref-width: 28;
+    -fx-pref-height: 28;
+    -fx-alignment: center;
+}
+.bf-auth-feat-title {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-auth-feat-sub {
+    -fx-font-size: 11px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* Footnote inferior — UPC mono */
+.bf-auth-footnote {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 11px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* ================================================================
+   FORMULARIO (lado derecho)
+   ================================================================ */
+.bf-auth-step {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-accent;
+}
+.bf-auth-form-title {
+    -fx-font-family: "Sora";
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-auth-form-sub {
+    -fx-font-size: 13.5px;
+    -fx-text-fill: -bf-text-muted;
+}
+
+/* Error banner */
+.bf-auth-error {
+    -fx-background-color: rgba(229, 115, 115, 0.08);
+    -fx-border-color: rgba(229, 115, 115, 0.3);
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 12 14 12 14;
+}
+.bf-auth-error-code {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 11px;
+    -fx-text-fill: #ff8a8a;
+}
+.bf-auth-error-msg {
+    -fx-font-size: 13px;
+    -fx-text-fill: -bf-text;
+}
+
+/* ================================================================
+   CAMPOS DE FORMULARIO
+   ================================================================ */
+.bf-field-lbl {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-text-muted;
+}
+.bf-field-lbl-optional {
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: -bf-text-dim;
+}
+.bf-field-link {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -bf-accent;
+    -fx-underline: false;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+.bf-field-link:hover {
+    -fx-underline: true;
+}
+
+.bf-field-input {
+    -fx-background-color: -bf-bg-3;
+    -fx-text-fill: -bf-text;
+    -fx-prompt-text-fill: -bf-text-dim;
+    -fx-background-radius: 6;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 0 14 0 14;
+    -fx-pref-height: 42;
+    -fx-font-size: 13.5px;
+}
+.bf-field-input:focused {
+    -fx-border-color: -bf-accent;
+    -fx-background-color: -bf-surface;
+}
+
+.bf-field-hint {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 11px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* Boton "ojo" para mostrar/ocultar password */
+.bf-field-eye {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(255, 255, 255, 0.5);
+    -fx-background-radius: 6;
+    -fx-pref-width: 30;
+    -fx-pref-height: 30;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.bf-field-eye:hover {
+    -fx-background-color: -bf-border;
+}
+
+/* ================================================================
+   MEDIDOR DE FUERZA DE CONTRASEÑA (Registro Paso 1)
+   ================================================================ */
+.bf-pwd-bar {
+    -fx-background-color: -bf-border;
+    -fx-background-radius: 2;
+    -fx-pref-width: 36;
+    -fx-pref-height: 3;
+    -fx-min-height: 3;
+    -fx-max-height: 3;
+}
+.bf-pwd-bar.is-on {
+    -fx-background-color: -bf-accent;
+}
+.bf-pwd-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -bf-accent;
+    -fx-font-weight: 600;
+}
+
+/* ================================================================
+   CHECKBOX (Mantener sesion iniciada)
+   ================================================================ */
+.bf-check {
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-size: 12.5px;
+}
+.bf-check .box {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 2;
+}
+.bf-check:selected .box {
+    -fx-background-color: -bf-accent;
+    -fx-border-color: -bf-accent;
+}
+.bf-check:selected .mark {
+    -fx-background-color: -bf-bg;
+}
+
+/* ================================================================
+   BOTONES
+   ================================================================ */
+.bf-btn-primary {
+    -fx-background-color: -bf-accent;
+    -fx-text-fill: -bf-bg;
+    -fx-background-radius: 999;
+    -fx-padding: 11 22 11 22;
+    -fx-font-size: 13.5px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+.bf-btn-primary:hover {
+    -fx-background-color: -bf-accent-deep;
+}
+.bf-btn-primary:pressed {
+    -fx-background-color: derive(-bf-accent-deep, -10%);
+}
+.bf-btn-primary:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+}
+.bf-btn-primary-sm {
+    -fx-padding: 7 14 7 14;
+    -fx-font-size: 12px;
+}
+
+.bf-btn-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 10 20 10 20;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+.bf-btn-ghost:hover {
+    -fx-background-color: -bf-border;
+}
+.bf-btn-ghost:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+/* ================================================================
+   SEPARADOR "o continua con" + botones SSO
+   ================================================================ */
+.bf-auth-sep-text {
+    -fx-text-fill: -bf-text-dim;
+    -fx-font-size: 11px;
+}
+.bf-auth-sep-line {
+    -fx-background-color: -bf-border;
+    -fx-pref-height: 1;
+    -fx-min-height: 1;
+    -fx-max-height: 1;
+}
+
+/* ================================================================
+   LINK "¿No tienes cuenta? Registrate gratis"
+   ================================================================ */
+.bf-auth-switch {
+    -fx-font-size: 13px;
+    -fx-text-fill: -bf-text-muted;
+}
+.bf-auth-switch-link {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -bf-accent;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.bf-auth-switch-link:hover {
+    -fx-underline: true;
+}
+
+/* ================================================================
+   DEBUG TRACE (footer del form, en mono)
+   ================================================================ */
+.bf-auth-debug {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -bf-text-dim;
+    -fx-border-color: -bf-border transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-style: dashed;
+    -fx-padding: 12 0 0 0;
+}
+
+/* ================================================================
+   INDICADOR DE PASOS DEL WIZARD (lado izquierdo del Registro)
+   ================================================================ */
+.bf-step-num {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-width: 1;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-font-family: "Sora";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text-dim;
+    -fx-alignment: center;
+}
+.bf-step-num.is-active {
+    -fx-background-color: -bf-accent;
+    -fx-text-fill: -bf-bg;
+    -fx-border-color: -bf-accent;
+}
+.bf-step-title {
+    -fx-font-size: 13.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-step-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* ================================================================
+   CHIPS DE GENERO (Registro Paso 2)
+   ================================================================ */
+.bf-pref-chip {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 8 6 8 6;
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -bf-text-muted;
+    -fx-cursor: hand;
+}
+.bf-pref-chip:hover {
+    -fx-background-color: -bf-surface-2;
+}
+.bf-pref-chip:selected {
+    -fx-background-color: rgba(183, 148, 255, 0.14);
+    -fx-border-color: -bf-accent;
+    -fx-text-fill: -bf-accent;
+}
+
+.bf-pref-title {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-weight: 600;
+}
+
+/* ================================================================
+   CARDS DE PLAN (Registro Paso 3)
+   ================================================================ */
+.bf-plan {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 14 16 14 16;
+    -fx-cursor: hand;
+}
+.bf-plan:hover {
+    -fx-background-color: -bf-surface-2;
+}
+.bf-plan:selected {
+    -fx-background-color: rgba(183, 148, 255, 0.08);
+    -fx-border-color: -bf-accent;
+}
+.bf-plan-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-text;
+}
+.bf-plan-tag {
+    -fx-background-color: -bf-accent;
+    -fx-text-fill: -bf-bg;
+    -fx-font-size: 9.5px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 999;
+    -fx-padding: 2 7 2 7;
+}
+.bf-plan-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bf-text-dim;
+}
+.bf-plan-price {
+    -fx-font-family: "Sora";
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bf-accent;
+}

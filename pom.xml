@@ -63,6 +63,18 @@
             <version>${jackson.version}</version>
         </dependency>
 
+        <!-- Ikonli: iconos lineales para JavaFX (recomendado por el handoff de diseno) -->
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-bootstrapicons-pack</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+
         <!-- JUnit 5 para pruebas unitarias -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<!--
+    home.fxml — Pantalla principal de Beatify (post-login).
+    Layout:
+        - TOP    : top bar (56 px) con flechas, search, notif, user
+        - LEFT   : sidebar (240 px) con 3 secciones de navegacion + playlists
+        - CENTER : ScrollPane con contenido — hero, quick row, BarrioCard,
+                   recomendados, artistas, continuar escuchando
+        - BOTTOM : mini-player (76 px) con cover, info, controles, progreso, volumen
+
+    Controller: com.beatify.view.controller.HomeController
+    Casi todos los datos (playlists, recomendados, artistas, continuar,
+    barrio, stats) son placeholder mientras no tengamos los services
+    correspondientes — ver TODOs en HomeController.
+-->
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.beatify.view.controller.HomeController"
+            prefWidth="1440.0" prefHeight="900.0">
+
+    <!-- ============================================================ -->
+    <!-- TOP : Top bar                                                 -->
+    <!-- ============================================================ -->
+    <top>
+        <HBox styleClass="bf-topbar" spacing="14" alignment="CENTER_LEFT">
+
+            <!-- Flechas back/forward -->
+            <HBox spacing="6">
+                <Button styleClass="bf-tb-arrow" onAction="#onAtras">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-arrow-left" iconSize="14"/>
+                    </graphic>
+                </Button>
+                <Button styleClass="bf-tb-arrow" onAction="#onAdelante">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-arrow-right" iconSize="14"/>
+                    </graphic>
+                </Button>
+            </HBox>
+
+            <!-- Search pill -->
+            <HBox styleClass="bf-search" spacing="10" alignment="CENTER_LEFT"
+                  HBox.hgrow="ALWAYS" maxWidth="480">
+                <FontIcon iconLiteral="bi-search" iconSize="14" iconColor="#8da3bd"/>
+                <TextField fx:id="txtBusqueda" styleClass="bf-search-input"
+                           promptText="Busca canciones, artistas, álbumes, podcasts..."
+                           HBox.hgrow="ALWAYS"/>
+                <Label text="Ctrl+K" styleClass="bf-search-hint"/>
+            </HBox>
+
+            <!-- Spacer -->
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Notif con badge -->
+            <StackPane>
+                <Button fx:id="btnNotif" styleClass="bf-tb-icon">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-bell" iconSize="16"/>
+                    </graphic>
+                </Button>
+                <Label fx:id="lblNotifCount" text="5" styleClass="bf-tb-dot"
+                       StackPane.alignment="TOP_RIGHT">
+                    <StackPane.margin>
+                        <Insets top="2" right="2"/>
+                    </StackPane.margin>
+                </Label>
+            </StackPane>
+
+            <!-- User pill (avatar + nombre) -->
+            <Button fx:id="btnUserMenu" styleClass="bf-tb-user" onAction="#onUserMenu">
+                <graphic>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <StackPane fx:id="userAvatarHolder"/>
+                        <Label fx:id="lblUserNombre" text="Usuario"/>
+                    </HBox>
+                </graphic>
+            </Button>
+        </HBox>
+    </top>
+
+    <!-- ============================================================ -->
+    <!-- LEFT : Sidebar 240px                                          -->
+    <!-- ============================================================ -->
+    <left>
+        <VBox styleClass="bf-sidebar" prefWidth="240" spacing="2">
+
+            <!-- PRINCIPAL -->
+            <Label text="PRINCIPAL" styleClass="bf-side-divider"/>
+            <Button text="Inicio" styleClass="bf-side-item, is-active"
+                    maxWidth="Infinity" onAction="#onIrInicio">
+                <graphic>
+                    <FontIcon iconLiteral="bi-house" iconSize="16"/>
+                </graphic>
+            </Button>
+            <Button text="Explorar" styleClass="bf-side-item"
+                    maxWidth="Infinity" onAction="#onIrExplorar">
+                <graphic>
+                    <FontIcon iconLiteral="bi-search" iconSize="16"/>
+                </graphic>
+            </Button>
+            <Button text="Tu biblioteca" styleClass="bf-side-item"
+                    maxWidth="Infinity" onAction="#onIrBiblioteca">
+                <graphic>
+                    <FontIcon iconLiteral="bi-collection" iconSize="16"/>
+                </graphic>
+            </Button>
+
+            <!-- DIFERENCIADORES -->
+            <Label text="DIFERENCIADORES" styleClass="bf-side-divider"/>
+            <Button text="Reseñas" styleClass="bf-side-item"
+                    maxWidth="Infinity" onAction="#onIrResenas">
+                <graphic>
+                    <FontIcon iconLiteral="bi-star" iconSize="16"/>
+                </graphic>
+            </Button>
+            <Button text="Música del Barrio" styleClass="bf-side-item"
+                    maxWidth="Infinity" onAction="#onIrBarrio">
+                <graphic>
+                    <FontIcon iconLiteral="bi-geo-alt" iconSize="16"/>
+                </graphic>
+            </Button>
+            <Button text="Cápsulas del Tiempo" styleClass="bf-side-item"
+                    maxWidth="Infinity" onAction="#onIrCapsulas">
+                <graphic>
+                    <FontIcon iconLiteral="bi-clock" iconSize="16"/>
+                </graphic>
+            </Button>
+            <Button text="Logros" styleClass="bf-side-item"
+                    maxWidth="Infinity" onAction="#onIrLogros">
+                <graphic>
+                    <FontIcon iconLiteral="bi-trophy" iconSize="16"/>
+                </graphic>
+            </Button>
+
+            <!-- TUS PLAYLISTS -->
+            <HBox styleClass="bf-side-divider" alignment="CENTER_LEFT">
+                <Label text="TUS PLAYLISTS" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Button styleClass="bf-side-plus" onAction="#onNuevaPlaylist">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-plus" iconSize="14"/>
+                    </graphic>
+                </Button>
+            </HBox>
+
+            <!-- Lista de playlists (el Controller las añade) -->
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-background: transparent;">
+                <VBox fx:id="sidebarPlaylistsBox" spacing="2"/>
+            </ScrollPane>
+
+            <!-- Cerrar sesion abajo -->
+            <Region VBox.vgrow="SOMETIMES" minHeight="8"/>
+            <Button text="Cerrar sesión" styleClass="bf-side-item"
+                    maxWidth="Infinity" onAction="#onCerrarSesion">
+                <graphic>
+                    <FontIcon iconLiteral="bi-box-arrow-right" iconSize="16"/>
+                </graphic>
+            </Button>
+        </VBox>
+    </left>
+
+    <!-- ============================================================ -->
+    <!-- CENTER : Contenido scrollable                                 -->
+    <!-- ============================================================ -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: -bf-bg; -fx-background: -bf-bg;">
+            <VBox styleClass="bf-page" spacing="0">
+
+                <!-- HERO: greeting + titulo + sub + 4 stats -->
+                <HBox spacing="40" alignment="BOTTOM_LEFT">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label fx:id="lblGreeting" text="BUENOS DÍAS"
+                               styleClass="bf-hero-eyebrow"/>
+                        <HBox spacing="0">
+                            <Label text="Hoy suena el " styleClass="bf-hero-title"/>
+                            <Label text="Caribe" styleClass="bf-hero-title-accent"/>
+                        </HBox>
+                        <Label fx:id="lblHeroSub" wrapText="true"
+                               styleClass="bf-hero-sub" maxWidth="540"
+                               text="Tu ciudad está escuchando vallenato clásico y cumbia. Únete."/>
+                    </VBox>
+
+                    <!-- Stats: 4 cifras en linea -->
+                    <HBox spacing="28" alignment="BOTTOM_LEFT">
+                        <VBox spacing="2">
+                            <Label fx:id="lblStatRep" text="1.247" styleClass="bf-hero-stat-num"/>
+                            <Label text="REPRODUCCIONES" styleClass="bf-hero-stat-lbl"/>
+                        </VBox>
+                        <VBox spacing="2">
+                            <Label fx:id="lblStatLikes" text="89" styleClass="bf-hero-stat-num"/>
+                            <Label text="FAVORITOS" styleClass="bf-hero-stat-lbl"/>
+                        </VBox>
+                        <VBox spacing="2">
+                            <Label fx:id="lblStatResenas" text="23" styleClass="bf-hero-stat-num"/>
+                            <Label text="RESEÑAS" styleClass="bf-hero-stat-lbl"/>
+                        </VBox>
+                        <VBox spacing="2">
+                            <Label fx:id="lblStatSiguiendo" text="42" styleClass="bf-hero-stat-num"/>
+                            <Label text="SIGUIENDO" styleClass="bf-hero-stat-lbl"/>
+                        </VBox>
+                    </HBox>
+                </HBox>
+
+                <!-- Quick row (grid 3 col) — el Controller la llena -->
+                <GridPane fx:id="quickRowGrid" hgap="10" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.33"/>
+                        <ColumnConstraints percentWidth="33.33"/>
+                        <ColumnConstraints percentWidth="33.33"/>
+                    </columnConstraints>
+                    <VBox.margin>
+                        <Insets top="24" bottom="0"/>
+                    </VBox.margin>
+                </GridPane>
+
+                <!-- BARRIO CARD: widget destacado "Top de tu ciudad" -->
+                <GridPane fx:id="barrioCardRoot" styleClass="bf-barrio" hgap="28">
+                    <columnConstraints>
+                        <ColumnConstraints prefWidth="360" minWidth="320"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints/>
+                    </rowConstraints>
+
+                    <!-- Lado izquierdo del barrio: descripcion -->
+                    <VBox GridPane.columnIndex="0" spacing="10">
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <FontIcon iconLiteral="bi-geo-alt" iconSize="13" iconColor="#b794ff"/>
+                            <Label text="FUNCIONALIDAD DISTINTIVA" styleClass="bf-barrio-tag"/>
+                        </HBox>
+                        <Label text="Top de tu ciudad" styleClass="bf-barrio-title"/>
+                        <HBox spacing="6">
+                            <Label fx:id="lblBarrioCiudad" text="Valledupar"
+                                   styleClass="bf-barrio-city-strong"/>
+                            <Label text=", Cesar — Colombia" styleClass="bf-barrio-city"/>
+                        </HBox>
+                        <Label wrapText="true" styleClass="bf-barrio-desc"
+                               text="Lo que se escucha ahora mismo en tu ciudad, calculado en vivo sobre la tabla REPRODUCCION cruzando CLIENTE.ciudad."/>
+                        <Button text="Ver ranking completo →"
+                                styleClass="bf-btn-primary, bf-btn-primary-sm"
+                                onAction="#onIrBarrio"/>
+                    </VBox>
+
+                    <!-- Lado derecho del barrio: ranking top 5 (el Controller lo llena) -->
+                    <VBox fx:id="barrioRankingBox" GridPane.columnIndex="1" spacing="6"/>
+
+                    <VBox.margin>
+                        <Insets top="32" bottom="32"/>
+                    </VBox.margin>
+                </GridPane>
+
+                <!-- SECTION HEADER: Recomendado para ti -->
+                <HBox spacing="0" alignment="BOTTOM_LEFT">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="ALGORITMO BASADO EN TU HISTORIAL" styleClass="bf-section-eyebrow"/>
+                        <Label text="Recomendado para ti" styleClass="bf-section-title"/>
+                    </VBox>
+                    <Button text="Ver todo →" styleClass="bf-section-action"
+                            onAction="#onIrExplorar"/>
+                    <VBox.margin>
+                        <Insets bottom="16"/>
+                    </VBox.margin>
+                </HBox>
+
+                <GridPane fx:id="recomendadosGrid" hgap="16" vgap="0">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                    </columnConstraints>
+                </GridPane>
+
+                <!-- SECTION HEADER: Artistas para descubrir -->
+                <HBox spacing="0" alignment="BOTTOM_LEFT">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="MÁS ESCUCHADOS EN COLOMBIA" styleClass="bf-section-eyebrow"/>
+                        <Label text="Artistas para descubrir" styleClass="bf-section-title"/>
+                    </VBox>
+                    <Button text="Ver todo →" styleClass="bf-section-action"
+                            onAction="#onIrExplorar"/>
+                    <VBox.margin>
+                        <Insets top="36" bottom="16"/>
+                    </VBox.margin>
+                </HBox>
+
+                <GridPane fx:id="artistasGrid" hgap="16" vgap="0">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                        <ColumnConstraints percentWidth="16.66"/>
+                    </columnConstraints>
+                </GridPane>
+
+                <!-- SECTION HEADER: Continuar escuchando -->
+                <VBox spacing="4">
+                    <Label text="HISTORIAL RECIENTE" styleClass="bf-section-eyebrow"/>
+                    <Label text="Continuar escuchando" styleClass="bf-section-title"/>
+                    <VBox.margin>
+                        <Insets top="36" bottom="16"/>
+                    </VBox.margin>
+                </VBox>
+
+                <VBox fx:id="continuarBox" spacing="0"/>
+
+                <!-- Padding inferior para que el ultimo item no quede pegado al miniplayer -->
+                <Region prefHeight="32"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM : Mini player                                          -->
+    <!-- ============================================================ -->
+    <bottom>
+        <HBox styleClass="bf-miniplayer" alignment="CENTER">
+
+            <!-- Izquierda: cover + info + like -->
+            <HBox spacing="14" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                <StackPane fx:id="mpCoverHolder"/>
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label fx:id="mpTitulo" text="La Gota Fría" styleClass="bf-mp-title"/>
+                    <Label fx:id="mpArtista" text="Comp. Emiliano Zuleta · Carlos Vives"
+                           styleClass="bf-mp-artist"/>
+                </VBox>
+                <Button styleClass="bf-mp-like">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-heart" iconSize="16"/>
+                    </graphic>
+                </Button>
+            </HBox>
+
+            <!-- Centro: controles + progreso -->
+            <VBox spacing="6" alignment="CENTER" prefWidth="480">
+                <HBox spacing="12" alignment="CENTER">
+                    <Button styleClass="bf-mp-ctrl">
+                        <graphic>
+                            <FontIcon iconLiteral="bi-shuffle" iconSize="16"/>
+                        </graphic>
+                    </Button>
+                    <Button styleClass="bf-mp-ctrl">
+                        <graphic>
+                            <FontIcon iconLiteral="bi-skip-start-fill" iconSize="20"/>
+                        </graphic>
+                    </Button>
+                    <Button styleClass="bf-mp-play">
+                        <graphic>
+                            <FontIcon iconLiteral="bi-play-fill" iconSize="18" iconColor="#0a1628"/>
+                        </graphic>
+                    </Button>
+                    <Button styleClass="bf-mp-ctrl">
+                        <graphic>
+                            <FontIcon iconLiteral="bi-skip-end-fill" iconSize="20"/>
+                        </graphic>
+                    </Button>
+                    <Button styleClass="bf-mp-ctrl">
+                        <graphic>
+                            <FontIcon iconLiteral="bi-arrow-repeat" iconSize="16"/>
+                        </graphic>
+                    </Button>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER">
+                    <Label text="1:34" styleClass="bf-mp-time"/>
+                    <StackPane HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                        <Region styleClass="bf-mp-bar" maxWidth="Infinity"/>
+                        <Region styleClass="bf-mp-bar-fill" maxWidth="120"
+                                StackPane.alignment="CENTER_LEFT"/>
+                    </StackPane>
+                    <Label text="4:33" styleClass="bf-mp-time"/>
+                </HBox>
+            </VBox>
+
+            <!-- Derecha: list + volumen + expandir -->
+            <HBox spacing="8" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                <Button styleClass="bf-mp-ctrl">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-list-ul" iconSize="16"/>
+                    </graphic>
+                </Button>
+                <Button styleClass="bf-mp-ctrl">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-volume-up" iconSize="16"/>
+                    </graphic>
+                </Button>
+                <StackPane>
+                    <Region styleClass="bf-mp-vol-bar"/>
+                    <Region styleClass="bf-mp-vol-fill" maxWidth="60"
+                            StackPane.alignment="CENTER_LEFT"/>
+                </StackPane>
+                <Button styleClass="bf-mp-ctrl">
+                    <graphic>
+                        <FontIcon iconLiteral="bi-arrows-fullscreen" iconSize="16"/>
+                    </graphic>
+                </Button>
+            </HBox>
+        </HBox>
+    </bottom>
+</BorderPane>

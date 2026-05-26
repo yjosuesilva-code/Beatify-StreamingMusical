@@ -1,103 +1,114 @@
 package com.beatify;
 
-import com.beatify.api.LastFmClient;
-import com.beatify.api.MusicBrainzClient;
-import com.beatify.dao.AlbumDAO;
-import com.beatify.dao.ArtistaDAO;
-import com.beatify.dao.ArtistaGeneroDAO;
-import com.beatify.dao.GeneroDAO;
-import com.beatify.model.Album;
-import com.beatify.model.Artista;
-import com.beatify.service.EnriquecimientoService;
-import com.beatify.util.Conexion;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
-public class Main {
+/**
+ * Punto de entrada de la aplicacion JavaFX Beatify.
+ *
+ * Flujo de arranque:
+ *   1. {@link Application#launch(String...)} llama a {@link #start(Stage)}.
+ *   2. Cargamos las fuentes Manrope, Sora y JetBrains Mono desde
+ *      {@code resources/fonts/} (sin esto el CSS cae a las fuentes default
+ *      del sistema).
+ *   3. Cargamos {@code /view/login.fxml} como escena inicial.
+ *   4. Aplicamos los 3 stylesheets globales:
+ *        - beatify-tokens.css  (looked-up colors + tipografia)
+ *        - beatify-auth.css    (Login y Registro)
+ *        - beatify-home.css    (sidebar, topbar, cards, miniplayer)
+ *   5. Configuramos el Stage y lo mostramos.
+ *
+ * Cuando el usuario se autentica, {@code LoginController} llama a
+ * {@code NavegacionUtil.cambiarA("/view/home.fxml", ...)} que reemplaza
+ * la Scene del mismo Stage. No se abren ventanas nuevas.
+ */
+public class Main extends Application {
 
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
-    public static void main(String[] args) {
-        probarConexion();
-        probarEnriquecimiento();
-    }
+    /** Tamaño minimo para no romper el layout en pantallas pequeñas. */
+    private static final double ANCHO_MIN = 980.0;
+    private static final double ALTO_MIN  = 640.0;
 
-    // -------------------------------------------------------------------------
-
-    private static void probarConexion() {
-        System.out.println("======================================");
-        System.out.println("  BEATIFY - Prueba de Conexion BD");
-        System.out.println("======================================");
-        try (Connection conn = Conexion.getInstancia().obtenerConexion()) {
-
-            System.out.println("[OK] Conexion establecida con Oracle XE");
-            System.out.println("  - URL: " + conn.getMetaData().getURL());
-            System.out.println("  - Usuario: " + conn.getMetaData().getUserName());
-            System.out.println("  - Driver: " + conn.getMetaData().getDriverName());
-            System.out.println("  - Version BD: " + conn.getMetaData().getDatabaseProductVersion().split("\n")[0]);
-
-            // El try-with-resources cierra la conexion al salir de este bloque
-        } catch (SQLException e) {
-            LOG.log(Level.SEVERE, "No se pudo conectar a Oracle", e);
-        }
-        System.out.println("[OK] Conexion cerrada correctamente");
-    }
-
-    // -------------------------------------------------------------------------
-
-    private static void probarEnriquecimiento() {
-        System.out.println();
-        System.out.println("======================================");
-        System.out.println("  BEATIFY - Prueba de APIs Externas");
-        System.out.println("======================================");
-
-        EnriquecimientoService svc = new EnriquecimientoService(
-                new LastFmClient(),
-                new MusicBrainzClient(),
-                new ArtistaDAO(),
-                new AlbumDAO(),
-                new GeneroDAO(),
-                new ArtistaGeneroDAO()
-        );
-
-        // --- Prueba: enriquecer artista ---
+    @Override
+    public void start(final Stage stage) {
+        cargarFuentes();
         try {
-            System.out.println("\n[TEST] Enriqueciendo artista: Carlos Vives");
-            Artista artista = svc.enriquecerArtista("Carlos Vives");
+            final Parent root = FXMLLoader.load(
+                    getClass().getResource("/view/login.fxml"));
 
-            System.out.println("[OK] Artista guardado:");
-            System.out.println("  - ID          : " + artista.getIdArtista());
-            System.out.println("  - Nombre art. : " + artista.getNombreArtistico());
-            System.out.println("  - Pais        : " + artista.getPais());
-            System.out.println("  - Foto URL    : " + artista.getFotoUrl());
-            System.out.println("  - Bio (100c)  : " + truncar(artista.getBiografia(), 100));
+            // Tamaño inicial: 90% de la pantalla del usuario (cabra en cualquier monitor)
+            final javafx.geometry.Rectangle2D pantalla =
+                    javafx.stage.Screen.getPrimary().getVisualBounds();
+            final double anchoInicial = Math.min(1440, pantalla.getWidth()  * 0.90);
+            final double altoInicial  = Math.min(900,  pantalla.getHeight() * 0.90);
 
-            // --- Prueba: enriquecer album ---
-            System.out.println("\n[TEST] Enriqueciendo album: El Amor de Mi Tierra");
-            Album album = svc.enriquecerAlbum(
-                    "Carlos Vives", "El Amor de Mi Tierra", artista.getIdArtista());
+            final Scene scene = new Scene(root, anchoInicial, altoInicial);
+            aplicarStylesheets(scene);
 
-            System.out.println("[OK] Album guardado:");
-            System.out.println("  - ID          : " + album.getIdAlbum());
-            System.out.println("  - Titulo      : " + album.getTitulo());
-            System.out.println("  - Año         : " + album.getAnioLanzamiento());
-            System.out.println("  - Sello       : " + album.getSelloDiscografico());
-            System.out.println("  - Tipo        : " + album.getTipo());
-            System.out.println("  - Portada URL : " + album.getPortadaUrl());
+            stage.setTitle("Beatify — Inicio de sesión");
+            stage.setScene(scene);
+            stage.setMinWidth(ANCHO_MIN);
+            stage.setMinHeight(ALTO_MIN);
+            stage.centerOnScreen();
+            stage.show();
 
-        } catch (Exception e) {
-            // Level.SEVERE + excepcion -> imprime mensaje + stack trace al log
-            LOG.log(Level.SEVERE, "Fallo el enriquecimiento", e);
+        } catch (final Exception e) {
+            LOG.log(Level.SEVERE, "No se pudo iniciar la UI", e);
+            throw new RuntimeException(e);
         }
     }
 
-    /** Recorta un texto a maxChars caracteres para mostrar en consola. */
-    private static String truncar(String texto, int maxChars) {
-        if (texto == null) return "(null)";
-        return texto.length() <= maxChars ? texto : texto.substring(0, maxChars) + "...";
+    /** Carga las 7 fuentes del tema desde resources/fonts/. */
+    private void cargarFuentes() {
+        final String[] rutas = {
+                "/fonts/Manrope-Regular.ttf",
+                "/fonts/Manrope-Medium.ttf",
+                "/fonts/Manrope-SemiBold.ttf",
+                "/fonts/Manrope-Bold.ttf",
+                "/fonts/Sora-Bold.ttf",
+                "/fonts/Sora-ExtraBold.ttf",
+                "/fonts/JetBrainsMono-Medium.ttf"
+        };
+        for (final String ruta : rutas) {
+            try (InputStream in = getClass().getResourceAsStream(ruta)) {
+                if (in == null) {
+                    LOG.warning("Fuente no encontrada: " + ruta);
+                    continue;
+                }
+                Font.loadFont(in, 14);
+            } catch (final Exception e) {
+                LOG.log(Level.WARNING, "Error cargando fuente " + ruta, e);
+            }
+        }
+    }
+
+    /** Agrega los stylesheets globales a la Scene. */
+    private void aplicarStylesheets(final Scene scene) {
+        final String[] hojas = {
+                "/style/beatify-tokens.css",
+                "/style/beatify-auth.css",
+                "/style/beatify-home.css"
+        };
+        for (final String hoja : hojas) {
+            final var url = getClass().getResource(hoja);
+            if (url == null) {
+                LOG.warning("Stylesheet no encontrado: " + hoja);
+                continue;
+            }
+            scene.getStylesheets().add(url.toExternalForm());
+        }
+    }
+
+    public static void main(final String[] args) {
+        launch(args);
     }
 }

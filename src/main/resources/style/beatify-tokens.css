@@ -1,0 +1,175 @@
+/*
+ * beatify-tokens.css
+ * ---------------------------------------------------------------
+ * Sistema de diseño base de Beatify.
+ * Define los "looked-up colors" (equivalente a CSS variables) y la
+ * tipografia. TODOS los demas archivos CSS heredan de aqui.
+ *
+ * Paleta del handoff de diseño (2026-05-24):
+ *   - Fondos: azul profundo (#0a1628) en 5 niveles de elevacion
+ *   - Acento: lavanda (#b794ff) en 3 tonos
+ *   - Texto: 3 niveles de jerarquia
+ *   - Bordes: alpha-rgba sobre blanco
+ * ---------------------------------------------------------------
+ */
+
+.root {
+    /* ============================================================
+       LOOKED-UP COLORS — equivalentes a CSS variables en web.
+       Se referencian desde otros archivos como -fx-background-color: -bf-bg;
+       ============================================================ */
+
+    /* Fondos por nivel de elevacion */
+    -bf-bg:         #0a1628;
+    -bf-bg-2:       #0f1f36;
+    -bf-bg-3:       #152841;
+    -bf-surface:    #15263d;
+    -bf-surface-2:  #1c324f;
+
+    /* Texto */
+    -bf-text:       #e8edf3;
+    -bf-text-muted: #8da3bd;
+    -bf-text-dim:   #5c7596;
+
+    /* Acento de marca (lavanda) */
+    -bf-accent:        #b794ff;
+    -bf-accent-deep:   #8b5cf6;
+    -bf-accent-soft:   #e9d8ff;
+
+    /* Bordes sobre fondos oscuros */
+    -bf-border:        rgba(255, 255, 255, 0.07);
+    -bf-border-strong: rgba(255, 255, 255, 0.14);
+
+    /* Estados */
+    -bf-success: #7ed957;
+    -bf-danger:  #e57373;
+
+    /* ============================================================
+       APLICACION POR DEFECTO
+       ============================================================ */
+    -fx-background-color: -bf-bg;
+    -fx-font-family: "Manrope";
+    -fx-text-fill: -bf-text;
+}
+
+/* ================================================================
+   TIPOGRAFIA — clases de utilidad para usar como styleClass
+   ================================================================ */
+
+/* Display (Sora) — hero titles, headings grandes */
+.text-display-xl {
+    -fx-font-family: "Sora";
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+}
+.text-display-lg {
+    -fx-font-family: "Sora";
+    -fx-font-size: 44px;
+    -fx-font-weight: bold;
+}
+.text-display {
+    -fx-font-family: "Sora";
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+}
+.text-section {
+    -fx-font-family: "Sora";
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+/* Body (Manrope) */
+.text-body {
+    -fx-font-size: 13.5px;
+}
+.text-body-sm {
+    -fx-font-size: 12.5px;
+}
+
+/* Colores de texto */
+.text-muted  { -fx-text-fill: -bf-text-muted; }
+.text-dim    { -fx-text-fill: -bf-text-dim; }
+.text-accent { -fx-text-fill: -bf-accent; }
+
+/* Eyebrow — uppercase, accent, small */
+.text-eyebrow {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -bf-accent;
+    /* NOTA: JavaFX no tiene text-transform; el texto debe llegar ya en mayusculas. */
+}
+
+/* Mono — debug traces, hints tecnicos */
+.text-mono {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -bf-text-dim;
+}
+
+/* ================================================================
+   FIXES GLOBALES — JavaFX defaults que rompen el tema oscuro
+   ================================================================ */
+
+/* ScrollPane: el .viewport por defecto tiene fondo blanco/gris claro.
+   Lo hacemos transparente para que herede el fondo del .bf-auth-form-wrap
+   o cualquier styleClass que aplique al ScrollPane padre. */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
+/* Scrollbars con colores acordes al tema oscuro */
+.scroll-bar:vertical, .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+.scroll-bar .thumb {
+    -fx-background-color: -bf-border-strong;
+    -fx-background-radius: 5;
+}
+.scroll-bar .thumb:hover {
+    -fx-background-color: -bf-text-dim;
+}
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button,
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-shape: null;
+}
+
+/* Asegurar que el .bf-auth-form-wrap sí aplica fondo al viewport */
+.bf-auth-form-wrap > .viewport {
+    -fx-background-color: -bf-bg;
+}
+
+/* ComboBox: el dropdown nativo de JavaFX tiene fondo claro */
+.combo-box .list-cell {
+    -fx-background-color: -bf-bg-3;
+    -fx-text-fill: -bf-text;
+}
+.combo-box .list-cell:hover, .combo-box .list-cell:filled:selected {
+    -fx-background-color: -bf-surface-2;
+    -fx-text-fill: -bf-text;
+}
+.combo-box-popup .list-view {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-width: 1;
+}
+
+/* ToggleButton: matar el styling default de JavaFX para no romper bf-pref-chip y bf-plan */
+.toggle-button {
+    -fx-background-radius: 6;
+}
