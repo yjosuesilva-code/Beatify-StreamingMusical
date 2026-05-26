@@ -34,13 +34,9 @@ public class Main extends Application {
 
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
-    /** Tamaño preferido inicial (matches el diseño del handoff). */
-    private static final double ANCHO_PREF = 1440.0;
-    private static final double ALTO_PREF  = 900.0;
-
     /** Tamaño minimo para no romper el layout en pantallas pequeñas. */
-    private static final double ANCHO_MIN = 1100.0;
-    private static final double ALTO_MIN  = 700.0;
+    private static final double ANCHO_MIN = 980.0;
+    private static final double ALTO_MIN  = 640.0;
 
     @Override
     public void start(final Stage stage) {
@@ -49,7 +45,13 @@ public class Main extends Application {
             final Parent root = FXMLLoader.load(
                     getClass().getResource("/view/login.fxml"));
 
-            final Scene scene = new Scene(root, ANCHO_PREF, ALTO_PREF);
+            // Tamaño inicial: 90% de la pantalla del usuario (cabra en cualquier monitor)
+            final javafx.geometry.Rectangle2D pantalla =
+                    javafx.stage.Screen.getPrimary().getVisualBounds();
+            final double anchoInicial = Math.min(1440, pantalla.getWidth()  * 0.90);
+            final double altoInicial  = Math.min(900,  pantalla.getHeight() * 0.90);
+
+            final Scene scene = new Scene(root, anchoInicial, altoInicial);
             aplicarStylesheets(scene);
 
             stage.setTitle("Beatify — Inicio de sesión");

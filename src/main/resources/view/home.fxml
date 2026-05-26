@@ -377,7 +377,7 @@
                     </Button>
                     <Button styleClass="bf-mp-ctrl">
                         <graphic>
-                            <FontIcon iconLiteral="bi-repeat" iconSize="16"/>
+                            <FontIcon iconLiteral="bi-arrow-repeat" iconSize="16"/>
                         </graphic>
                     </Button>
                 </HBox>

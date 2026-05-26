@@ -266,7 +266,7 @@
                                     <Label text="Con anuncios. 6 saltos/hora."
                                            styleClass="bf-plan-desc"/>
                                 </VBox>
-                                <Label text="$0" styleClass="bf-plan-price"/>
+                                <Label text="\$0" styleClass="bf-plan-price"/>
                             </HBox>
                         </graphic>
                     </ToggleButton>
@@ -285,7 +285,7 @@
                                     <Label text="Sin anuncios. Saltos ilimitados."
                                            styleClass="bf-plan-desc"/>
                                 </VBox>
-                                <Label text="$16.900/mes" styleClass="bf-plan-price"/>
+                                <Label text="\$16.900/mes" styleClass="bf-plan-price"/>
                             </HBox>
                         </graphic>
                     </ToggleButton>
@@ -301,7 +301,7 @@
                                     <Label text="Verificación con .edu"
                                            styleClass="bf-plan-desc"/>
                                 </VBox>
-                                <Label text="$8.900/mes" styleClass="bf-plan-price"/>
+                                <Label text="\$8.900/mes" styleClass="bf-plan-price"/>
                             </HBox>
                         </graphic>
                     </ToggleButton>
@@ -317,7 +317,7 @@
                                     <Label text="Para dos cuentas en el mismo hogar."
                                            styleClass="bf-plan-desc"/>
                                 </VBox>
-                                <Label text="$22.900/mes" styleClass="bf-plan-price"/>
+                                <Label text="\$22.900/mes" styleClass="bf-plan-price"/>
                             </HBox>
                         </graphic>
                     </ToggleButton>
@@ -333,7 +333,7 @@
                                     <Label text="Hasta 6 cuentas. Control parental."
                                            styleClass="bf-plan-desc"/>
                                 </VBox>
-                                <Label text="$29.900/mes" styleClass="bf-plan-price"/>
+                                <Label text="\$29.900/mes" styleClass="bf-plan-price"/>
                             </HBox>
                         </graphic>
                     </ToggleButton>

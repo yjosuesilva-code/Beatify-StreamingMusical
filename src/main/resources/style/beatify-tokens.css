@@ -105,3 +105,71 @@
     -fx-font-size: 10.5px;
     -fx-text-fill: -bf-text-dim;
 }
+
+/* ================================================================
+   FIXES GLOBALES — JavaFX defaults que rompen el tema oscuro
+   ================================================================ */
+
+/* ScrollPane: el .viewport por defecto tiene fondo blanco/gris claro.
+   Lo hacemos transparente para que herede el fondo del .bf-auth-form-wrap
+   o cualquier styleClass que aplique al ScrollPane padre. */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
+/* Scrollbars con colores acordes al tema oscuro */
+.scroll-bar:vertical, .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+.scroll-bar .thumb {
+    -fx-background-color: -bf-border-strong;
+    -fx-background-radius: 5;
+}
+.scroll-bar .thumb:hover {
+    -fx-background-color: -bf-text-dim;
+}
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button,
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-shape: null;
+}
+
+/* Asegurar que el .bf-auth-form-wrap sí aplica fondo al viewport */
+.bf-auth-form-wrap > .viewport {
+    -fx-background-color: -bf-bg;
+}
+
+/* ComboBox: el dropdown nativo de JavaFX tiene fondo claro */
+.combo-box .list-cell {
+    -fx-background-color: -bf-bg-3;
+    -fx-text-fill: -bf-text;
+}
+.combo-box .list-cell:hover, .combo-box .list-cell:filled:selected {
+    -fx-background-color: -bf-surface-2;
+    -fx-text-fill: -bf-text;
+}
+.combo-box-popup .list-view {
+    -fx-background-color: -bf-bg-3;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-width: 1;
+}
+
+/* ToggleButton: matar el styling default de JavaFX para no romper bf-pref-chip y bf-plan */
+.toggle-button {
+    -fx-background-radius: 6;
+}
