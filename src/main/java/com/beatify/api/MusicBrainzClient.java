@@ -73,9 +73,9 @@ public class MusicBrainzClient {
         }
 
         JsonNode primero = artistas.get(0);
+        String mbid = primero.path("id").asText(null);
         String pais = primero.path("country").asText(null);
-
-        return new ArtistaApiDTO(nombre, pais, null, null,
+        return new ArtistaApiDTO(mbid, nombre, pais, null, null,
                 Collections.emptyList(), Collections.emptyList());
     }
 
