@@ -53,7 +53,7 @@ com.beatify/
 
 ## Base de datos
 
-+El esquema `BEATIFY` contiene **29 tablas** y **28 secuencias** en Oracle XE.
+El esquema `BEATIFY` contiene **29 tablas** y **28 secuencias** en Oracle XE.
 
 | Dominio | Tablas |
 |---|---|
@@ -137,7 +137,7 @@ java -jar target/BeatifyApp-1.0-SNAPSHOT.jar
 - ✅ Fase 1: Documentación (problema, objetivos, requerimientos)
 - ✅ Fase 2: Arquitectura (paquetes, clases, mockups, GRASP/SOLID)
 - 🔄 Fase 3: Desarrollo (en curso)
-+   - ✅ Esquema BD completo — 29 tablas, secuencias, constraints
+   - ✅ Esquema BD completo — 29 tablas, secuencias, constraints
    - ✅ Seed data — géneros, artistas, álbumes, canciones, clientes
    - ✅ Capa DAO — 25 DAOs implementados con JDBC
    - ✅ Capa Service — interfaces + implementaciones para todos los DAOs
