@@ -1,7 +1,6 @@
 package com.beatify.service;
 
-import com.beatify.api.LastFmClient;
-import com.beatify.api.MusicBrainzClient;
+
 import com.beatify.api.dto.AlbumApiDTO;
 import com.beatify.api.dto.ArtistaApiDTO;
 import com.beatify.dao.AlbumDAO;
@@ -23,25 +22,25 @@ public class EnriquecimientoService implements IEnriquecimientoService {
     private static final Logger LOGGER =
             Logger.getLogger(EnriquecimientoService.class.getName());
 
-    private final LastFmClient lastFmClient;
-    private final MusicBrainzClient musicBrainzClient;
+    private final IMusicBrainzCacheService musicBrainzCache;
+    private final ILastFmCacheService lastFmCache;
     private final ArtistaDAO artistaDAO;
     private final AlbumDAO albumDAO;
     private final GeneroDAO generoDAO;
     private final ArtistaGeneroDAO artistaGeneroDAO;
 
-    public EnriquecimientoService(LastFmClient lastFmClient,
-                                  MusicBrainzClient musicBrainzClient,
+    public EnriquecimientoService(IMusicBrainzCacheService musicBrainzCache,
+                                  ILastFmCacheService lastFmCache,
                                   ArtistaDAO artistaDAO,
                                   AlbumDAO albumDAO,
                                   GeneroDAO generoDAO,
                                   ArtistaGeneroDAO artistaGeneroDAO) {
-        this.lastFmClient      = lastFmClient;
-        this.musicBrainzClient = musicBrainzClient;
-        this.artistaDAO        = artistaDAO;
-        this.albumDAO          = albumDAO;
-        this.generoDAO         = generoDAO;
-        this.artistaGeneroDAO  = artistaGeneroDAO;
+        this.musicBrainzCache = musicBrainzCache;
+        this.lastFmCache      = lastFmCache;
+        this.artistaDAO       = artistaDAO;
+        this.albumDAO         = albumDAO;
+        this.generoDAO        = generoDAO;
+        this.artistaGeneroDAO = artistaGeneroDAO;
     }
 
     @Override
@@ -53,7 +52,7 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         // --- Llamar Last.fm (bio, foto, generos, similares) ---
         ArtistaApiDTO dtoLastFm = null;
         try {
-            dtoLastFm = lastFmClient.buscarArtista(nombreArtistico);
+            dtoLastFm = lastFmCache.obtenerArtista(nombreArtistico);
         } catch (ApiException e) {
             LOGGER.log(Level.WARNING,
                     "Last.fm fallo para artista: " + nombreArtistico, e);
@@ -62,7 +61,7 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         // --- Llamar MusicBrainz (pais de origen) ---
         ArtistaApiDTO dtoMB = null;
         try {
-            dtoMB = musicBrainzClient.buscarArtista(nombreArtistico);
+            dtoMB = musicBrainzCache.obtenerArtista(nombreArtistico);
         } catch (ApiException e) {
             LOGGER.log(Level.WARNING,
                     "MusicBrainz fallo para artista: " + nombreArtistico, e);
@@ -126,7 +125,7 @@ public class EnriquecimientoService implements IEnriquecimientoService {
         // --- Llamar Last.fm (portada, descripcion) ---
         AlbumApiDTO dtoLastFm = null;
         try {
-            dtoLastFm = lastFmClient.buscarAlbum(nombreArtista, tituloAlbum);
+            dtoLastFm = lastFmCache.obtenerAlbum(nombreArtista, tituloAlbum);
         } catch (ApiException e) {
             LOGGER.log(Level.WARNING,
                     "Last.fm fallo para album: " + tituloAlbum, e);
@@ -134,16 +133,13 @@ public class EnriquecimientoService implements IEnriquecimientoService {
 
         // --- Llamar MusicBrainz (año, sello, tipo) ---
         AlbumApiDTO dtoMB = null;
-        try {
-            dtoMB = musicBrainzClient.buscarAlbum(nombreArtista, tituloAlbum);
-        } catch (ApiException e) {
-            LOGGER.log(Level.WARNING,
-                    "MusicBrainz fallo para album: " + tituloAlbum, e);
-        }
-        if (dtoLastFm == null && dtoMB == null) {
+
+        // Si Last.fm tampoco respondio (ni cache stale), no hay nada que persistir
+        if (dtoLastFm == null) {
             throw new ApiException(
-                    "Ninguna API devolvio datos para el album: " + tituloAlbum);
+                    "Last.fm no devolvio datos para el album: " + tituloAlbum);
         }
+
 
         // --- Fusionar datos ---
         Album album = new Album();

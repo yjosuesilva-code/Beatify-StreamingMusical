@@ -76,7 +76,11 @@ public class LastFmClient {
         if (artista.isMissingNode()) {
             throw new ApiException("Last.fm no encontró al artista: " + nombre);
         }
-
+// Last.fm también devuelve mbid cuando lo conoce; vacio si no
+        String mbid = artista.path("mbid").asText("").trim();
+        if (mbid.isBlank()) {
+            mbid = null;
+        }
         String bio       = artista.path("bio").path("summary").asText("").trim();
         // Limpiar el enlace HTML que Last.fm agrega al final de la bio
         if (bio.contains("<a href")) {
@@ -87,8 +91,7 @@ public class LastFmClient {
         List<String> generos   = extraerTags(artista.path("tags").path("tag"));
         List<String> similares = extraerNombres(artista.path("similar").path("artist"));
 
-        return new ArtistaApiDTO(nombre, null, bio, fotoUrl, generos, similares);
-    }
+        return new ArtistaApiDTO(mbid, nombre, null, bio, fotoUrl, generos, similares);    }
 
     /**
      * Busca informacion de un album por nombre de artista y titulo.
