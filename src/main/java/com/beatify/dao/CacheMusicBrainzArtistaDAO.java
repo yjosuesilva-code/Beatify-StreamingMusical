@@ -49,6 +49,16 @@ public class CacheMusicBrainzArtistaDAO {
          WHERE id_cache_mb_artista = ?
         """;
 
+    private static final String SQL_BUSCAR_POR_NOMBRE = """
+            SELECT id_cache_mb_artista, mbid, ARTISTA_id_artista, nombre_completo,
+                   biografia, pais_origen, year_inicio, year_fin, tags, payload_json,
+                   fetched_at, expires_at, intentos
+            FROM CACHE_MUSICBRAINZ_ARTISTA
+            WHERE LOWER(nombre_completo) = LOWER(?)
+            ORDER BY fetched_at DESC
+            FETCH FIRST 1 ROWS ONLY
+            """;
+
     private static final String SQL_SELECT_BY_MBID = """
         SELECT id_cache_mb_artista, mbid, ARTISTA_id_artista, nombre_completo,
                biografia, pais_origen, year_inicio, year_fin, tags, payload_json,
@@ -169,6 +179,23 @@ public class CacheMusicBrainzArtistaDAO {
             }
         } catch (SQLException e) {
             throw new ConexionException("Error al buscar cache MusicBrainz por id: " + e.getMessage(), e);
+        }
+    }
+
+    public CacheMusicBrainzArtista buscarPorNombreCompleto(String nombreCompleto) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_BUSCAR_POR_NOMBRE)) {
+
+            ps.setString(1, nombreCompleto);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearResultSet(rs);
+                }
+                return null;  // cache miss — esperado
+            }
+        } catch (SQLException e) {
+            throw new ConexionException(
+                    "Error buscando cache MusicBrainz por nombre_completo=" + nombreCompleto, e);
         }
     }
 
