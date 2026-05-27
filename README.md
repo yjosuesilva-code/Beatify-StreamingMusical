@@ -53,7 +53,7 @@ com.beatify/
 
 ## Base de datos
 
-El esquema `BEATIFY` contiene **25 tablas** y **24 secuencias** en Oracle XE.
++El esquema `BEATIFY` contiene **29 tablas** y **28 secuencias** en Oracle XE.
 
 | Dominio | Tablas |
 |---|---|
@@ -89,6 +89,7 @@ Ejecutar los scripts en orden desde SQL Developer:
 @db/01_schema_beatify.sql  -- crea 25 tablas y 24 secuencias
 @db/02_seed_data.sql       -- datos de prueba (géneros, artistas, álbumes, clientes)
 @db/03_cache_apis.sql      -- tablas de caché para MusicBrainz y Last.fm
+@db/04_cache_lastfm_artista.sql  -- cache de artistas de Last.fm
 ```
 
 ### 2. Configurar credenciales
@@ -136,7 +137,7 @@ java -jar target/BeatifyApp-1.0-SNAPSHOT.jar
 - ✅ Fase 1: Documentación (problema, objetivos, requerimientos)
 - ✅ Fase 2: Arquitectura (paquetes, clases, mockups, GRASP/SOLID)
 - 🔄 Fase 3: Desarrollo (en curso)
-   - ✅ Esquema BD completo — 25 tablas, secuencias, constraints
++   - ✅ Esquema BD completo — 29 tablas, secuencias, constraints
    - ✅ Seed data — géneros, artistas, álbumes, canciones, clientes
    - ✅ Capa DAO — 25 DAOs implementados con JDBC
    - ✅ Capa Service — interfaces + implementaciones para todos los DAOs
