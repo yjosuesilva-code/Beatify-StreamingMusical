@@ -90,6 +90,7 @@ Ejecutar los scripts en orden desde SQL Developer:
 @db/02_seed_data.sql       -- datos de prueba (géneros, artistas, álbumes, clientes)
 @db/03_cache_apis.sql      -- tablas de caché para MusicBrainz y Last.fm
 @db/04_cache_lastfm_artista.sql  -- cache de artistas de Last.fm
+@db/05_plsql_resena.sql    -- function + trigger de validación polimórfica de RESEÑA
 ```
 
 ### 2. Configurar credenciales
