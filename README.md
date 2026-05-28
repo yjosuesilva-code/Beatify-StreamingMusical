@@ -91,6 +91,8 @@ Ejecutar los scripts en orden desde SQL Developer:
 @db/03_cache_apis.sql      -- tablas de caché para MusicBrainz y Last.fm
 @db/04_cache_lastfm_artista.sql  -- cache de artistas de Last.fm
 @db/05_plsql_resena.sql    -- function + trigger de validación polimórfica de RESEÑA
+@db/06_sp_limpiar_cache.sql -- procedure para purgar entradas vencidas de cache
+@db/07_sp_reset_datos.sql   -- procedure para resetear acciones de prueba (conservador)
 ```
 
 ### 2. Configurar credenciales
