@@ -20,9 +20,22 @@ public class ClienteService implements IClienteService {
 
 
     public Integer registrar(Cliente cliente) {
-        validarCliente(cliente);
-        // Hashear la contraseña en texto plano antes de guardar
-        cliente.setPasswordHash(PasswordUtil.hash(cliente.getPasswordHash()));
+        validarRegistro(cliente);
+        if (cliente.getPasswordHash().length() < 6) {
+            throw new ValidacionException(
+                    "La contraseña debe tener al menos 6 caracteres");
+        }
+        try {
+            clienteDAO.buscarPorCorreo(cliente.getCorreo());
+
+            throw new ValidacionException(
+                    "Ya existe un cliente con ese correo");
+
+        } catch (NotFoundException e) {
+            // correcto, el correo no existe
+        }
+        cliente.setPasswordHash(
+                PasswordUtil.hash(cliente.getPasswordHash()));
         if (cliente.getFechaRegistro() == null) {
             cliente.setFechaRegistro(LocalDate.now());
         }
@@ -35,6 +48,9 @@ public class ClienteService implements IClienteService {
         try {
             Cliente cliente = clienteDAO.buscarPorCorreo(correo);
             if (!PasswordUtil.verificar(password, cliente.getPasswordHash())) {
+                throw new AutenticacionException("Correo o contraseña incorrectos");
+            }
+            if (Boolean.FALSE.equals(cliente.getActivo())) {
                 throw new AutenticacionException("Correo o contraseña incorrectos");
             }
             return cliente;
@@ -60,7 +76,7 @@ public class ClienteService implements IClienteService {
         if (cliente.getIdCliente() == null || cliente.getIdCliente() <= 0) {
             throw new ValidacionException("El id del cliente es obligatorio");
         }
-        validarCliente(cliente);
+        validarActualizacion(cliente);
         clienteDAO.actualizar(cliente);
     }
 
@@ -92,21 +108,39 @@ public class ClienteService implements IClienteService {
         clienteDAO.eliminar(idCliente);
     }
 
-    private void validarCliente(Cliente cliente) {
+    private void validarRegistro(Cliente cliente) {
+        validarDatosBasicos(cliente);
+
+        if (cliente.getPasswordHash() == null ||
+                cliente.getPasswordHash().trim().isEmpty()) {
+            throw new ValidacionException("La contraseña es obligatoria");
+        }
+    }
+
+    private void validarDatosBasicos(Cliente cliente) {
         if (cliente == null) {
             throw new ValidacionException("El cliente no puede ser null");
         }
-        if (cliente.getNombre() == null || cliente.getNombre().trim().isEmpty()) {
+
+        if (cliente.getNombre() == null ||
+                cliente.getNombre().trim().isEmpty()) {
             throw new ValidacionException("El nombre es obligatorio");
         }
-        if (cliente.getApellido() == null || cliente.getApellido().trim().isEmpty()) {
+
+        if (cliente.getApellido() == null ||
+                cliente.getApellido().trim().isEmpty()) {
             throw new ValidacionException("El apellido es obligatorio");
         }
-        if (cliente.getCorreo() == null || cliente.getCorreo().trim().isEmpty()) {
+
+        if (cliente.getCorreo() == null ||
+                cliente.getCorreo().trim().isEmpty()) {
             throw new ValidacionException("El correo es obligatorio");
         }
-        if (cliente.getPasswordHash() == null || cliente.getPasswordHash().trim().isEmpty()) {
-            throw new ValidacionException("La contraseña es obligatoria");
+        if (!cliente.getCorreo().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new ValidacionException("Formato de correo inválido");
         }
+    }
+    private void validarActualizacion(Cliente cliente) {
+        validarDatosBasicos(cliente);
     }
 }

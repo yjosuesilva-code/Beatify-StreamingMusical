@@ -14,11 +14,12 @@ public class Cliente {
     private String ciudad;
     private String pais;
     private LocalDate fechaRegistro;
+    private Boolean activo;
     
     public Cliente(){
     }
 
-    public Cliente(final String nombre, final String apellido, final String correo, final String passwordHash, final String telefono, final String direccion, final String ciudad, final String pais) {
+    public Cliente(final String nombre, final String apellido, final String correo, final String passwordHash, final String telefono, final String direccion, final String ciudad, final String pais, final Boolean activo) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.correo = correo;
@@ -27,20 +28,22 @@ public class Cliente {
         this.direccion = direccion;
         this.ciudad = ciudad;
         this.pais = pais;
+        this.activo = activo != null ? activo : true;
     }
 
-        public Cliente(final Integer idCliente, final String nombre, final String apellido, final String correo, final String passwordHash, final String telefono, final String direccion, final String ciudad, final String pais, final LocalDate fechaRegistro) {
-            this.idCliente = idCliente;
-            this.nombre = nombre;
-            this.apellido = apellido;
-            this.correo = correo;
-            this.passwordHash = passwordHash;
-            this.telefono = telefono;
-            this.direccion = direccion;
-            this.ciudad = ciudad;
-            this.pais = pais;
-            this.fechaRegistro = fechaRegistro;
-        }
+    public Cliente(final Integer idCliente, final String nombre, final String apellido, final String correo, final String passwordHash, final String telefono, final String direccion, final String ciudad, final String pais, final LocalDate fechaRegistro, final Boolean activo) {
+        this.idCliente = idCliente;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.correo = correo;
+        this.passwordHash = passwordHash;
+        this.telefono = telefono;
+        this.direccion = direccion;
+        this.ciudad = ciudad;
+        this.pais = pais;
+        this.fechaRegistro = fechaRegistro;
+        this.activo = activo;
+    }
 
     public Integer getIdCliente() {
         return this.idCliente;
@@ -122,6 +125,14 @@ public class Cliente {
         this.fechaRegistro = fechaRegistro;
     }
 
+    public Boolean getActivo() {
+        return this.activo;
+    }
+
+    public void setActivo(final Boolean activo) {
+        this.activo = activo;
+    }
+
     @Override
     public boolean equals( final Object o) {
         if (null == o || this.getClass() != o.getClass()) return false;
@@ -146,6 +157,7 @@ public class Cliente {
                 ", ciudad='" + ciudad + '\'' +
                 ", pais='" + pais + '\'' +
                 ", fechaRegistro=" + fechaRegistro +
+                ", activo=" + activo +
                 '}';
     }
 }

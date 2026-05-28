@@ -15,29 +15,29 @@ import java.util.List;
 
 public class ClienteDAO {
     private static final String SQL_INSERT = """
-        INSERT INTO CLIENTE
-            (id_cliente, nombre, apellido, correo, password_hash,
-            telefono, direccion, ciudad, pais, fecha_registro)
-        VALUES (seq_cliente.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?,SYSDATE)
-    """;
+    INSERT INTO CLIENTE
+        (id_cliente, nombre, apellido, correo, password_hash,
+        telefono, direccion, ciudad, pais, fecha_registro, activo)
+    VALUES (seq_cliente.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE, ?)
+""";
 
     private static final String SQL_SELECT_ALL = """
-        SELECT id_cliente, nombre, apellido, correo, password_hash,
-               telefono, direccion, ciudad, pais, fecha_registro
-          FROM CLIENTE
-         ORDER BY id_cliente
-    """;
+    SELECT id_cliente, nombre, apellido, correo, password_hash,
+           telefono, direccion, ciudad, pais, fecha_registro, activo
+      FROM CLIENTE
+     ORDER BY id_cliente
+""";
 
     private static final String SQL_SELECT_BY_ID = """
-        SELECT id_cliente, nombre, apellido, correo, password_hash,
-               telefono, direccion, ciudad, pais, fecha_registro
-          FROM CLIENTE
-         WHERE id_cliente = ?
-    """;
+    SELECT id_cliente, nombre, apellido, correo, password_hash,
+           telefono, direccion, ciudad, pais, fecha_registro, activo
+      FROM CLIENTE
+     WHERE id_cliente = ?
+""";
 
     private static final String SQL_SELECT_BY_CORREO = """
     SELECT id_cliente, nombre, apellido, correo, password_hash,
-           telefono, direccion, ciudad, pais, fecha_registro
+           telefono, direccion, ciudad, pais, fecha_registro, activo
       FROM CLIENTE
      WHERE correo = ?
 """;
@@ -52,7 +52,8 @@ public class ClienteDAO {
             telefono = ?,
             direccion = ?,
             ciudad = ?,
-            pais = ?
+            pais = ?,
+            activo = ?
         WHERE id_cliente = ?
     """;
 
@@ -63,7 +64,8 @@ public class ClienteDAO {
     """;
 
     private static final String SQL_DELETE = """
-        DELETE FROM CLIENTE
+        UPDATE CLIENTE
+            SET activo = 0
         WHERE id_cliente = ?
     """;
 
@@ -77,13 +79,12 @@ public class ClienteDAO {
         String direccion  = rs.getString("direccion");
         String ciudad     = rs.getString("ciudad");
         String pais       = rs.getString("pais");
-
-        Date fechaSql = rs.getDate("fecha_registro");
+        Boolean activo = "S".equals(rs.getString("activo"));        Date fechaSql = rs.getDate("fecha_registro");
         LocalDate fechaRegistro = fechaSql != null ? fechaSql.toLocalDate() : null;
 
         return new Cliente(
-                idCliente, nombre, apellido, correo, passwordHash,
-                telefono, direccion, ciudad, pais, fechaRegistro
+                idCliente, nombre, apellido, correo, passwordHash, telefono, direccion,
+                ciudad, pais, fechaRegistro, activo
         );
     }
 
@@ -99,6 +100,7 @@ public class ClienteDAO {
             ps.setString(6, cliente.getDireccion());
             ps.setString(7, cliente.getCiudad());
             ps.setString(8, cliente.getPais());
+            ps.setString(9, (cliente.getActivo() == null || cliente.getActivo()) ? "S" : "N");
             ps.executeUpdate();
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -182,8 +184,9 @@ public class ClienteDAO {
             ps.setString(5, cliente.getDireccion());
             ps.setString(6, cliente.getCiudad());
             ps.setString(7, cliente.getPais());
-            ps.setInt(8, cliente.getIdCliente());
-
+            ps.setString(8, (cliente.getActivo() == null || cliente.getActivo()) ? "S" : "N");
+            ps.setInt(9, cliente.getIdCliente());
+            
             int filasAfectadas = ps.executeUpdate();
             if (filasAfectadas == 0) {
                 throw new NotFoundException(
