@@ -93,6 +93,12 @@ Ejecutar los scripts en orden desde SQL Developer:
 @db/05_plsql_resena.sql    -- function + trigger de validación polimórfica de RESEÑA
 @db/06_sp_limpiar_cache.sql -- procedure para purgar entradas vencidas de cache
 @db/07_sp_reset_datos.sql   -- procedure para resetear acciones de prueba (conservador)
+@db/08_pkg_resenas.sql           -- PKG_RESENAS (CREAR, VOTAR, PROMEDIO, CONTAR)
+@db/09_alter_cliente_activo.sql  -- ALTER CLIENTE ADD activo (soft-delete)
+@db/10_pkg_cliente.sql           -- PKG_CLIENTE (REGISTRAR, EXISTE_CORREO, CONTAR_ACTIVIDAD, DESACTIVAR)
+@db/11_pkg_suscripcion.sql       -- PKG_SUSCRIPCION (ACTIVAR, CANCELAR, TIENE_ACTIVA)
+@db/12_pkg_reproduccion.sql      -- PKG_REPRODUCCION (REGISTRAR, TOTAL, TOP_GENERO)
+@db/13_pkg_logros.sql            -- PKG_LOGROS (OTORGAR, EVALUAR_AUTO, CONTAR)
 ```
 
 ### 2. Configurar credenciales

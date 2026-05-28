@@ -260,7 +260,8 @@ public class RegistroController {
                 nullSiBlank(txtTelefono.getText()),
                 null,                                          // direccion (no se pide en el wizard)
                 cmbCiudad.getValue(),
-                "Colombia"                                     // pais hardcoded por ahora
+                "Colombia",
+                true                                     // pais hardcoded por ahora
         );
 
         btnContinuar.setDisable(true);
