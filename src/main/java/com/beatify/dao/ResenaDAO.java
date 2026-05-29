@@ -37,7 +37,13 @@ public class ResenaDAO {
           FROM RESENA
          WHERE id_resena = ?
         """;
-
+    private static final String SQL_SELECT_BY_CLIENTE = """
+            SELECT id_resena, CLIENTE_id_cliente, tipo_objetivo, id_objetivo,
+                   calificacion, comentario, fecha_resena
+              FROM RESENA
+             WHERE CLIENTE_id_cliente = ?
+             ORDER BY fecha_resena DESC
+            """;
     private static final String SQL_UPDATE = """
         UPDATE RESENA
            SET CLIENTE_id_cliente = ?,
@@ -109,7 +115,26 @@ public class ResenaDAO {
         }
         return resenas;
     }
-
+    /**
+     * Lista las reseñas de un cliente especifico, ordenadas por fecha descendente
+     * (mas recientes primero). Devuelve lista vacia si no tiene reseñas.
+     */
+    public List<Resena> listarPorCliente(Integer idCliente) {
+        List<Resena> resultado = new ArrayList<>();
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_BY_CLIENTE)) {
+            ps.setInt(1, idCliente);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    resultado.add(mapearResultSet(rs));
+                }
+            }
+            return resultado;
+        } catch (SQLException e) {
+            throw new ConexionException(
+                    "Error listando reseñas del cliente " + idCliente, e);
+        }
+    }
     public Resena buscarPorId(Integer idResena) {
         try (Connection conn = Conexion.getInstancia().obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(SQL_SELECT_BY_ID)) {
