@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.beatify.view.controller.LogrosController"
+            prefWidth="1280.0"
+            prefHeight="800.0">
+    <!-- TOPBAR -->
+    <top>
+        <HBox styleClass="bf-topbar" spacing="14" alignment="CENTER_LEFT">
+            <HBox spacing="6">
+                <Button styleClass="bf-tb-arrow" onAction="#onAtras">
+                    <graphic><FontIcon iconLiteral="bi-arrow-left" iconSize="14"/></graphic>
+                </Button>
+                <Button styleClass="bf-tb-arrow" onAction="#onAdelante">
+                    <graphic><FontIcon iconLiteral="bi-arrow-right" iconSize="14"/></graphic>
+                </Button>
+            </HBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <StackPane>
+                <Button fx:id="btnNotif" styleClass="bf-tb-icon" onAction="#onIrNotificaciones">
+                    <graphic><FontIcon iconLiteral="bi-bell" iconSize="16"/></graphic>
+                </Button>
+                <Label fx:id="lblNotifCount" text="5" styleClass="bf-tb-dot" StackPane.alignment="TOP_RIGHT">
+                    <StackPane.margin><Insets top="2" right="2"/></StackPane.margin>
+                </Label>
+            </StackPane>
+
+            <Button fx:id="btnUserMenu" styleClass="bf-tb-user" onAction="#onUserMenu">
+                <graphic>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <StackPane fx:id="userAvatarHolder"/>
+                        <Label fx:id="lblUserNombre" text="Usuario"/>
+                    </HBox>
+                </graphic>
+            </Button>
+        </HBox>
+    </top>
+
+    <!-- SIDEBAR -->
+    <left>
+        <VBox styleClass="bf-sidebar" prefWidth="240" spacing="2">
+            <Label text="PRINCIPAL" styleClass="bf-side-divider"/>
+            <Button text="Inicio" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrInicio">
+                <graphic><FontIcon iconLiteral="bi-house" iconSize="16"/></graphic>
+            </Button>
+            <Button text="Explorar" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrExplorar">
+                <graphic><FontIcon iconLiteral="bi-search" iconSize="16"/></graphic>
+            </Button>
+            <Button text="Tu biblioteca" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrBiblioteca">
+                <graphic><FontIcon iconLiteral="bi-collection" iconSize="16"/></graphic>
+            </Button>
+
+            <Label text="DIFERENCIADORES" styleClass="bf-side-divider"/>
+            <Button text="Reseñas" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrResenas">
+                <graphic><FontIcon iconLiteral="bi-star" iconSize="16"/></graphic>
+            </Button>
+            <Button text="Música del Barrio" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrBarrio">
+                <graphic><FontIcon iconLiteral="bi-geo-alt" iconSize="16"/></graphic>
+            </Button>
+            <Button text="Cápsulas del Tiempo" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrCapsulas">
+                <graphic><FontIcon iconLiteral="bi-clock" iconSize="16"/></graphic>
+            </Button>
+            <Button text="Logros" styleClass="bf-side-item, is-active" maxWidth="Infinity" onAction="#onIrLogros">
+                <graphic><FontIcon iconLiteral="bi-trophy" iconSize="16"/></graphic>
+            </Button>
+
+            <HBox styleClass="bf-side-divider" alignment="CENTER_LEFT">
+                <Label text="TUS PLAYLISTS" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Button styleClass="bf-side-plus" onAction="#onNuevaPlaylist">
+                    <graphic><FontIcon iconLiteral="bi-plus" iconSize="14"/></graphic>
+                </Button>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-background: transparent;">
+                <VBox fx:id="sidebarPlaylistsBox" spacing="2"/>
+            </ScrollPane>
+
+            <Region VBox.vgrow="SOMETIMES" minHeight="8"/>
+            <Button text="Cerrar sesión" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onCerrarSesion">
+                <graphic><FontIcon iconLiteral="bi-box-arrow-right" iconSize="16"/></graphic>
+            </Button>
+        </VBox>
+    </left>
+
+    <!-- CONTENIDO CENTRAL -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: -bf-bg; -fx-background: -bf-bg;">
+            <VBox styleClass="bf-page" spacing="28">
+
+                <!-- HEADER -->
+                <VBox spacing="8">
+                    <Label text="FUNCIONALIDAD DISTINTIVA #2" styleClass="bf-section-eyebrow"/>
+                    <Label text="🏆 Sistema de Logros" styleClass="bf-page-title"/>
+                    <Label text="Otorgados automáticamente cuando se cumplen las condiciones predefinidas. Tabla CLIENTE_LOGRO con CHECK constraints sobre las metas." styleClass="bf-page-meta" wrapText="true"/>
+                </VBox>
+
+                <!-- CARDS DE RESUMEN -->
+                <HBox spacing="24">
+                    <VBox spacing="8" styleClass="bf-card" alignment="CENTER" prefWidth="200">
+                        <Label fx:id="lblProgreso" text="8 / 24" styleClass="bf-page-title"/>
+                        <Label fx:id="lblProgresoSub" text="logros obtenidos" styleClass="bf-field-lbl"/>
+                        <ProgressBar fx:id="progresoBar" progress="0.33" prefWidth="160" style="-fx-background-color: -bf-border; -fx-background-radius: 4px;"/>
+                    </VBox>
+                    <VBox spacing="8" styleClass="bf-card" alignment="CENTER" prefWidth="200">
+                        <Label fx:id="lblRarezas" text="2 épicos · 1 legendario" styleClass="bf-page-title" style="-fx-font-size: 20px;"/>
+                        <Label fx:id="lblRarezasSub" text="logros raros en tu colección" styleClass="bf-field-lbl"/>
+                    </VBox>
+                </HBox>
+
+                <!-- SEGMENTED CONTROL FILTROS -->
+                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="segmented-control">
+                    <ToggleButton fx:id="tabTodos" text="Todos (12)" styleClass="seg-btn"/>
+                    <ToggleButton fx:id="tabObtenidos" text="Obtenidos (6)" styleClass="seg-btn"/>
+                    <ToggleButton fx:id="tabPendientes" text="En progreso (6)" styleClass="seg-btn"/>
+                </HBox>
+
+                <!-- GRID DE LOGROS -->
+                <FlowPane fx:id="logrosGrid" hgap="20" vgap="20"/>
+
+                <Region prefHeight="32"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

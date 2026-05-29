@@ -41,12 +41,11 @@ public final class NavegacionUtil {
      */
     public static void cambiarA(final String rutaFxml, final Node nodoActual) {
         try {
-            final Parent root = FXMLLoader.load(
-                    NavegacionUtil.class.getResource(rutaFxml));
-
+            final Parent root = FXMLLoader.load(NavegacionUtil.class.getResource(rutaFxml));
             final Stage stage = (Stage) nodoActual.getScene().getWindow();
             final Scene scene = new Scene(root);
 
+            // Aplicar estilos
             for (final String ruta : STYLESHEETS) {
                 final java.net.URL url = NavegacionUtil.class.getResource(ruta);
                 if (url != null) {
@@ -55,12 +54,12 @@ public final class NavegacionUtil {
             }
 
             stage.setScene(scene);
-            stage.sizeToScene();
+            stage.setWidth(1280);   // ← AGREGAR ESTO
+            stage.setHeight(800);   // ← AGREGAR ESTO
             stage.centerOnScreen();
 
         } catch (final IOException e) {
-            throw new RuntimeException(
-                    "No se pudo cargar la vista: " + rutaFxml, e);
+            throw new RuntimeException("No se pudo cargar la vista: " + rutaFxml, e);
         }
     }
 }
