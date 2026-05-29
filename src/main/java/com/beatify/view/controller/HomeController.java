@@ -345,14 +345,17 @@ public class HomeController {
     @FXML private void onAdelante()        { /* TODO: historial de navegacion */ }
     @FXML private void onUserMenu()        { /* TODO: menu desplegable usuario */ }
     @FXML private void onIrInicio()        { /* ya estamos en inicio */ }
-    @FXML private void onIrExplorar()      { LOG.info("Navegar a Explorar — proxima pantalla"); }
+    @FXML private void onIrExplorar()      { NavegacionUtil.cambiarA("/view/catalogo.fxml", btnUserMenu); }
     @FXML private void onIrBiblioteca()    { LOG.info("Navegar a Biblioteca — proxima pantalla"); }
-    @FXML private void onIrResenas()       { LOG.info("Navegar a Reseñas — proxima pantalla"); }
-    @FXML private void onIrBarrio()        { LOG.info("Navegar a Musica del Barrio — proxima pantalla"); }
-    @FXML private void onIrCapsulas()      { LOG.info("Navegar a Capsulas del Tiempo — proxima pantalla"); }
-    @FXML private void onIrLogros()        { LOG.info("Navegar a Logros — proxima pantalla"); }
+    @FXML private void onIrResenas() { NavegacionUtil.cambiarA("/view/resenas.fxml", btnUserMenu); }    @FXML private void onIrBarrio()        { NavegacionUtil.cambiarA("/view/barrio.fxml", btnUserMenu); }
+    @FXML private void onIrCapsulas()      { NavegacionUtil.cambiarA("/view/capsulas.fxml", btnUserMenu); }
+    @FXML private void onIrLogros()        { NavegacionUtil.cambiarA("/view/logros.fxml", btnUserMenu); }
     @FXML private void onNuevaPlaylist()   { LOG.info("Crear nueva playlist — proxima funcionalidad"); }
+    @FXML private void onIrPerfil()         {NavegacionUtil.cambiarA("/view/perfil.fxml", btnUserMenu);}
 
+    @FXML private void onAbrirPlayer() {
+        NavegacionUtil.cambiarA("/view/player.fxml", btnUserMenu);
+    }
     @FXML
     private void onCerrarSesion() {
         SessionContext.getInstance().cerrarSesion();

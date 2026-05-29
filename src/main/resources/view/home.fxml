@@ -29,9 +29,11 @@
     barrio, stats) son placeholder mientras no tengamos los services
     correspondientes — ver TODOs en HomeController.
 -->
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.beatify.view.controller.HomeController"
-            prefWidth="1440.0" prefHeight="900.0">
+            prefWidth="1280.0"
+            prefHeight="800.0">
 
     <!-- ============================================================ -->
     <!-- TOP : Top bar                                                 -->
@@ -128,6 +130,9 @@
                     <FontIcon iconLiteral="bi-star" iconSize="16"/>
                 </graphic>
             </Button>
+            <Button text="Reseñas" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrResenas">
+                <graphic><FontIcon iconLiteral="bi-star" iconSize="16"/></graphic>
+            </Button>
             <Button text="Música del Barrio" styleClass="bf-side-item"
                     maxWidth="Infinity" onAction="#onIrBarrio">
                 <graphic>
@@ -162,6 +167,14 @@
                         style="-fx-background-color: transparent; -fx-background: transparent;">
                 <VBox fx:id="sidebarPlaylistsBox" spacing="2"/>
             </ScrollPane>
+
+            <!-- Perfil - AGREGAR ESTO ANTES DE CERRAR SESIÓN -->
+            <Button text="👤 Perfil" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrPerfil">
+                <graphic>
+                    <FontIcon iconLiteral="bi-person" iconSize="16"/>
+                </graphic>
+            </Button>
+
 
             <!-- Cerrar sesion abajo -->
             <Region VBox.vgrow="SOMETIMES" minHeight="8"/>
@@ -351,7 +364,7 @@
                     </graphic>
                 </Button>
             </HBox>
-
+            <Button text="🎵 TEST PLAYER" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onAbrirPlayer"/>
             <!-- Centro: controles + progreso -->
             <VBox spacing="6" alignment="CENTER" prefWidth="480">
                 <HBox spacing="12" alignment="CENTER">
