@@ -1,12 +1,19 @@
 package com.beatify.view.controller;
 
+import com.beatify.dao.PlaylistDAO;
 import com.beatify.dao.ResenaDAO;
+import com.beatify.exceptions.ConexionException;
 import com.beatify.model.Cliente;
+import com.beatify.model.Playlist;
 import com.beatify.model.Resena;
 import com.beatify.util.Conexion;
 import com.beatify.view.SessionContext;
 import com.beatify.view.component.AlbumCover;
 import com.beatify.view.component.ArtistAvatar;
+import com.beatify.view.util.HistorialNavegacion;
+import com.beatify.view.util.PlayerManager;
+import com.beatify.view.util.PlaylistUtil;
+import com.beatify.view.util.UserMenuUtil;
 import com.beatify.view.util.NavegacionUtil;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -26,6 +33,8 @@ import oracle.jdbc.OracleTypes;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -72,16 +81,26 @@ public class ResenasController {
     // ---- Lista ----
     @FXML private VBox listaResenasBox;
 
+    // ---- Topbar search ----
+    @FXML private TextField txtBusqueda;
+
     // ---- Form nueva reseña ----
-    @FXML private ComboBox<String> cmbTipo;
-    @FXML private TextField txtIdObjetivo;
+    @FXML private ComboBox<String>      cmbTipo;        // CANCION / ALBUM / ARTISTA
+    @FXML private ComboBox<ObjetivoRef> cmbObjetivo;    // objetivos del tipo, por nombre
+    @FXML private TextField txtIdObjetivo;              // interno (compat)
     @FXML private Spinner<Integer> spnCalificacion;
     @FXML private TextArea txtComentario;
     @FXML private Label lblFeedback;
+    @FXML private Button btnUsarActual;
 
     private final ResenaDAO resenaDAO = new ResenaDAO();
     private String filtroActivo = "TODAS";
     private List<Resena> todasMisResenas;
+
+    /** Referencia ligera id→nombre para los ComboBox de objetivo. */
+    private record ObjetivoRef(int id, String nombre) {
+        @Override public String toString() { return nombre; }
+    }
 
     @FXML
     private void initialize() {
@@ -95,6 +114,10 @@ public class ResenasController {
         configurarForm();
         configurarFiltros();
         cargarResenasDelCliente(actual.getIdCliente());
+
+        // Si ya hay una canción sonando, precargarla como objetivo de reseña
+        // Si hay una canción sonando, preseleccionarla como atajo (sin warning)
+        if (PlayerManager.getInstance().getSongActual() != null) onUsarCancionActual();
     }
 
     // -----------------------------------------------------------------
@@ -102,33 +125,40 @@ public class ResenasController {
     // -----------------------------------------------------------------
     private void configurarTopBar(final Cliente c) {
         userAvatarHolder.getChildren().setAll(
-                new ArtistAvatar(28, "#b794ff", "#8b5cf6",
+                new ArtistAvatar(28, "#1ed760", "#1ab44e",
                         c.getNombre() + " " + c.getApellido()));
         lblUserNombre.setText(c.getNombre());
-        lblNotifCount.setText("5");
+        com.beatify.view.util.NotificacionMenuUtil.aplicarBadge(lblNotifCount, c.getIdCliente());
     }
 
     private void configurarSidebarPlaylists() {
-        final String[][] playlists = {
-                {"Mis Vallenatos Clásicos", "Yo · 24 canc.", "#c97a1f", "#3a1a05"},
-                {"Cumbia del Caribe", "Yo · 18 canc.", "#1f7a5a", "#072a1a"},
-                {"Para escribir tesis", "Yo · 42 canc.", "#3a6a8a", "#051a2a"},
-                {"Fiesta de Sábado", "Andrés Z. · 31 canc.", "#a83232", "#3a0a0a"},
-                {"Champeta Total", "Kendrick S. · 27 canc.", "#d4a017", "#2a1a05"},
+        final Cliente c = SessionContext.getInstance().getClienteActual();
+        if (c == null || c.getIdCliente() == null) return;
+        final String[][] colores = {
+                {"#c97a1f", "#3a1a05"}, {"#1f7a5a", "#072a1a"}, {"#3a6a8a", "#051a2a"},
+                {"#a83232", "#3a0a0a"}, {"#d4a017", "#2a1a05"}, {"#7a3a8a", "#1a052a"}
         };
-        for (final String[] pl : playlists) {
-            final Button item = new Button();
-            item.getStyleClass().add("bf-side-playlist");
-            item.setMaxWidth(Double.MAX_VALUE);
-            final HBox row = new HBox(10);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.getChildren().addAll(
-                    new AlbumCover(32, pl[2], pl[3]),
-                    construirVBox(2,
-                            crearLabel(pl[0], "bf-side-pl-name"),
-                            crearLabel(pl[1], "bf-side-pl-meta")));
-            item.setGraphic(row);
-            sidebarPlaylistsBox.getChildren().add(item);
+        try {
+            final List<Playlist> mias = new PlaylistDAO().listarPorCliente(c.getIdCliente());
+            for (int i = 0; i < mias.size(); i++) {
+                final Playlist pl  = mias.get(i);
+                final String[] col = colores[i % colores.length];
+                final Button item = new Button();
+                item.getStyleClass().add("bf-side-playlist");
+                item.setMaxWidth(Double.MAX_VALUE);
+                item.setOnAction(e -> PlaylistUtil.abrir(pl.getIdPlaylist()));
+                final HBox row = new HBox(10);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.getChildren().addAll(
+                        new AlbumCover(32, col[0], col[1]),
+                        construirVBox(2,
+                                crearLabel(pl.getNombre(), "bf-side-pl-name"),
+                                crearLabel("Playlist", "bf-side-pl-meta")));
+                item.setGraphic(row);
+                sidebarPlaylistsBox.getChildren().add(item);
+            }
+        } catch (final ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando playlists sidebar", ex);
         }
     }
 
@@ -137,9 +167,31 @@ public class ResenasController {
     // -----------------------------------------------------------------
     private void configurarForm() {
         cmbTipo.getItems().addAll("CANCION", "ALBUM", "ARTISTA");
-        cmbTipo.setValue("CANCION");
+        // Al cambiar el tipo, recargar la lista de objetivos por nombre
+        cmbTipo.valueProperty().addListener((obs, o, tipo) -> cargarObjetivos(tipo));
+        cmbTipo.setValue("CANCION");   // dispara cargarObjetivos("CANCION")
         spnCalificacion.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 5));
+    }
+
+    /** Llena cmbObjetivo con los nombres reales (id+nombre) del tipo dado. */
+    private void cargarObjetivos(final String tipo) {
+        cmbObjetivo.getItems().clear();
+        if (tipo == null) return;
+        final String sql = switch (tipo.toUpperCase()) {
+            case "ALBUM"   -> "SELECT id_album, titulo FROM ALBUM ORDER BY titulo";
+            case "ARTISTA" -> "SELECT id_artista, nombre_artistico FROM ARTISTA ORDER BY nombre_artistico";
+            default        -> "SELECT id_cancion, titulo FROM CANCION ORDER BY titulo";
+        };
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                cmbObjetivo.getItems().add(new ObjetivoRef(rs.getInt(1), rs.getString(2)));
+            }
+        } catch (final SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando objetivos de reseña", ex);
+        }
     }
 
     private void configurarFiltros() {
@@ -200,14 +252,44 @@ public class ResenasController {
         }
     }
 
+    /**
+     * Traduce (tipo, id) al nombre legible del objetivo reseñado.
+     * CANCION/ALBUM → titulo; ARTISTA → nombre_artistico.
+     * Si no se encuentra, devuelve "id N" como respaldo.
+     */
+    private String resolverNombreObjetivo(final String tipo, final Integer idObj) {
+        if (tipo == null || idObj == null) return "—";
+        final String sql;
+        switch (tipo.toUpperCase()) {
+            case "CANCION" -> sql = "SELECT titulo FROM CANCION WHERE id_cancion = ?";
+            case "ALBUM"   -> sql = "SELECT titulo FROM ALBUM WHERE id_album = ?";
+            case "ARTISTA" -> sql = "SELECT nombre_artistico FROM ARTISTA WHERE id_artista = ?";
+            default        -> { return "id " + idObj; }
+        }
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idObj);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    final String nombre = rs.getString(1);
+                    return (nombre == null || nombre.isBlank()) ? "id " + idObj : nombre;
+                }
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.FINE, "No se pudo resolver nombre del objetivo", ex);
+        }
+        return "id " + idObj;
+    }
+
     private VBox construirCard(final Resena r) {
         final VBox card = new VBox(8);
         card.getStyleClass().add("bf-card");
 
-        // Header: tipo · id  +  estrellas
+        // Header: tipo · NOMBRE  +  estrellas
         final HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
-        final Label tipo = new Label(r.getTipoObjetivo() + " · id " + r.getIdObjetivo());
+        final String nombreObj = resolverNombreObjetivo(r.getTipoObjetivo(), r.getIdObjetivo());
+        final Label tipo = new Label(r.getTipoObjetivo() + " · " + nombreObj);
         tipo.getStyleClass().add("bf-section-eyebrow");
         final Label estrellas = new Label("★".repeat(r.getCalificacion())
                 + "☆".repeat(5 - r.getCalificacion()));
@@ -245,18 +327,16 @@ public class ResenasController {
         // Validar form
         final String tipo = cmbTipo.getValue();
         final Integer calif = spnCalificacion.getValue();
-        final String idTxt = txtIdObjetivo.getText() == null ? "" : txtIdObjetivo.getText().trim();
-        if (idTxt.isEmpty()) {
-            lblFeedback.setText("⚠ Ingresa el ID del objetivo");
+        final ObjetivoRef objetivo = cmbObjetivo.getValue();
+        if (tipo == null) {
+            lblFeedback.setText("⚠ Elige un tipo (canción, álbum o artista)");
             return;
         }
-        final Integer idObj;
-        try {
-            idObj = Integer.valueOf(idTxt);
-        } catch (NumberFormatException ex) {
-            lblFeedback.setText("⚠ ID debe ser numérico");
+        if (objetivo == null) {
+            lblFeedback.setText("⚠ Elige qué quieres reseñar en la lista");
             return;
         }
+        final int idObj = objetivo.id();
         final String coment = txtComentario.getText();
 
         // Invocar PKG_RESENAS.CREAR_RESENA via CallableStatement
@@ -291,32 +371,63 @@ public class ResenasController {
         }
     }
 
+    /**
+     * Atajo: pone tipo=CANCION y selecciona en el ComboBox la canción que
+     * está sonando en el reproductor.
+     */
+    @FXML
+    private void onUsarCancionActual() {
+        final PlayerManager.SongInfo info = PlayerManager.getInstance().getSongActual();
+        if (info == null || info.cancion() == null || info.cancion().getIdCancion() == null) {
+            lblFeedback.setText("⚠ No hay ninguna canción reproduciéndose. Dale play primero.");
+            return;
+        }
+        final int idCancion = info.cancion().getIdCancion();
+        cmbTipo.setValue("CANCION");          // dispara cargarObjetivos("CANCION")
+        // Seleccionar la canción actual en el ComboBox de objetivos
+        cmbObjetivo.getItems().stream()
+                .filter(o -> o.id() == idCancion)
+                .findFirst()
+                .ifPresent(cmbObjetivo::setValue);
+        lblFeedback.setText("");
+    }
+
     @FXML
     private void onLimpiar() {
-        txtIdObjetivo.clear();
         txtComentario.clear();
         spnCalificacion.getValueFactory().setValue(5);
         cmbTipo.setValue("CANCION");
+        cmbObjetivo.setValue(null);
+        lblFeedback.setText("");
     }
 
     // -----------------------------------------------------------------
     // Navegación
     // -----------------------------------------------------------------
-    @FXML private void onAtras() { NavegacionUtil.cambiarA("/view/home.fxml", btnUserMenu); }
-    @FXML private void onAdelante() {}
-    @FXML private void onUserMenu() {}
-    @FXML private void onIrNotificaciones() {}
-    @FXML private void onIrInicio() { NavegacionUtil.cambiarA("/view/home.fxml", btnUserMenu); }
-    @FXML private void onIrExplorar() { NavegacionUtil.cambiarA("/view/catalogo.fxml", btnUserMenu); }
-    @FXML private void onIrBiblioteca() { LOG.info("Biblioteca — próximamente"); }
+    @FXML private void onAtras()        { HistorialNavegacion.getInstance().atras(); }
+    @FXML private void onAdelante()     { HistorialNavegacion.getInstance().adelante(); }
+    @FXML private void onUserMenu()     { UserMenuUtil.mostrar(btnUserMenu); }
+    @FXML private void onNotif() { com.beatify.view.util.NotificacionMenuUtil.mostrar(btnNotif, lblNotifCount); }
+    @FXML private void onIrInicio() { HistorialNavegacion.getInstance().navegar("/view/home.fxml"); }
+
+    @FXML
+    private void onBuscar() {
+        final String termino = txtBusqueda == null ? null : txtBusqueda.getText();
+        if (termino == null || termino.isBlank()) return;
+        SessionContext.getInstance().setTerminoBusqueda(termino);
+        HistorialNavegacion.getInstance().navegar("/view/catalogo.fxml");
+    }
+    @FXML private void onIrExplorar() { HistorialNavegacion.getInstance().navegar("/view/catalogo.fxml"); }
+    @FXML private void onIrBiblioteca() { HistorialNavegacion.getInstance().navegar("/view/biblioteca.fxml"); }
     @FXML private void onIrResenas() { /* ya estamos aquí */ }
-    @FXML private void onIrBarrio() { NavegacionUtil.cambiarA("/view/barrio.fxml", btnUserMenu); }
-    @FXML private void onIrCapsulas() { NavegacionUtil.cambiarA("/view/capsulas.fxml", btnUserMenu); }
-    @FXML private void onIrLogros() { NavegacionUtil.cambiarA("/view/logros.fxml", btnUserMenu); }
-    @FXML private void onNuevaPlaylist() { LOG.info("Nueva playlist"); }
+    @FXML private void onIrBarrio() { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
+    @FXML private void onIrCapsulas() { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
+    @FXML private void onIrLogros() { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(); }); }
     @FXML
     private void onCerrarSesion() {
         SessionContext.getInstance().cerrarSesion();
+        HistorialNavegacion.getInstance().reset();
         NavegacionUtil.cambiarA("/view/login.fxml", btnUserMenu);
     }
 

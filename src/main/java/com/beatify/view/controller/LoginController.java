@@ -7,6 +7,7 @@ import com.beatify.model.Cliente;
 import com.beatify.service.ClienteService;
 import com.beatify.service.IClienteService;
 import com.beatify.view.SessionContext;
+import com.beatify.view.util.HistorialNavegacion;
 import com.beatify.view.util.NavegacionUtil;
 
 import javafx.fxml.FXML;
@@ -79,10 +80,13 @@ public class LoginController {
 
     @FXML
     private void initialize() {
-        // ----- SSO stubs deshabilitados con tooltip explicativo -----
-        deshabilitarSSO(btnGoogle, "Inicio de sesion con Google — proximamente");
-        deshabilitarSSO(btnGitHub, "Inicio de sesion con GitHub — proximamente");
-        deshabilitarSSO(btnUPC,    "Inicio de sesion con SSO de la Universidad — proximamente");
+        // ----- SSO (inicio rápido demo): cada proveedor mapea a una cuenta del seed -----
+        btnGoogle.setTooltip(new Tooltip("Entrar con Google (demo)"));
+        btnGitHub.setTooltip(new Tooltip("Entrar con GitHub (demo)"));
+        btnUPC.setTooltip(new Tooltip("Entrar con SSO Universidad del Cesar (demo)"));
+        btnGoogle.setOnAction(e -> onSSO("Google", "yilver.test@unicesar.edu.co"));
+        btnGitHub.setOnAction(e -> onSSO("GitHub", "andres.test@unicesar.edu.co"));
+        btnUPC.setOnAction(e    -> onSSO("Univ. del Cesar", "kendrick.test@unicesar.edu.co"));
 
         // ----- Enter en cualquier input dispara el submit -----
         txtCorreo.setOnAction(e -> onIngresar());
@@ -91,6 +95,26 @@ public class LoginController {
 
         // ----- Banner de error oculto al inicio -----
         ocultarError();
+    }
+
+    /**
+     * Inicio de sesión vía proveedor SSO (demo). El proveedor "valida" la
+     * identidad y resolvemos el cliente por su correo, sin pedir contraseña.
+     */
+    private void onSSO(final String proveedor, final String correo) {
+        ocultarError();
+        try {
+            final Cliente cliente = clienteService.iniciarSesionSSO(correo);
+            entrar(cliente);
+        } catch (final com.beatify.exceptions.NotFoundException e) {
+            mostrarError("SSO", "No hay una cuenta vinculada a " + proveedor + " (" + correo + ")");
+        } catch (final ConexionException e) {
+            LOG.log(Level.SEVERE, "Error de BD en SSO " + proveedor, e);
+            mostrarError("ConexionException", "Error de conexión. Intenta de nuevo.");
+        } catch (final RuntimeException e) {
+            LOG.log(Level.SEVERE, "Error inesperado en SSO " + proveedor, e);
+            mostrarError("Error", "No se pudo iniciar sesión con " + proveedor);
+        }
     }
 
     /** Maneja el click de "Iniciar sesion" y la tecla Enter en los inputs. */
@@ -116,13 +140,12 @@ public class LoginController {
 
         try {
             final Cliente cliente = clienteService.autenticar(correo, pwd);
-            SessionContext.getInstance().setClienteActual(cliente);
 
             // TODO bloque backend: persistir "mantener sesion" si chkMantenerSesion esta seleccionado
             //   - guardar token local en ~/.beatify/session
             //   - leer en BeatifyApp.start() y auto-login si existe
 
-            NavegacionUtil.cambiarA("/view/home.fxml", btnIngresar);
+            entrar(cliente);
 
         } catch (final AutenticacionException e) {
             // Mensaje generico anti-enumeracion (ya viene asi del service)
@@ -139,6 +162,19 @@ public class LoginController {
         } finally {
             btnIngresar.setDisable(false);
         }
+    }
+
+    /**
+     * Establece la sesión y navega según el rol: los administradores van al
+     * panel de admin; los clientes, al home.
+     */
+    private void entrar(final Cliente cliente) {
+        SessionContext.getInstance().setClienteActual(cliente);
+        final String destino = cliente.esAdmin() ? "/view/admin.fxml" : "/view/home.fxml";
+        final javafx.stage.Stage stage =
+                (javafx.stage.Stage) btnIngresar.getScene().getWindow();
+        NavegacionUtil.cambiarA(destino, btnIngresar);
+        HistorialNavegacion.getInstance().iniciar(stage, destino);
     }
 
     /** Alterna entre PasswordField (oculto) y TextField (visible). */
@@ -171,11 +207,10 @@ public class LoginController {
         NavegacionUtil.cambiarA("/view/registro.fxml", linkRegistro);
     }
 
-    /** Stub: por ahora solo muestra un aviso. */
+    /** Navega a la pantalla de recuperación de contraseña (con verificación por correo). */
     @FXML
     private void onOlvidoPassword() {
-        // TODO bloque backend: flujo de recuperacion de contraseña por correo
-        mostrarError("Informacion", "La recuperacion de contraseña estara disponible proximamente.");
+        NavegacionUtil.cambiarA("/view/recuperar.fxml", txtCorreo);
     }
 
     // ----- helpers privados -----
@@ -187,10 +222,6 @@ public class LoginController {
                 : txtPassword.getText();
     }
 
-    private void deshabilitarSSO(final Button btn, final String tooltipMsg) {
-        btn.setDisable(true);
-        btn.setTooltip(new Tooltip(tooltipMsg));
-    }
 
     private void mostrarError(final String code, final String msg) {
         lblErrorCode.setText(code);

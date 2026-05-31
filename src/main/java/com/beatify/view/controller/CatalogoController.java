@@ -1,13 +1,28 @@
 package com.beatify.view.controller;
 
+import com.beatify.dao.BusquedaDAO;
+import com.beatify.dao.GeneroDAO;
+import com.beatify.dao.PlaylistDAO;
+import com.beatify.exceptions.ConexionException;
+import com.beatify.model.Busqueda;
+import com.beatify.model.Cancion;
 import com.beatify.model.Cliente;
+import com.beatify.model.Genero;
+import com.beatify.model.Playlist;
+import com.beatify.util.Conexion;
 import com.beatify.view.SessionContext;
 import com.beatify.view.component.AlbumCover;
 import com.beatify.view.component.ArtistAvatar;
 import com.beatify.view.component.MediaCard;
+import com.beatify.view.util.AgregarAPlaylistUtil;
+import com.beatify.view.util.HistorialNavegacion;
+import com.beatify.view.util.PlayerManager;
+import com.beatify.view.util.PlaylistUtil;
+import com.beatify.view.util.UserMenuUtil;
 import com.beatify.view.util.NavegacionUtil;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -17,50 +32,53 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-import org.kordamp.ikonli.javafx.FontIcon;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Controller de la pantalla de Catálogo / Explorar.
- *
- * Muestra:
- *   - Filtros por género (chips seleccionables)
- *   - Ordenamiento (A-Z, Z-A, más reciente, etc.)
- *   - Tarjetas de géneros raíz (6 géneros con gradientes)
- *   - Grid de álbumes destacados (6 columnas)
- *   - Tracklist de canciones con número, título, álbum, género, duración
- */
 public class CatalogoController {
 
     private static final Logger LOG = Logger.getLogger(CatalogoController.class.getName());
 
+    private static final String[][] PALETA = {
+        {"#c97a1f", "#3a1a05"}, {"#1f7a5a", "#072a1a"}, {"#3a6a8a", "#051a2a"},
+        {"#a83232", "#3a0a0a"}, {"#d4a017", "#2a1a05"}, {"#7a3a8a", "#1a052a"}
+    };
+
     // ---- TopBar ----
     @FXML private TextField txtBusqueda;
-    @FXML private Button btnNotif;
-    @FXML private Label lblNotifCount;
-    @FXML private Button btnUserMenu;
+    @FXML private Button    btnNotif;
+    @FXML private Label     lblNotifCount;
+    @FXML private Button    btnUserMenu;
     @FXML private StackPane userAvatarHolder;
-    @FXML private Label lblUserNombre;
+    @FXML private Label     lblUserNombre;
 
     // ---- Sidebar ----
     @FXML private VBox sidebarPlaylistsBox;
 
     // ---- Filtros ----
-    @FXML private FlowPane filtrosPane;
+    @FXML private FlowPane         filtrosPane;
     @FXML private ComboBox<String> cmbOrden;
 
     // ---- Contenido ----
     @FXML private FlowPane generosPane;
     @FXML private GridPane albumesGrid;
-    @FXML private VBox tracklistBox;
+    @FXML private VBox     tracklistBox;
 
-    private String generoFiltro = null;
+    private String generoFiltro   = null;
+    private String busquedaFiltro = null;
+
+    private final GeneroDAO    generoDAO    = new GeneroDAO();
+    private final PlaylistDAO  playlistDAO  = new PlaylistDAO();
+    private final BusquedaDAO  busquedaDAO  = new BusquedaDAO();
 
     @FXML
     private void initialize() {
@@ -71,198 +89,341 @@ public class CatalogoController {
         }
 
         configurarTopBar(actual);
-        configurarSidebarPlaylists();
+        configurarSidebarPlaylists(actual);
         configurarFiltros();
         configurarGeneros();
+
+        // Recoger búsqueda pendiente (viene de Home u otra pantalla)
+        final String pendiente = SessionContext.getInstance().consumirTerminoBusqueda();
+        if (pendiente != null) {
+            txtBusqueda.setText(pendiente);
+            busquedaFiltro = pendiente;
+        }
+
         configurarAlbumes();
         configurarTracklist();
     }
 
     // -----------------------------------------------------------------
-    // TopBar y Sidebar (igual que HomeController)
+    // TopBar
     // -----------------------------------------------------------------
-
     private void configurarTopBar(final Cliente c) {
         userAvatarHolder.getChildren().setAll(
-                new ArtistAvatar(28, "#b794ff", "#8b5cf6",
+                new ArtistAvatar(28, "#1ed760", "#1ab44e",
                         c.getNombre() + " " + c.getApellido()));
         lblUserNombre.setText(c.getNombre());
-        lblNotifCount.setText("5");
+        com.beatify.view.util.NotificacionMenuUtil.aplicarBadge(lblNotifCount, c.getIdCliente());
     }
 
-    private void configurarSidebarPlaylists() {
-        // Placeholder - igual que en HomeController
-        final String[][] playlists = {
-                {"Mis Vallenatos Clásicos", "Yo · 24 canc.", "#c97a1f", "#3a1a05"},
-                {"Cumbia del Caribe", "Yo · 18 canc.", "#1f7a5a", "#072a1a"},
-                {"Para escribir tesis", "Yo · 42 canc.", "#3a6a8a", "#051a2a"},
-                {"Fiesta de Sábado", "Andrés Z. · 31 canc.", "#a83232", "#3a0a0a"},
-                {"Champeta Total", "Kendrick S. · 27 canc.", "#d4a017", "#2a1a05"},
-                {"Raíces Andinas", "Yo · 15 canc.", "#7a3a8a", "#1a052a"},
-        };
+    // -----------------------------------------------------------------
+    // Sidebar: playlists reales del cliente
+    // -----------------------------------------------------------------
+    private void configurarSidebarPlaylists(final Cliente c) {
+        try {
+            final List<Playlist> mias = playlistDAO.listarPorCliente(c.getIdCliente());
 
-        for (final String[] pl : playlists) {
-            final Button item = new Button();
-            item.getStyleClass().add("bf-side-playlist");
-            item.setMaxWidth(Double.MAX_VALUE);
-
-            final HBox row = new HBox(10);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.getChildren().addAll(
-                    new AlbumCover(32, pl[2], pl[3]),
-                    crearVBox(2,
-                            crearLabel(pl[0], "bf-side-pl-name"),
-                            crearLabel(pl[1], "bf-side-pl-meta")));
-            item.setGraphic(row);
-            sidebarPlaylistsBox.getChildren().add(item);
+            for (int i = 0; i < mias.size(); i++) {
+                final Playlist pl  = mias.get(i);
+                final String[] col = PALETA[i % PALETA.length];
+                final Button item  = new Button();
+                item.getStyleClass().add("bf-side-playlist");
+                item.setMaxWidth(Double.MAX_VALUE);
+                final HBox row = new HBox(10);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.getChildren().addAll(
+                        new AlbumCover(32, col[0], col[1]),
+                        crearVBox(2,
+                                crearLabel(pl.getNombre(), "bf-side-pl-name"),
+                                crearLabel("Playlist", "bf-side-pl-meta")));
+                item.setGraphic(row);
+                sidebarPlaylistsBox.getChildren().add(item);
+            }
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando playlists sidebar", ex);
         }
     }
 
     // -----------------------------------------------------------------
-    // Filtros (chips de género)
+    // Filtros: chip "Todos" + géneros reales de BD
     // -----------------------------------------------------------------
-
     private void configurarFiltros() {
-        final String[] generos = {
-                "Todos", "Vallenato", "Cumbia", "Champeta",
-                "Bullerengue", "Salsa", "Música andina", "Currulao", "Joropo"
-        };
+        // Chip "Todos"
+        final ToggleButton todos = new ToggleButton("Todos");
+        todos.getStyleClass().add("bf-pref-chip");
+        todos.setSelected(true);
+        todos.setOnAction(e -> {
+            deselectOtros(todos);
+            generoFiltro = null;
+            aplicarFiltro();
+        });
+        filtrosPane.getChildren().add(todos);
 
-        for (final String g : generos) {
-            final ToggleButton chip = new ToggleButton(g);
-            chip.getStyleClass().add("bf-pref-chip");
-            if ("Todos".equals(g)) chip.setSelected(true);
-            chip.setOnAction(e -> {
-                filtrosPane.getChildren().forEach(n -> ((ToggleButton) n).setSelected(false));
-                chip.setSelected(true);
-                generoFiltro = "Todos".equals(g) ? null : g;
-                aplicarFiltro();
-            });
-            filtrosPane.getChildren().add(chip);
+        // Géneros desde BD
+        try {
+            for (final Genero g : generoDAO.listar()) {
+                final ToggleButton chip = new ToggleButton(g.getNombre());
+                chip.getStyleClass().add("bf-pref-chip");
+                chip.setOnAction(e -> {
+                    deselectOtros(chip);
+                    todos.setSelected(false);
+                    generoFiltro = g.getNombre();
+                    aplicarFiltro();
+                });
+                filtrosPane.getChildren().add(chip);
+            }
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando géneros para filtros", ex);
         }
 
-        cmbOrden.getItems().addAll("A–Z", "Z–A", "Más reciente", "Más antiguo", "Más escuchado");
+        cmbOrden.getItems().addAll("A–Z", "Z–A", "Más reciente", "Más antiguo");
         cmbOrden.setValue("Más reciente");
         cmbOrden.setOnAction(e -> aplicarFiltro());
     }
 
+    private void deselectOtros(final ToggleButton activo) {
+        filtrosPane.getChildren().forEach(n -> {
+            if (n instanceof ToggleButton tb && tb != activo) tb.setSelected(false);
+        });
+        activo.setSelected(true);
+    }
+
     private void aplicarFiltro() {
-        LOG.info("Filtro aplicado — género: " + generoFiltro + ", orden: " + cmbOrden.getValue());
         configurarTracklist();
     }
 
     // -----------------------------------------------------------------
-    // Géneros raíz (tarjetas grandes)
+    // Géneros raíz: tarjetas desde BD
     // -----------------------------------------------------------------
-
     private void configurarGeneros() {
-        final Object[][] datos = {
-                {"Vallenato", "#c97a1f", "#3a1a05", "Cesar · Guajira"},
-                {"Cumbia", "#1f7a5a", "#072a1a", "Caribe colombiano"},
-                {"Champeta", "#a83232", "#3a0a0a", "Cartagena"},
-                {"Bullerengue", "#d4a017", "#2a1a05", "Bolívar · Atlántico"},
-                {"Música andina", "#3a6a8a", "#051a2a", "Boyacá · Cundinamarca"},
-                {"Salsa colombiana", "#7a3a8a", "#1a052a", "Cali · Barranquilla"},
-        };
+        generosPane.getChildren().clear();
+        try {
+            final List<Genero> generos = generoDAO.listar();
+            for (int i = 0; i < generos.size(); i++) {
+                final Genero g   = generos.get(i);
+                final String[] c = PALETA[i % PALETA.length];
 
-        for (final Object[] d : datos) {
-            final Button card = new Button();
-            card.getStyleClass().add("bf-card");
-            card.setPrefWidth(200);
-            card.setPrefHeight(100);
-            card.setMaxWidth(Double.MAX_VALUE);
+                final Button card = new Button();
+                card.getStyleClass().add("bf-card");
+                card.setPrefWidth(200);
+                card.setPrefHeight(100);
+                card.setMaxWidth(Double.MAX_VALUE);
 
-            final StackPane sp = new StackPane();
-            sp.setPrefSize(200, 100);
-            sp.setStyle("-fx-background-color: linear-gradient(to bottom right, "
-                    + d[1] + ", " + d[2] + "); -fx-background-radius: 10;");
+                final StackPane sp = new StackPane();
+                sp.setPrefSize(200, 100);
+                sp.setStyle("-fx-background-color: linear-gradient(to bottom right, "
+                        + c[0] + ", " + c[1] + "); -fx-background-radius: 10;");
 
-            final VBox info = new VBox(4);
-            info.setAlignment(Pos.BOTTOM_LEFT);
-            info.setPadding(new javafx.geometry.Insets(0, 0, 12, 14));
-            final Label lblNombre = new Label((String) d[0]);
-            lblNombre.setStyle("-fx-font-family: 'Sora'; -fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
-            final Label lblRegion = new Label((String) d[3]);
-            lblRegion.setStyle("-fx-font-family: 'Manrope'; -fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.7);");
-            info.getChildren().addAll(lblNombre, lblRegion);
-            sp.getChildren().add(info);
-            card.setGraphic(sp);
+                final VBox info = new VBox(4);
+                info.setAlignment(Pos.BOTTOM_LEFT);
+                info.setPadding(new Insets(0, 0, 12, 14));
 
-            final String generoNombre = (String) d[0];
-            card.setOnAction(e -> {
-                // Seleccionar el chip correspondiente
-                for (var node : filtrosPane.getChildren()) {
-                    ToggleButton tb = (ToggleButton) node;
-                    tb.setSelected(tb.getText().equals(generoNombre));
-                    if (tb.isSelected()) generoFiltro = generoNombre;
-                    else if (tb.getText().equals("Todos")) tb.setSelected(false);
-                }
-                aplicarFiltro();
-            });
-            generosPane.getChildren().add(card);
+                final Label lblNombre = new Label(g.getNombre());
+                lblNombre.setStyle("-fx-font-family: 'Sora'; -fx-font-size: 18px;"
+                        + " -fx-font-weight: bold; -fx-text-fill: white;");
+
+                final String region = g.getOrigenPais() != null ? g.getOrigenPais() : "";
+                final Label lblRegion = new Label(region);
+                lblRegion.setStyle("-fx-font-family: 'Manrope'; -fx-font-size: 11px;"
+                        + " -fx-text-fill: rgba(255,255,255,0.7);");
+
+                info.getChildren().addAll(lblNombre, lblRegion);
+                sp.getChildren().add(info);
+                card.setGraphic(sp);
+
+                final String generoNombre = g.getNombre();
+                card.setOnAction(e -> {
+                    generoFiltro = generoNombre;
+                    deselectChipPorNombre(generoNombre);
+                    aplicarFiltro();
+                });
+                generosPane.getChildren().add(card);
+            }
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando géneros raíz", ex);
         }
     }
 
-    // -----------------------------------------------------------------
-    // Álbumes destacados (grid 6 columnas)
-    // -----------------------------------------------------------------
+    private void deselectChipPorNombre(final String nombre) {
+        filtrosPane.getChildren().forEach(n -> {
+            if (n instanceof ToggleButton tb) {
+                tb.setSelected(tb.getText().equals(nombre));
+            }
+        });
+    }
 
+    // -----------------------------------------------------------------
+    // Álbumes destacados: últimos 6 (filtrados por búsqueda si hay término)
+    // -----------------------------------------------------------------
     private void configurarAlbumes() {
-        final String[][] albumes = {
-                {"Clásicos de la Provincia", "1993 · Carlos Vives", "#c97a1f", "#3a1a05"},
-                {"Cumbia Cienaguera", "1988 · Totó la Momposina", "#1f7a5a", "#072a1a"},
-                {"En Concierto", "1989 · Joe Arroyo", "#d4a017", "#2a1a05"},
-                {"La Tierra del Olvido", "1995 · Carlos Vives", "#a83232", "#3a0a0a"},
-                {"Cantos de Bullerengue", "2010 · Petrona Martínez", "#7a3a8a", "#1a052a"},
-                {"Un Canto a la Vida", "2008 · Los Gaiteros", "#3a6a8a", "#051a2a"},
-        };
+        albumesGrid.getChildren().clear();
 
-        for (int i = 0; i < albumes.length; i++) {
-            final String[] a = albumes[i];
-            final MediaCard card = new MediaCard(a[2], a[3], a[0], a[0], a[1], false);
-            GridPane.setColumnIndex(card, i);
-            albumesGrid.getChildren().add(card);
+        final boolean hayBusqueda = busquedaFiltro != null && !busquedaFiltro.isBlank();
+        final String sql = hayBusqueda
+                ? """
+                  SELECT al.id_album, al.titulo, al.anio_lanzamiento, a.nombre_artistico
+                    FROM ALBUM al
+                    JOIN ARTISTA a ON a.id_artista = al.ARTISTA_id_artista
+                   WHERE UPPER(al.titulo) LIKE UPPER(?)
+                      OR UPPER(a.nombre_artistico) LIKE UPPER(?)
+                   ORDER BY al.id_album DESC
+                   FETCH FIRST 6 ROWS ONLY"""
+                : """
+                  SELECT al.id_album, al.titulo, al.anio_lanzamiento, a.nombre_artistico
+                    FROM ALBUM al
+                    JOIN ARTISTA a ON a.id_artista = al.ARTISTA_id_artista
+                   ORDER BY al.id_album DESC
+                   FETCH FIRST 6 ROWS ONLY""";
+
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (hayBusqueda) {
+                final String like = "%" + busquedaFiltro + "%";
+                ps.setString(1, like);
+                ps.setString(2, like);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                int col = 0;
+                while (rs.next()) {
+                    final String titulo = rs.getString(2);
+                    final int    anio   = rs.getInt(3);
+                    final String art    = rs.getString(4);
+                    final String[] c    = PALETA[col % PALETA.length];
+                    final MediaCard card = new MediaCard(c[0], c[1], titulo, titulo, anio + " · " + art, false);
+                    GridPane.setColumnIndex(card, col);
+                    albumesGrid.getChildren().add(card);
+                    col++;
+                }
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando álbumes", ex);
         }
     }
 
     // -----------------------------------------------------------------
-    // Tracklist de canciones
+    // Tracklist de canciones (con filtros de género y búsqueda combinados)
     // -----------------------------------------------------------------
-
     private void configurarTracklist() {
         tracklistBox.getChildren().clear();
         tracklistBox.getChildren().add(crearCabeceraTracklist());
 
-        // Datos de canciones (placeholder)
-        final String[][] canciones = {
-                {"1", "La Gota Fría", "Carlos Vives", "Clásicos de la Provincia", "Vallenato", "4:33", "#c97a1f", "#3a1a05"},
-                {"2", "La Cumbia Cienaguera", "Totó la Momposina", "Cumbia Cienaguera", "Cumbia", "3:48", "#1f7a5a", "#072a1a"},
-                {"3", "La Rebelión", "Joe Arroyo", "En Concierto", "Salsa", "5:22", "#a83232", "#3a0a0a"},
-                {"4", "La Tierra del Olvido", "Carlos Vives", "La Tierra del Olvido", "Vallenato", "4:15", "#d4a017", "#2a1a05"},
-                {"5", "Mi Cafetal", "Carlos Vives", "Clásicos de la Provincia", "Vallenato", "3:55", "#c97a1f", "#3a1a05"},
-                {"6", "Bullerengue", "Petrona Martínez", "Cantos de Bullerengue", "Bullerengue", "4:01", "#7a3a8a", "#1a052a"},
-                {"7", "Toro Mata", "Los Gaiteros", "Un Canto a la Vida", "Cumbia", "3:30", "#3a6a8a", "#051a2a"},
-                {"8", "Las Tapias", "Diomedes Díaz", "El Cacique", "Vallenato", "5:10", "#c97a1f", "#3a1a05"},
-                {"9", "La Provincia", "Carlos Vives", "Clásicos de la Provincia", "Vallenato", "4:45", "#a83232", "#3a0a0a"},
-                {"10", "Negrita", "Joe Arroyo", "Orígenes", "Salsa", "4:20", "#d4a017", "#2a1a05"},
-        };
+        final boolean hayGenero   = generoFiltro   != null && !generoFiltro.isBlank();
+        final boolean hayBusqueda = busquedaFiltro != null && !busquedaFiltro.isBlank();
 
-        for (final String[] c : canciones) {
-            tracklistBox.getChildren().add(crearFilaTracklist(c));
+        final StringBuilder sql = new StringBuilder("""
+                SELECT c.id_cancion, c.titulo, a.nombre_artistico,
+                       al.titulo, g.nombre, c.duracion_seg, al.id_album,
+                       c.ruta_archivo
+                  FROM CANCION c
+                  JOIN ALBUM al   ON al.id_album = c.ALBUM_id_album
+                  JOIN ARTISTA a  ON a.id_artista = al.ARTISTA_id_artista
+                  JOIN GENERO g   ON g.id_genero = c.GENERO_id_genero
+                """);
+
+        if (hayGenero && hayBusqueda) {
+            sql.append(" WHERE UPPER(g.nombre) = UPPER(?)"
+                    + " AND (UPPER(c.titulo) LIKE UPPER(?)"
+                    + "      OR UPPER(a.nombre_artistico) LIKE UPPER(?))");
+        } else if (hayGenero) {
+            sql.append(" WHERE UPPER(g.nombre) = UPPER(?)");
+        } else if (hayBusqueda) {
+            sql.append(" WHERE UPPER(c.titulo) LIKE UPPER(?)"
+                    + "    OR UPPER(a.nombre_artistico) LIKE UPPER(?)");
+        }
+        sql.append(" ORDER BY c.id_cancion FETCH FIRST 50 ROWS ONLY");
+
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int param = 1;
+            if (hayGenero && hayBusqueda) {
+                final String like = "%" + busquedaFiltro + "%";
+                ps.setString(param++, generoFiltro);
+                ps.setString(param++, like);
+                ps.setString(param,   like);
+            } else if (hayGenero) {
+                ps.setString(param, generoFiltro);
+            } else if (hayBusqueda) {
+                final String like = "%" + busquedaFiltro + "%";
+                ps.setString(param++, like);
+                ps.setString(param,   like);
+            }
+
+            // Recopilar cola completa antes de crear filas
+            final java.util.List<PlayerManager.SongInfo> cola = new java.util.ArrayList<>();
+            final java.util.List<String[]>               filas = new java.util.ArrayList<>();
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    final int    idCan   = rs.getInt(1);
+                    final String titulo  = rs.getString(2);
+                    final String artista = rs.getString(3);
+                    final String album   = rs.getString(4);
+                    final int    durSeg  = rs.getInt(6);
+                    final int    albId   = rs.getInt(7);
+                    final String ruta    = rs.getString(8);
+                    cola.add(new PlayerManager.SongInfo(
+                            new Cancion(idCan, titulo, durSeg, ruta, null, null, null, albId, null),
+                            artista, album));
+                    filas.add(new String[]{
+                        String.valueOf(cola.size()), titulo, artista, album,
+                        rs.getString(5), formatDur(durSeg),
+                        PALETA[Math.abs(albId) % PALETA.length][0],
+                        PALETA[Math.abs(albId) % PALETA.length][1]
+                    });
+                }
+            }
+
+            if (cola.isEmpty()) {
+                final String msg = hayBusqueda
+                        ? "Sin resultados para \"" + busquedaFiltro + "\"."
+                        : "Sin canciones" + (hayGenero ? " para " + generoFiltro : "") + ".";
+                tracklistBox.getChildren().add(crearLabel(msg, "bf-field-lbl"));
+            }
+
+            final java.util.List<PlayerManager.SongInfo> colaFinal = java.util.List.copyOf(cola);
+            for (int i = 0; i < filas.size(); i++) {
+                final int idx = i;
+                final HBox row = crearFilaTracklist(filas.get(i));
+                row.setStyle(row.getStyle() + "; -fx-cursor: hand;");
+                row.setOnMouseClicked(e -> reproducirEnCola(colaFinal, idx));
+
+                // Botón "+" para agregar a playlist (verde visible, antes del play)
+                final com.beatify.model.Cancion can = colaFinal.get(idx).cancion();
+                final Button btnAdd = new Button();
+                btnAdd.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 4;");
+                final org.kordamp.ikonli.javafx.FontIcon icAdd =
+                        new org.kordamp.ikonli.javafx.FontIcon("bi-plus-circle");
+                icAdd.setIconSize(20);
+                icAdd.setIconColor(javafx.scene.paint.Color.web("#1ed760"));
+                btnAdd.setGraphic(icAdd);
+                btnAdd.setTooltip(new javafx.scene.control.Tooltip("Agregar a playlist"));
+                btnAdd.setOnAction(e -> {
+                    e.consume();
+                    AgregarAPlaylistUtil.mostrar(btnAdd, can.getIdCancion(), can.getTitulo());
+                });
+                row.getChildren().add(row.getChildren().size() - 1, btnAdd);
+
+                final int last = row.getChildren().size() - 1;
+                if (row.getChildren().get(last) instanceof javafx.scene.control.Button bp) {
+                    bp.setOnAction(e -> { e.consume(); reproducirEnCola(colaFinal, idx); });
+                }
+                tracklistBox.getChildren().add(row);
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando tracklist", ex);
+            tracklistBox.getChildren().add(crearLabel("Error consultando BD.", "bf-field-lbl"));
         }
     }
 
     private HBox crearCabeceraTracklist() {
         final HBox header = new HBox(0);
         header.getStyleClass().add("bf-tracklist-header");
-        header.setPadding(new javafx.geometry.Insets(12, 16, 12, 16));
+        header.setPadding(new Insets(12, 16, 12, 16));
         header.getChildren().addAll(
                 crearLabel("#", 40, "bf-track-num"),
                 crearLabel("TÍTULO", 280, "bf-track-col"),
                 crearLabel("ÁLBUM", 180, "bf-track-col"),
                 crearLabel("GÉNERO", 120, "bf-track-col"),
-                crearLabel("DURACIÓN", 70, "bf-track-col")
-        );
+                crearLabel("DURACIÓN", 70, "bf-track-col"));
         return header;
     }
 
@@ -270,7 +431,7 @@ public class CatalogoController {
         final HBox row = new HBox(0);
         row.getStyleClass().add("bf-tracklist-row");
         row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new javafx.geometry.Insets(12, 16, 12, 16));
+        row.setPadding(new Insets(12, 16, 12, 16));
 
         final Label lblNum = crearLabel(c[0], 40, "bf-track-num");
 
@@ -279,8 +440,7 @@ public class CatalogoController {
         titleCell.setMinWidth(280);
         titleCell.getChildren().addAll(
                 new AlbumCover(36, c[6], c[7]),
-                crearVBoxTitulo(c[1], c[2])
-        );
+                crearVBoxTitulo(c[1], c[2]));
 
         final Label lblAlbum = crearLabel(c[3], 180, "bf-track-album");
 
@@ -290,9 +450,13 @@ public class CatalogoController {
         generoWrap.setMinWidth(120);
         generoWrap.setAlignment(Pos.CENTER_LEFT);
 
-        final Label lblDur = crearLabel(c[5], 70, "bf-track-dur");
+        final Label lblDur = crearLabel(c[5], 60, "bf-track-dur");
 
-        row.getChildren().addAll(lblNum, titleCell, lblAlbum, generoWrap, lblDur);
+        final Button btnPlay = new Button("▶");
+        btnPlay.setStyle("-fx-background-color: transparent; -fx-text-fill: #1ed760;"
+                + " -fx-font-size: 13px; -fx-cursor: hand; -fx-padding: 0 4;");
+
+        row.getChildren().addAll(lblNum, titleCell, lblAlbum, generoWrap, lblDur, btnPlay);
         return row;
     }
 
@@ -307,31 +471,65 @@ public class CatalogoController {
     }
 
     // -----------------------------------------------------------------
+    // Reproducción: clic en fila — toca sin navegar, con cola completa
+    // -----------------------------------------------------------------
+    private void reproducirEnCola(final java.util.List<PlayerManager.SongInfo> cola, final int indice) {
+        PlayerManager.getInstance().reproducirCola(cola, indice);
+    }
+
+    // -----------------------------------------------------------------
+    // Búsqueda
+    // -----------------------------------------------------------------
+    @FXML
+    private void onBuscar() {
+        final String termino = txtBusqueda.getText();
+        busquedaFiltro = (termino == null || termino.isBlank()) ? null : termino.trim();
+
+        configurarAlbumes();
+        configurarTracklist();
+
+        // Registrar en BD (no bloquea UI si falla)
+        final Cliente c = SessionContext.getInstance().getClienteActual();
+        if (busquedaFiltro != null && c != null && c.getIdCliente() != null) {
+            try {
+                busquedaDAO.insertar(new Busqueda(
+                        null, busquedaFiltro, LocalDateTime.now(), null, c.getIdCliente()));
+            } catch (final Exception ex) {
+                LOG.log(Level.WARNING, "No se pudo registrar la búsqueda en BD", ex);
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
     // Navegación
     // -----------------------------------------------------------------
-
-    @FXML private void onAtras() { /* TODO historial */ }
-    @FXML private void onAdelante() { /* TODO historial */ }
-    @FXML private void onUserMenu() { /* TODO menú */ }
-    @FXML private void onIrInicio() { NavegacionUtil.cambiarA("/view/home.fxml", btnUserMenu); }
-    @FXML private void onIrExplorar() { /* ya estamos aquí */ }
-    @FXML private void onIrBiblioteca() { LOG.info("Biblioteca — próximamente"); }
-    @FXML private void onIrResenas() { NavegacionUtil.cambiarA("/view/resenas.fxml", btnUserMenu); }
-    @FXML private void onIrBarrio() { NavegacionUtil.cambiarA("/view/barrio.fxml", btnUserMenu); }
-    @FXML private void onIrCapsulas() { NavegacionUtil.cambiarA("/view/capsulas.fxml", btnUserMenu); }
-    @FXML private void onIrLogros() { NavegacionUtil.cambiarA("/view/logros.fxml", btnUserMenu); }
-    @FXML private void onNuevaPlaylist() { LOG.info("Nueva playlist"); }
-    @FXML private void onVerTodosAlbumes() { LOG.info("Ver todos los álbumes"); }
+    @FXML private void onAtras()        { HistorialNavegacion.getInstance().atras(); }
+    @FXML private void onAdelante()     { HistorialNavegacion.getInstance().adelante(); }
+    @FXML private void onUserMenu()     { UserMenuUtil.mostrar(btnUserMenu); }
+    @FXML private void onNotif()        { com.beatify.view.util.NotificacionMenuUtil.mostrar(btnNotif, lblNotifCount); }
+    @FXML private void onIrInicio()         { HistorialNavegacion.getInstance().navegar("/view/home.fxml"); }
+    @FXML private void onIrExplorar()       { /* ya estamos */ }
+    @FXML private void onIrBiblioteca() { HistorialNavegacion.getInstance().navegar("/view/biblioteca.fxml"); }
+    @FXML private void onIrResenas()        { HistorialNavegacion.getInstance().navegar("/view/resenas.fxml"); }
+    @FXML private void onIrBarrio()         { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
+    @FXML private void onIrCapsulas()       { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
+    @FXML private void onIrLogros()         { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(SessionContext.getInstance().getClienteActual()); }); }
+    @FXML private void onVerTodosAlbumes()  { LOG.info("Ver todos los álbumes"); }
 
     @FXML
     private void onCerrarSesion() {
         SessionContext.getInstance().cerrarSesion();
+        HistorialNavegacion.getInstance().reset();
         NavegacionUtil.cambiarA("/view/login.fxml", btnUserMenu);
     }
 
     // -----------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------
+    private static String formatDur(final int seg) {
+        return String.format("%d:%02d", seg / 60, seg % 60);
+    }
 
     private static Label crearLabel(final String texto, final double minWidth, final String... classes) {
         final Label l = new Label(texto);

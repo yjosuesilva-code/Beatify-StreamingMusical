@@ -1,10 +1,24 @@
 package com.beatify.view.controller;
 
+import com.beatify.dao.AlbumDAO;
+import com.beatify.dao.ArtistaDAO;
+import com.beatify.dao.PlaylistDAO;
+import com.beatify.model.Cancion;
+import com.beatify.exceptions.ConexionException;
+import com.beatify.model.Artista;
 import com.beatify.model.Cliente;
+import com.beatify.model.Playlist;
+import com.beatify.util.Conexion;
 import com.beatify.view.SessionContext;
 import com.beatify.view.component.AlbumCover;
 import com.beatify.view.component.ArtistAvatar;
 import com.beatify.view.component.MediaCard;
+import com.beatify.view.util.AgregarAPlaylistUtil;
+import com.beatify.view.util.HistorialNavegacion;
+import com.beatify.view.util.NotificacionMenuUtil;
+import com.beatify.view.util.PlayerManager;
+import com.beatify.view.util.PlaylistUtil;
+import com.beatify.view.util.UserMenuUtil;
 import com.beatify.view.util.NavegacionUtil;
 import com.beatify.view.util.SaludoUtil;
 
@@ -21,34 +35,26 @@ import javafx.scene.layout.VBox;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Controller de la pantalla principal del Home (home.fxml).
- *
- * Esta pantalla muestra el panorama completo de la app:
- *   - Greeting personalizado por hora del dia
- *   - 4 estadisticas del usuario (placeholders mientras no haya queries)
- *   - 6 playlists recientes en grid 3x2
- *   - BarrioCard con top 5 artistas de la ciudad del usuario
- *   - 6 albumes recomendados
- *   - 6 artistas para descubrir (circulares)
- *   - 4 canciones del historial reciente
- *   - Mini-player abajo con la cancion en curso
- *
- * La mayoria de los datos son HARDCODED por ahora. Cuando los services
- * tengan los metodos correspondientes (PlaylistService.deCliente(),
- * BarrioService.topEnCiudad(), etc.) se reemplazan los placeholders.
- * Ver TODOs marcados como "bloque backend".
- */
 public class HomeController {
 
     private static final Logger LOG = Logger.getLogger(HomeController.class.getName());
     private static final NumberFormat NF_ES_CO = NumberFormat.getInstance(new Locale("es", "CO"));
+
+    private static final String[][] PALETA = {
+        {"#c97a1f", "#3a1a05"}, {"#1f7a5a", "#072a1a"}, {"#3a6a8a", "#051a2a"},
+        {"#a83232", "#3a0a0a"}, {"#d4a017", "#2a1a05"}, {"#7a3a8a", "#1a052a"}
+    };
 
     // ---- TopBar ----
     @FXML private TextField  txtBusqueda;
@@ -63,8 +69,10 @@ public class HomeController {
 
     // ---- Hero ----
     @FXML private Label lblGreeting;
+    @FXML private Label lblHeroNombre;
     @FXML private Label lblHeroSub;
     @FXML private Label lblStatRep, lblStatLikes, lblStatResenas, lblStatSiguiendo;
+    private int repCount = -1;   // conteo de reproducciones para refresco en vivo
 
     // ---- Quick row + secciones ----
     @FXML private GridPane quickRowGrid;
@@ -73,20 +81,19 @@ public class HomeController {
     @FXML private VBox     continuarBox;
 
     // ---- BarrioCard ----
-    @FXML private Label lblBarrioCiudad;
-    @FXML private VBox  barrioRankingBox;
+    @FXML private GridPane barrioCardRoot;
+    @FXML private Label    lblBarrioCiudad;
+    @FXML private VBox     barrioRankingBox;
 
-    // ---- MiniPlayer ----
-    @FXML private StackPane mpCoverHolder;
-    @FXML private Label     mpTitulo, mpArtista;
+    // MiniPlayer gestionado por MiniPlayerController vía fx:include
+
+    private final PlaylistDAO playlistDAO = new PlaylistDAO();
+    private final AlbumDAO    albumDAO    = new AlbumDAO();
+    private final ArtistaDAO  artistaDAO  = new ArtistaDAO();
 
     @FXML
     private void initialize() {
-        // El Cliente actual viene de SessionContext (lo guardo el Login)
         Cliente actual = SessionContext.getInstance().getClienteActual();
-
-        // Defensa: si no hay sesion (alguien navego directo al Home),
-        // armamos un cliente placeholder para no romper en demo
         if (actual == null) {
             LOG.warning("No hay cliente en SessionContext — usando placeholder de demo");
             actual = clientePlaceholder();
@@ -95,276 +102,408 @@ public class HomeController {
 
         configurarTopBar(actual);
         configurarHero(actual);
-        configurarSidebarPlaylists();
-        configurarQuickRow();
+        configurarSidebarPlaylists(actual);
+        configurarQuickRow(actual);
         configurarBarrioCard(actual);
         configurarRecomendados();
         configurarArtistas();
-        configurarContinuar();
+        configurarContinuar(actual);
         configurarMiniPlayer();
     }
 
     // -----------------------------------------------------------------
-    // Top bar y hero (depende del Cliente actual)
+    // Top bar
     // -----------------------------------------------------------------
-
     private void configurarTopBar(final Cliente c) {
-        // Avatar del usuario en la pill (44 px, gradiente lavanda)
         userAvatarHolder.getChildren().setAll(
-                new ArtistAvatar(28, "#b794ff", "#8b5cf6",
+                new ArtistAvatar(28, "#1ed760", "#1ab44e",
                         c.getNombre() + " " + c.getApellido()));
         lblUserNombre.setText(c.getNombre());
-        lblNotifCount.setText("5");                 // placeholder
+        NotificacionMenuUtil.aplicarBadge(lblNotifCount, c.getIdCliente());
     }
 
+    // -----------------------------------------------------------------
+    // Hero: stats reales del cliente
+    // -----------------------------------------------------------------
     private void configurarHero(final Cliente c) {
         final String saludo = SaludoUtil.saludoActual().toUpperCase();
-        lblGreeting.setText(saludo + ", " + c.getNombre().toUpperCase());
+        lblGreeting.setText(saludo.toUpperCase());
+        lblHeroNombre.setText(c.getNombre().toUpperCase() + " " + c.getApellido().toUpperCase());
 
         final String ciudad = c.getCiudad() == null ? "tu ciudad" : c.getCiudad();
-        lblHeroSub.setText("Tu ciudad — " + ciudad
-                + " — está escuchando vallenato clásico y cumbia. Únete.");
+        lblHeroSub.setText("Tu ciudad — " + ciudad + " — está escuchando vallenato clásico y cumbia. Únete.");
 
-        // TODO bloque backend: stats reales de
-        //   - ReproduccionDAO.contarPorCliente(idCliente)
-        //   - LikeCancionDAO.contarPorCliente(...) + LikeAlbumDAO + LikePlaylistDAO
-        //   - ResenaDAO.contarPorCliente(idCliente)
-        //   - SeguimientoDAO.contarSeguidos(idCliente)
-        lblStatRep.setText(NF_ES_CO.format(1247));
-        lblStatLikes.setText("89");
-        lblStatResenas.setText("23");
-        lblStatSiguiendo.setText("42");
+        if (c.getIdCliente() != null) {
+            final int id = c.getIdCliente();
+            final int rep = contarBD(
+                    "SELECT COUNT(*) FROM REPRODUCCION WHERE CLIENTE_id_cliente = ?", id);
+            final int likes = contarBD("""
+                    SELECT (SELECT COUNT(*) FROM LIKE_CANCION  WHERE CLIENTE_id_cliente = ?)
+                         + (SELECT COUNT(*) FROM LIKE_ALBUM    WHERE CLIENTE_id_cliente = ?)
+                         + (SELECT COUNT(*) FROM LIKE_PLAYLIST WHERE CLIENTE_id_cliente = ?)
+                      FROM dual""", id, id, id);
+            final int resenas   = contarBD(
+                    "SELECT COUNT(*) FROM RESENA WHERE CLIENTE_id_cliente = ?", id);
+            final int siguiendo = contarBD(
+                    "SELECT COUNT(*) FROM SEGUIMIENTO WHERE CLIENTE_id_cliente = ?", id);
+            repCount = rep;
+            lblStatRep.setText(NF_ES_CO.format(rep));
+            lblStatLikes.setText(String.valueOf(likes));
+            lblStatResenas.setText(String.valueOf(resenas));
+            lblStatSiguiendo.setText(String.valueOf(siguiendo));
+        } else {
+            lblStatRep.setText("—");
+            lblStatLikes.setText("—");
+            lblStatResenas.setText("—");
+            lblStatSiguiendo.setText("—");
+        }
+
+        // Refresco EN VIVO: cuando se registra una reproducción, sube el contador
+        PlayerManager.getInstance().setOnNuevaReproduccion(() -> {
+            if (lblStatRep.getScene() == null || repCount < 0) return;  // pantalla ya no visible
+            repCount++;
+            lblStatRep.setText(NF_ES_CO.format(repCount));
+        });
     }
 
     // -----------------------------------------------------------------
-    // Sidebar: lista de playlists (placeholders)
+    // Sidebar: playlists reales del cliente
     // -----------------------------------------------------------------
+    private void configurarSidebarPlaylists(final Cliente c) {
+        try {
+            final List<Playlist> mias = playlistDAO.listarPorCliente(c.getIdCliente());
 
-    private void configurarSidebarPlaylists() {
-        // TODO bloque backend: PlaylistService.listarDeCliente(idCliente)
-        final String[][] playlists = {
-                {"Mis Vallenatos Clásicos", "Yo · 24 canc.", "#c97a1f", "#3a1a05"},
-                {"Cumbia del Caribe",       "Yo · 18 canc.", "#1f7a5a", "#072a1a"},
-                {"Para escribir tesis",     "Yo · 42 canc.", "#3a6a8a", "#051a2a"},
-                {"Fiesta de Sábado",        "Andrés Z. · 31 canc.", "#a83232", "#3a0a0a"},
-                {"Champeta Total",          "Kendrick S. · 27 canc.", "#d4a017", "#2a1a05"},
-                {"Raíces Andinas",          "Yo · 15 canc.", "#7a3a8a", "#1a052a"},
-        };
-
-        for (final String[] pl : playlists) {
-            final Button item = new Button();
-            item.getStyleClass().add("bf-side-playlist");
-            item.setMaxWidth(Double.MAX_VALUE);
-
-            final HBox row = new HBox(10);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.getChildren().addAll(
-                    new AlbumCover(32, pl[2], pl[3]),
-                    construirVBox(2,
-                            label(pl[0], "bf-side-pl-name"),
-                            label(pl[1], "bf-side-pl-meta")));
-            item.setGraphic(row);
-            sidebarPlaylistsBox.getChildren().add(item);
+            if (mias.isEmpty()) {
+                sidebarPlaylistsBox.getChildren().add(label("Sin playlists aún.", "bf-side-pl-meta"));
+                return;
+            }
+            for (int i = 0; i < mias.size(); i++) {
+                final Playlist pl  = mias.get(i);
+                final String[] col = PALETA[i % PALETA.length];
+                final Button item  = new Button();
+                item.getStyleClass().add("bf-side-playlist");
+                item.setMaxWidth(Double.MAX_VALUE);
+                item.setOnAction(e -> PlaylistUtil.abrir(pl.getIdPlaylist()));
+                final HBox row = new HBox(10);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.getChildren().addAll(
+                        new AlbumCover(32, col[0], col[1]),
+                        construirVBox(2,
+                                label(pl.getNombre(), "bf-side-pl-name"),
+                                label("Playlist", "bf-side-pl-meta")));
+                item.setGraphic(row);
+                sidebarPlaylistsBox.getChildren().add(item);
+            }
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando playlists sidebar", ex);
         }
     }
 
     // -----------------------------------------------------------------
-    // Quick row (6 playlists recientes en grid 3 col x 2 filas)
+    // Quick row: primeras 6 playlists del cliente
     // -----------------------------------------------------------------
+    private void configurarQuickRow(final Cliente c) {
+        try {
+            final List<Playlist> mias = playlistDAO.listarPorCliente(c.getIdCliente()).stream().limit(6).toList();
 
-    private void configurarQuickRow() {
-        final String[][] playlists = {
-                {"Mis Vallenatos Clásicos", "#c97a1f", "#3a1a05"},
-                {"Cumbia del Caribe",       "#1f7a5a", "#072a1a"},
-                {"Para escribir tesis",     "#3a6a8a", "#051a2a"},
-                {"Fiesta de Sábado",        "#a83232", "#3a0a0a"},
-                {"Champeta Total",          "#d4a017", "#2a1a05"},
-                {"Raíces Andinas",          "#7a3a8a", "#1a052a"},
-        };
-
-        for (int i = 0; i < playlists.length; i++) {
-            final String[] pl = playlists[i];
-            final Button quick = new Button();
-            quick.getStyleClass().add("bf-quick");
-            quick.setMaxWidth(Double.MAX_VALUE);
-
-            final HBox content = new HBox(14);
-            content.setAlignment(Pos.CENTER_LEFT);
-            content.getChildren().addAll(
-                    new AlbumCover(56, pl[1], pl[2]),
-                    label(pl[0], "bf-quick-name"));
-            quick.setGraphic(content);
-
-            GridPane.setRowIndex(quick, i / 3);
-            GridPane.setColumnIndex(quick, i % 3);
-            quickRowGrid.getChildren().add(quick);
+            for (int i = 0; i < mias.size(); i++) {
+                final Playlist pl  = mias.get(i);
+                final String[] col = PALETA[i % PALETA.length];
+                final Button quick = new Button();
+                quick.getStyleClass().add("bf-quick");
+                quick.setMaxWidth(Double.MAX_VALUE);
+                quick.setOnAction(e -> PlaylistUtil.abrir(pl.getIdPlaylist()));
+                final HBox content = new HBox(14);
+                content.setAlignment(Pos.CENTER_LEFT);
+                content.getChildren().addAll(
+                        new AlbumCover(56, col[0], col[1]),
+                        label(pl.getNombre(), "bf-quick-name"));
+                quick.setGraphic(content);
+                GridPane.setRowIndex(quick, i / 3);
+                GridPane.setColumnIndex(quick, i % 3);
+                quickRowGrid.getChildren().add(quick);
+            }
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando quick row", ex);
         }
     }
 
     // -----------------------------------------------------------------
     // BarrioCard: top 5 artistas en la ciudad del usuario
     // -----------------------------------------------------------------
-
     private void configurarBarrioCard(final Cliente c) {
         final String ciudad = c.getCiudad() == null ? "Valledupar" : c.getCiudad();
         lblBarrioCiudad.setText(ciudad);
 
-        // TODO bloque backend: BarrioService.topEnCiudad(ciudad, periodo)
-        final Object[][] barrio = {
-                {1, "Diomedes Díaz",                "12.3k", "#c97a1f", "#3a1a05", "up"},
-                {2, "Carlos Vives",                  "10.7k", "#1f7a5a", "#072a1a", "up"},
-                {3, "Silvestre Dangond",              "9.2k", "#d4a017", "#2a1a05", "same"},
-                {4, "Jorge Oñate",                    "7.8k", "#a83232", "#3a0a0a", "down"},
-                {5, "Los Gaiteros de San Jacinto",   "5.4k", "#7a3a8a", "#1a052a", "up"},
-        };
+        final String sql = """
+                SELECT a.nombre_artistico, COUNT(*) oyentes
+                  FROM REPRODUCCION r
+                  JOIN CLIENTE cl ON cl.id_cliente = r.CLIENTE_id_cliente
+                  JOIN CANCION cc  ON cc.id_cancion = r.CANCION_id_cancion
+                  JOIN ALBUM al    ON al.id_album = cc.ALBUM_id_album
+                  JOIN ARTISTA a   ON a.id_artista = al.ARTISTA_id_artista
+                 WHERE cl.ciudad = ?
+                 GROUP BY a.id_artista, a.nombre_artistico
+                 ORDER BY oyentes DESC
+                 FETCH FIRST 5 ROWS ONLY""";
 
-        for (final Object[] b : barrio) {
-            final int rank        = (int) b[0];
-            final String nombre   = (String) b[1];
-            final String oyentes  = (String) b[2];
-            final String c1       = (String) b[3];
-            final String c2       = (String) b[4];
-            final String trend    = (String) b[5];
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, ciudad);
+            try (ResultSet rs = ps.executeQuery()) {
+                int rank = 1;
+                while (rs.next()) {
+                    final String nombre  = rs.getString(1);
+                    final int    oyentes = rs.getInt(2);
+                    final String[] col   = PALETA[(rank - 1) % PALETA.length];
 
-            final HBox item = new HBox(14);
-            item.getStyleClass().add("bf-barrio-item");
-            item.setAlignment(Pos.CENTER_LEFT);
+                    final HBox item = new HBox(14);
+                    item.getStyleClass().add("bf-barrio-item");
+                    item.setAlignment(Pos.CENTER_LEFT);
 
-            // Rank
-            final Label lblRank = new Label(String.format("%02d", rank));
-            lblRank.getStyleClass().add("bf-barrio-rank");
+                    final Label lblRank = new Label(String.format("%02d", rank));
+                    lblRank.getStyleClass().add("bf-barrio-rank");
 
-            // Avatar
-            final ArtistAvatar avatar = new ArtistAvatar(44, c1, c2, nombre);
+                    final ArtistAvatar avatar = new ArtistAvatar(44, col[0], col[1], nombre);
 
-            // Info (nombre + meta)
-            final VBox info = construirVBox(2,
-                    label(nombre, "bf-barrio-name"),
-                    label(oyentes + " oyentes en " + ciudad, "bf-barrio-meta"));
-            HBox.setHgrow(info, javafx.scene.layout.Priority.ALWAYS);
+                    final VBox info = construirVBox(2,
+                            label(nombre, "bf-barrio-name"),
+                            label(fmtOyentes(oyentes) + " oyentes en " + ciudad, "bf-barrio-meta"));
+                    HBox.setHgrow(info, javafx.scene.layout.Priority.ALWAYS);
 
-            // Trend icon
-            final StackPane trendIcon = new StackPane();
-            trendIcon.getStyleClass().add("bf-trend-" + trend);
-            trendIcon.getChildren().add(
-                    new FontIcon(switch (trend) {
-                        case "up"   -> "bi-arrow-up";
-                        case "down" -> "bi-arrow-down";
-                        default     -> "bi-dash";
-                    }));
+                    final StackPane trendIcon = new StackPane();
+                    trendIcon.getStyleClass().add("bf-trend-same");
+                    trendIcon.getChildren().add(new FontIcon("bi-dash"));
 
-            item.getChildren().addAll(lblRank, avatar, info, trendIcon);
-            barrioRankingBox.getChildren().add(item);
+                    item.getChildren().addAll(lblRank, avatar, info, trendIcon);
+                    barrioRankingBox.getChildren().add(item);
+                    rank++;
+                }
+                if (rank == 1) {
+                    barrioRankingBox.getChildren().add(
+                            label("Sin datos para " + ciudad + " aún.", "bf-barrio-meta"));
+                }
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando barrio card", ex);
         }
     }
 
     // -----------------------------------------------------------------
-    // Secciones: Recomendados, Artistas, Continuar
+    // Recomendados: últimos 6 álbumes con artista
     // -----------------------------------------------------------------
-
     private void configurarRecomendados() {
-        // TODO bloque backend: AlbumService.listarRecomendados(idCliente)
-        final String[][] albumes = {
-                {"Clásicos de la Provincia", "1993 · Carlos Vives",    "#c97a1f", "#3a1a05"},
-                {"Cumbia Cienaguera",        "1988 · Totó la Momposina","#1f7a5a", "#072a1a"},
-                {"En Concierto",             "1989 · Joe Arroyo",      "#d4a017", "#2a1a05"},
-                {"La Tierra del Olvido",     "1995 · Carlos Vives",    "#a83232", "#3a0a0a"},
-                {"Cantos de Bullerengue",    "2010 · Petrona Martínez","#7a3a8a", "#1a052a"},
-                {"Un Canto a la Vida",       "2008 · Los Gaiteros",    "#3a6a8a", "#051a2a"},
-        };
+        final String sql = """
+                SELECT al.id_album, al.titulo, al.anio_lanzamiento, a.nombre_artistico
+                  FROM ALBUM al
+                  JOIN ARTISTA a ON a.id_artista = al.ARTISTA_id_artista
+                 ORDER BY al.id_album DESC
+                 FETCH FIRST 6 ROWS ONLY""";
 
-        for (int i = 0; i < albumes.length; i++) {
-            final String[] a = albumes[i];
-            final MediaCard card = new MediaCard(a[2], a[3], a[0], a[0], a[1], false);
-            GridPane.setColumnIndex(card, i);
-            recomendadosGrid.getChildren().add(card);
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            int col = 0;
+            while (rs.next()) {
+                final int    idAlbum = rs.getInt(1);
+                final String titulo  = rs.getString(2);
+                final int    anio    = rs.getInt(3);
+                final String art     = rs.getString(4);
+                final String[] c     = PALETA[col % PALETA.length];
+                final MediaCard card = new MediaCard(c[0], c[1], titulo, titulo, anio + " · " + art, false);
+                card.onClick(() -> abrirDetalle("ALBUM", idAlbum));
+                GridPane.setColumnIndex(card, col);
+                recomendadosGrid.getChildren().add(card);
+                col++;
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando recomendados", ex);
         }
     }
 
+    // -----------------------------------------------------------------
+    // Artistas: primeros 6 de la BD
+    // -----------------------------------------------------------------
     private void configurarArtistas() {
-        // TODO bloque backend: ArtistaService.listarPopulares()
-        final String[][] artistas = {
-                {"Diomedes Díaz",                "Vallenato · La Junta",        "#c97a1f", "#3a1a05"},
-                {"Carlos Vives",                  "Vallenato · Santa Marta",     "#1f7a5a", "#072a1a"},
-                {"Totó la Momposina",             "Cumbia · Talaigua",           "#d4a017", "#2a1a05"},
-                {"Joe Arroyo",                    "Salsa · Cartagena",           "#a83232", "#3a0a0a"},
-                {"Petrona Martínez",              "Bullerengue · Palenque",      "#7a3a8a", "#1a052a"},
-                {"Los Gaiteros de San Jacinto",   "Cumbia · San Jacinto",        "#3a6a8a", "#051a2a"},
-        };
-
-        for (int i = 0; i < artistas.length; i++) {
-            final String[] a = artistas[i];
-            final MediaCard card = new MediaCard(a[2], a[3], a[0], a[0], a[1], true);
-            GridPane.setColumnIndex(card, i);
-            artistasGrid.getChildren().add(card);
-        }
-    }
-
-    private void configurarContinuar() {
-        // TODO bloque backend: ReproduccionService.historialReciente(idCliente, 4)
-        final List<String[]> canciones = Arrays.asList(
-                new String[]{"La Gota Fría",    "Carlos Vives · Vallenato",       "4:33", "#c97a1f", "#3a1a05"},
-                new String[]{"La Cumbia Cienaguera", "Totó la Momposina · Cumbia","3:48", "#1f7a5a", "#072a1a"},
-                new String[]{"La Rebelión",     "Joe Arroyo · Salsa",             "5:22", "#a83232", "#3a0a0a"},
-                new String[]{"La Tierra del Olvido", "Carlos Vives · Vallenato",  "4:15", "#d4a017", "#2a1a05"}
-        );
-
-        for (final String[] c : canciones) {
-            final Button row = new Button();
-            row.getStyleClass().add("bf-rowlist-item");
-            row.setMaxWidth(Double.MAX_VALUE);
-
-            final HBox content = new HBox(16);
-            content.setAlignment(Pos.CENTER_LEFT);
-            content.getChildren().addAll(
-                    new AlbumCover(56, c[3], c[4]),
-                    construirVBox(2,
-                            label(c[0], "bf-rowlist-title"),
-                            label(c[1], "bf-rowlist-sub")),
-                    spacerFlex(),
-                    label(c[2], "bf-rowlist-dur"));
-            row.setGraphic(content);
-            continuarBox.getChildren().add(row);
+        try {
+            final List<Artista> artistas = artistaDAO.listar();
+            final int max = Math.min(6, artistas.size());
+            for (int i = 0; i < max; i++) {
+                final Artista a  = artistas.get(i);
+                final String[] c = PALETA[i % PALETA.length];
+                final String sub = a.getPais() != null ? a.getPais() : "";
+                final MediaCard card = new MediaCard(c[0], c[1],
+                        a.getNombreArtistico(), a.getNombreArtistico(), sub, true);
+                final Integer idArtista = a.getIdArtista();
+                card.onClick(() -> { if (idArtista != null) abrirDetalle("ARTISTA", idArtista); });
+                GridPane.setColumnIndex(card, i);
+                artistasGrid.getChildren().add(card);
+            }
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando artistas", ex);
         }
     }
 
     // -----------------------------------------------------------------
-    // MiniPlayer (placeholder)
+    // Continuar escuchando: últimas 4 reproducciones del cliente
     // -----------------------------------------------------------------
+    private void configurarContinuar(final Cliente c) {
+        if (c.getIdCliente() == null) return;
 
+        final String sql = """
+                SELECT cc.id_cancion, cc.titulo, a.nombre_artistico,
+                       cc.duracion_seg, al.id_album, al.titulo, cc.ruta_archivo
+                  FROM REPRODUCCION r
+                  JOIN CANCION cc ON cc.id_cancion = r.CANCION_id_cancion
+                  JOIN ALBUM al   ON al.id_album = cc.ALBUM_id_album
+                  JOIN ARTISTA a  ON a.id_artista = al.ARTISTA_id_artista
+                 WHERE r.CLIENTE_id_cliente = ?
+                 ORDER BY r.fecha_hora DESC
+                 FETCH FIRST 4 ROWS ONLY""";
+
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, c.getIdCliente());
+            try (ResultSet rs = ps.executeQuery()) {
+                int idx = 0;
+                while (rs.next()) {
+                    final int    idCancion = rs.getInt(1);
+                    final String titulo    = rs.getString(2);
+                    final String artista   = rs.getString(3);
+                    final int    dur       = rs.getInt(4);
+                    final int    albId     = rs.getInt(5);
+                    final String album     = rs.getString(6);
+                    final String ruta      = rs.getString(7);
+                    final String[] col     = PALETA[Math.abs(albId) % PALETA.length];
+                    final String durStr    = String.format("%d:%02d", dur / 60, dur % 60);
+                    final Cancion cancion  = new Cancion(idCancion, titulo, dur, ruta,
+                                                        null, null, null, albId, null);
+
+                    final Button row = new Button();
+                    row.getStyleClass().add("bf-rowlist-item");
+                    row.setMaxWidth(Double.MAX_VALUE);
+                    row.setOnAction(e -> reproducir(cancion, artista, album));
+                    final HBox content = new HBox(16);
+                    content.setAlignment(Pos.CENTER_LEFT);
+
+                    // Botón "+" agregar a playlist (verde)
+                    final Button btnAdd = new Button();
+                    btnAdd.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0 8 0 0;");
+                    final org.kordamp.ikonli.javafx.FontIcon icAdd =
+                            new org.kordamp.ikonli.javafx.FontIcon("bi-plus-circle");
+                    icAdd.setIconSize(20);
+                    icAdd.setIconColor(javafx.scene.paint.Color.web("#1ed760"));
+                    btnAdd.setGraphic(icAdd);
+                    btnAdd.setTooltip(new javafx.scene.control.Tooltip("Agregar a playlist"));
+                    btnAdd.setOnAction(e -> AgregarAPlaylistUtil.mostrar(
+                            btnAdd, cancion.getIdCancion(), cancion.getTitulo()));
+
+                    // Botón ▶ visible
+                    final Button btnPlay = new Button("▶");
+                    btnPlay.setStyle("-fx-background-color: transparent; -fx-text-fill: #1ed760;"
+                            + " -fx-font-size: 14px; -fx-cursor: hand; -fx-padding: 0 8 0 0;");
+                    btnPlay.setOnAction(e -> reproducir(cancion, artista, album));
+
+                    content.getChildren().addAll(
+                            new AlbumCover(48, col[0], col[1]),
+                            construirVBox(2,
+                                    label(titulo,  "bf-rowlist-title"),
+                                    label(artista, "bf-rowlist-sub")),
+                            spacerFlex(),
+                            btnAdd,
+                            btnPlay,
+                            label(durStr, "bf-rowlist-dur"));
+                    row.setGraphic(content);
+                    continuarBox.getChildren().add(row);
+                    idx++;
+                }
+                if (idx == 0) {
+                    continuarBox.getChildren().add(
+                            label("Sin historial de reproducciones aún.", "bf-rowlist-sub"));
+                }
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando continuar", ex);
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Reproducción — toca en el miniplayer, no navega
+    // -----------------------------------------------------------------
+    private void reproducir(final Cancion cancion, final String artista, final String album) {
+        PlayerManager.getInstance().reproducir(cancion, artista, album);
+    }
+
+    /** Abre la pantalla de detalle de un álbum o artista. */
+    private void abrirDetalle(final String tipo, final int id) {
+        SessionContext.getInstance().setDetalle(tipo, id);
+        HistorialNavegacion.getInstance().navegar("/view/detalle.fxml");
+    }
+
+    // -----------------------------------------------------------------
+    // MiniPlayer — delegado completamente a MiniPlayerController
+    // -----------------------------------------------------------------
     private void configurarMiniPlayer() {
-        mpCoverHolder.getChildren().setAll(
-                new AlbumCover(56, "#c97a1f", "#3a1a05", "Clásicos\nde la\nProvincia"));
+        // El MiniPlayerController se inicializa solo vía fx:include
     }
 
     // -----------------------------------------------------------------
-    // Acciones de navegacion (top bar y sidebar)
+    // Navegación
     // -----------------------------------------------------------------
+    @FXML private void onAtras()        { HistorialNavegacion.getInstance().atras(); }
+    @FXML private void onAdelante()     { HistorialNavegacion.getInstance().adelante(); }
 
-    @FXML private void onAtras()           { /* TODO: historial de navegacion */ }
-    @FXML private void onAdelante()        { /* TODO: historial de navegacion */ }
-    @FXML private void onUserMenu()        { /* TODO: menu desplegable usuario */ }
-    @FXML private void onIrInicio()        { /* ya estamos en inicio */ }
-    @FXML private void onIrExplorar()      { NavegacionUtil.cambiarA("/view/catalogo.fxml", btnUserMenu); }
-    @FXML private void onIrBiblioteca()    { LOG.info("Navegar a Biblioteca — proxima pantalla"); }
-    @FXML private void onIrResenas() { NavegacionUtil.cambiarA("/view/resenas.fxml", btnUserMenu); }    @FXML private void onIrBarrio()        { NavegacionUtil.cambiarA("/view/barrio.fxml", btnUserMenu); }
-    @FXML private void onIrCapsulas()      { NavegacionUtil.cambiarA("/view/capsulas.fxml", btnUserMenu); }
-    @FXML private void onIrLogros()        { NavegacionUtil.cambiarA("/view/logros.fxml", btnUserMenu); }
-    @FXML private void onNuevaPlaylist()   { LOG.info("Crear nueva playlist — proxima funcionalidad"); }
-    @FXML private void onIrPerfil()         {NavegacionUtil.cambiarA("/view/perfil.fxml", btnUserMenu);}
-
-    @FXML private void onAbrirPlayer() {
-        NavegacionUtil.cambiarA("/view/player.fxml", btnUserMenu);
+    @FXML
+    private void onBuscar() {
+        final String termino = txtBusqueda.getText();
+        if (termino == null || termino.isBlank()) return;
+        SessionContext.getInstance().setTerminoBusqueda(termino);
+        HistorialNavegacion.getInstance().navegar("/view/catalogo.fxml");
     }
+    @FXML private void onUserMenu()     { UserMenuUtil.mostrar(btnUserMenu); }
+    @FXML private void onNotif()        { NotificacionMenuUtil.mostrar(btnNotif, lblNotifCount); }
+    @FXML private void onIrInicio()     { /* ya estamos */ }
+    @FXML private void onIrExplorar()   { HistorialNavegacion.getInstance().navegar("/view/catalogo.fxml"); }
+    @FXML private void onIrBiblioteca() { HistorialNavegacion.getInstance().navegar("/view/biblioteca.fxml"); }
+    @FXML private void onIrResenas()    { HistorialNavegacion.getInstance().navegar("/view/resenas.fxml"); }
+    @FXML private void onIrBarrio()     { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
+    @FXML private void onIrCapsulas()   { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
+    @FXML private void onIrLogros()     { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(SessionContext.getInstance().getClienteActual()); }); }
+    @FXML private void onIrPerfil()     { HistorialNavegacion.getInstance().navegar("/view/perfil.fxml"); }
+    @FXML private void onAbrirPlayer()  { HistorialNavegacion.getInstance().navegar("/view/player.fxml"); }
+
     @FXML
     private void onCerrarSesion() {
         SessionContext.getInstance().cerrarSesion();
+        HistorialNavegacion.getInstance().reset();
         NavegacionUtil.cambiarA("/view/login.fxml", btnUserMenu);
     }
 
     // -----------------------------------------------------------------
-    // Helpers privados
+    // Helper BD: COUNT con N parámetros enteros
     // -----------------------------------------------------------------
+    private int contarBD(final String sql, final int... ids) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) ps.setInt(i + 1, ids[i]);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error contarBD", ex);
+        }
+        return 0;
+    }
+
+    // -----------------------------------------------------------------
+    // Helpers UI
+    // -----------------------------------------------------------------
+    private static String fmtOyentes(final int n) {
+        if (n >= 1_000_000) return String.format("%.1fM", n / 1_000_000.0);
+        if (n >= 1_000)     return String.format("%.1fk", n / 1_000.0);
+        return String.valueOf(n);
+    }
 
     private static Label label(final String texto, final String... styleClasses) {
         final Label lbl = new Label(texto);
@@ -384,7 +523,6 @@ public class HomeController {
         return r;
     }
 
-    /** Cliente placeholder usado solo si alguien navega al Home sin pasar por Login. */
     private static Cliente clientePlaceholder() {
         final Cliente c = new Cliente();
         c.setNombre("Yilver");

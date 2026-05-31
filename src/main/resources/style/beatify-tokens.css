@@ -1,14 +1,14 @@
 /*
  * beatify-tokens.css
  * ---------------------------------------------------------------
- * Sistema de diseño base de Beatify.
+ * Sistema de diseño base de Beatify (estilo Spotify).
  * Define los "looked-up colors" (equivalente a CSS variables) y la
  * tipografia. TODOS los demas archivos CSS heredan de aqui.
  *
- * Paleta del handoff de diseño (2026-05-24):
- *   - Fondos: azul profundo (#0a1628) en 5 niveles de elevacion
- *   - Acento: lavanda (#b794ff) en 3 tonos
- *   - Texto: 3 niveles de jerarquia
+ * Paleta Spotify-like (2026-05-29):
+ *   - Fondos: negro neutro (#000–#282828) en 5 niveles de elevacion
+ *   - Acento: verde Spotify (#1ed760) en 3 tonos
+ *   - Texto: blanco/grises en 3 niveles de jerarquia
  *   - Bordes: alpha-rgba sobre blanco
  * ---------------------------------------------------------------
  */
@@ -19,29 +19,29 @@
        Se referencian desde otros archivos como -fx-background-color: -bf-bg;
        ============================================================ */
 
-    /* Fondos por nivel de elevacion */
-    -bf-bg:         #0a1628;
-    -bf-bg-2:       #0f1f36;
-    -bf-bg-3:       #152841;
-    -bf-surface:    #15263d;
-    -bf-surface-2:  #1c324f;
+    /* Fondos por nivel de elevacion — paleta Spotify */
+    -bf-bg:         #0a0a0a;
+    -bf-bg-2:       #121212;
+    -bf-bg-3:       #181818;
+    -bf-surface:    #181818;
+    -bf-surface-2:  #282828;
 
     /* Texto */
-    -bf-text:       #e8edf3;
-    -bf-text-muted: #8da3bd;
-    -bf-text-dim:   #5c7596;
+    -bf-text:       #ffffff;
+    -bf-text-muted: #a7a7a7;
+    -bf-text-dim:   #6a6a6a;
 
-    /* Acento de marca (lavanda) */
-    -bf-accent:        #b794ff;
-    -bf-accent-deep:   #8b5cf6;
-    -bf-accent-soft:   #e9d8ff;
+    /* Acento de marca (verde Spotify) */
+    -bf-accent:        #1ed760;
+    -bf-accent-deep:   #1ab44e;
+    -bf-accent-soft:   #b7f0c9;
 
     /* Bordes sobre fondos oscuros */
     -bf-border:        rgba(255, 255, 255, 0.07);
     -bf-border-strong: rgba(255, 255, 255, 0.14);
 
     /* Estados */
-    -bf-success: #7ed957;
+    -bf-success: #1ed760;
     -bf-danger:  #e57373;
 
     /* ============================================================

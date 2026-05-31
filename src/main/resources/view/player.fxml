@@ -1,25 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
 <StackPane xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.beatify.view.controller.PlayerController"
-           prefWidth="1280.0"
-           prefHeight="800.0"
-           style="-fx-background-color: #0a1628;">
+           prefWidth="1280.0" prefHeight="800.0"
+           style="-fx-background-color: linear-gradient(to bottom, #1f1f1f 0%, #0a0a0a 60%);">
 
+    <VBox alignment="CENTER" spacing="0">
 
-    <VBox spacing="20" alignment="CENTER">
-        <Label text="REPRODUCTOR EXPANDIDO"
-               style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-family: 'Sora';"/>
-        <Label text="En construcción - Prueba de navegación"
-               style="-fx-text-fill: #8da3bd; -fx-font-size: 14px;"/>
-        <Button fx:id="btnVolver" text="← Volver al Home"
-                onAction="#onVolver"
-                style="-fx-background-color: #b794ff; -fx-text-fill: #0a1628; -fx-padding: 10 20; -fx-background-radius: 20;"/>
+        <!-- Topbar: volver -->
+        <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 32 0 32;">
+            <Button fx:id="btnVolver" text="← Volver" onAction="#onVolver"
+                    style="-fx-background-color: transparent; -fx-text-fill: #a7a7a7;
+                           -fx-font-family: 'Manrope'; -fx-font-size: 13px; -fx-cursor: hand;
+                           -fx-font-weight: bold;"/>
+        </HBox>
+
+        <!-- Portada del álbum -->
+        <StackPane fx:id="coverHolder"
+                   prefWidth="280" prefHeight="280"
+                   style="-fx-background-color: linear-gradient(to bottom right, #1ed760, #1ab44e);
+                          -fx-background-radius: 16px;
+                          -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 40, 0, 0, 12);">
+            <VBox.margin>
+                <Insets top="36" bottom="32"/>
+            </VBox.margin>
+            <Label fx:id="lblCoverInitials" text="♫"
+                   style="-fx-text-fill: rgba(255,255,255,0.5); -fx-font-size: 80px;"/>
+        </StackPane>
+
+        <!-- Info de la canción -->
+        <VBox alignment="CENTER" spacing="6">
+            <VBox.margin><Insets bottom="24"/></VBox.margin>
+            <Label fx:id="lblTitulo" text="Sin canción seleccionada"
+                   style="-fx-text-fill: white; -fx-font-family: 'Sora';
+                          -fx-font-size: 28px; -fx-font-weight: 800;"/>
+            <Label fx:id="lblArtista" text="—"
+                   style="-fx-text-fill: #a7a7a7; -fx-font-family: 'Manrope';
+                          -fx-font-size: 15px; -fx-font-weight: 600;"/>
+            <Label fx:id="lblAlbum" text=""
+                   style="-fx-text-fill: #6a6a6a; -fx-font-family: 'Manrope'; -fx-font-size: 12px;"/>
+        </VBox>
+
+        <!-- Barra de progreso -->
+        <VBox spacing="4" maxWidth="540">
+            <VBox.margin><Insets bottom="20"/></VBox.margin>
+            <Slider fx:id="sliderProgreso" min="0" max="100" value="0"
+                    style="-fx-accent: #1ed760;"/>
+            <HBox>
+                <Label fx:id="lblTiempoActual" text="0:00"
+                       style="-fx-text-fill: #a7a7a7; -fx-font-size: 11px; -fx-font-family: 'JetBrains Mono';"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblTiempoTotal" text="0:00"
+                       style="-fx-text-fill: #a7a7a7; -fx-font-size: 11px; -fx-font-family: 'JetBrains Mono';"/>
+            </HBox>
+        </VBox>
+
+        <!-- Controles principales -->
+        <HBox alignment="CENTER" spacing="24">
+            <VBox.margin><Insets bottom="24"/></VBox.margin>
+            <Button fx:id="btnShuffle" onAction="#onShuffle"
+                    style="-fx-background-color: transparent; -fx-cursor: hand;">
+                <graphic><FontIcon fx:id="iconShuffle" iconLiteral="bi-shuffle" iconSize="18" iconColor="#a7a7a7"/></graphic>
+            </Button>
+            <Button fx:id="btnAnterior" onAction="#onAnterior"
+                    style="-fx-background-color: transparent; -fx-cursor: hand;">
+                <graphic><FontIcon iconLiteral="bi-skip-start-fill" iconSize="26" iconColor="white"/></graphic>
+            </Button>
+            <Button fx:id="btnPlayPause" onAction="#onPlayPause"
+                    prefWidth="64" prefHeight="64"
+                    style="-fx-background-color: white; -fx-background-radius: 50px; -fx-cursor: hand;
+                           -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 12, 0, 0, 4);">
+                <graphic><FontIcon fx:id="iconPlay" iconLiteral="bi-play-fill" iconSize="26" iconColor="#000000"/></graphic>
+            </Button>
+            <Button fx:id="btnSiguiente" onAction="#onSiguiente"
+                    style="-fx-background-color: transparent; -fx-cursor: hand;">
+                <graphic><FontIcon iconLiteral="bi-skip-end-fill" iconSize="26" iconColor="white"/></graphic>
+            </Button>
+            <Button fx:id="btnRepeat" onAction="#onRepeat"
+                    style="-fx-background-color: transparent; -fx-cursor: hand;">
+                <graphic><FontIcon fx:id="iconRepeat" iconLiteral="bi-arrow-repeat" iconSize="18" iconColor="#a7a7a7"/></graphic>
+            </Button>
+            <Button fx:id="btnDescargar" onAction="#onDescargar"
+                    style="-fx-background-color: transparent; -fx-cursor: hand;">
+                <graphic><FontIcon fx:id="iconDescargar" iconLiteral="bi-download" iconSize="18" iconColor="#a7a7a7"/></graphic>
+            </Button>
+        </HBox>
+
+        <!-- Volumen -->
+        <HBox alignment="CENTER" spacing="12" maxWidth="300">
+            <FontIcon iconLiteral="bi-volume-down-fill" iconSize="16" iconColor="#a7a7a7"/>
+            <Slider fx:id="sliderVolumen" min="0" max="1" value="0.7"
+                    prefWidth="200"
+                    style="-fx-accent: #1ed760;"/>
+            <FontIcon iconLiteral="bi-volume-up-fill" iconSize="16" iconColor="#a7a7a7"/>
+        </HBox>
+
+        <!-- Modo demo -->
+        <Label fx:id="lblModoDemo" text=""
+               style="-fx-text-fill: #6a6a6a; -fx-font-size: 11px; -fx-font-family: 'JetBrains Mono';">
+            <VBox.margin><Insets top="16"/></VBox.margin>
+        </Label>
+
     </VBox>
-
 </StackPane>

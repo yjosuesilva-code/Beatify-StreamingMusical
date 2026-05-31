@@ -15,7 +15,8 @@ public class Cliente {
     private String pais;
     private LocalDate fechaRegistro;
     private Boolean activo;
-    
+    private String rol = "CLIENTE";   // 'CLIENTE' | 'ADMIN' (default lo pone la BD)
+
     public Cliente(){
     }
 
@@ -131,6 +132,19 @@ public class Cliente {
 
     public void setActivo(final Boolean activo) {
         this.activo = activo;
+    }
+
+    public String getRol() {
+        return this.rol;
+    }
+
+    public void setRol(final String rol) {
+        this.rol = rol;
+    }
+
+    /** {@code true} si la cuenta es de administrador. */
+    public boolean esAdmin() {
+        return "ADMIN".equalsIgnoreCase(this.rol);
     }
 
     @Override

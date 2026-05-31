@@ -85,4 +85,16 @@ public class MediaCard extends VBox {
                      final String titulo, final String subtitulo) {
         this(color1Hex, color2Hex, titulo, titulo, subtitulo, false);
     }
+
+    /**
+     * Hace la tarjeta clicable. Devuelve {@code this} para encadenar.
+     * Ej: {@code new MediaCard(...).onClick(() -> reproducir(album));}
+     */
+    public MediaCard onClick(final Runnable accion) {
+        if (accion != null) {
+            this.setStyle("-fx-cursor: hand;");
+            this.setOnMouseClicked(e -> accion.run());
+        }
+        return this;
+    }
 }

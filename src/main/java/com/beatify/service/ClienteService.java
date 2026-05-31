@@ -72,6 +72,14 @@ public class ClienteService implements IClienteService {
         return clienteDAO.buscarPorId(idCliente);
     }
 
+    @Override
+    public Cliente buscarPorCorreo(final String correo) {
+        if (correo == null || correo.isBlank()) {
+            throw new ValidacionException("El correo es obligatorio");
+        }
+        return clienteDAO.buscarPorCorreo(correo.trim().toLowerCase());
+    }
+
     public void actualizar(Cliente cliente) {
         if (cliente.getIdCliente() == null || cliente.getIdCliente() <= 0) {
             throw new ValidacionException("El id del cliente es obligatorio");
@@ -99,6 +107,40 @@ public class ClienteService implements IClienteService {
 
         // actualizar() ya NO toca password_hash; usamos el metodo dedicado
         clienteDAO.actualizarPassword(idCliente, PasswordUtil.hash(passwordNueva));
+    }
+
+    /**
+     * Restablece la contraseña a partir del correo, sin requerir la contraseña
+     * actual (flujo "olvidé mi contraseña"). Lanza NotFoundException si el
+     * correo no existe.
+     */
+    @Override
+    public void resetearPassword(final String correo, final String passwordNueva) {
+        if (correo == null || correo.isBlank()) {
+            throw new ValidacionException("El correo es obligatorio");
+        }
+        if (passwordNueva == null || passwordNueva.length() < 6) {
+            throw new ValidacionException("La nueva contraseña debe tener al menos 6 caracteres");
+        }
+        final Cliente cliente = clienteDAO.buscarPorCorreo(correo.trim().toLowerCase());
+        clienteDAO.actualizarPassword(cliente.getIdCliente(), PasswordUtil.hash(passwordNueva));
+    }
+
+    /**
+     * Inicio de sesión vía proveedor externo (SSO). El proveedor ya validó la
+     * identidad, así que solo resolvemos el cliente por su correo — sin verificar
+     * contraseña. Lanza NotFoundException si la cuenta no existe.
+     */
+    @Override
+    public Cliente iniciarSesionSSO(final String correo) {
+        if (correo == null || correo.isBlank()) {
+            throw new ValidacionException("El correo del proveedor es obligatorio");
+        }
+        final Cliente cliente = clienteDAO.buscarPorCorreo(correo.trim().toLowerCase());
+        if (Boolean.FALSE.equals(cliente.getActivo())) {
+            throw new AutenticacionException("La cuenta está inactiva");
+        }
+        return cliente;
     }
 
     public void eliminar(Integer idCliente) {

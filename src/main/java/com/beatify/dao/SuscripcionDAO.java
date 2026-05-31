@@ -38,6 +38,19 @@ public class SuscripcionDAO {
          WHERE id_suscripcion = ?
         """;
 
+    // Suscripcion vigente del cliente: ACTIVA y aun no vencida. Si hubiera mas
+    // de una (no deberia, la politica es una activa por cliente) toma la mas
+    // reciente por fecha_inicio.
+    private static final String SQL_SELECT_ACTIVA_POR_CLIENTE = """
+        SELECT id_suscripcion, tipo_plan, precio, fecha_inicio, fecha_fin,
+               estado, CLIENTE_id_cliente
+          FROM SUSCRIPCION
+         WHERE CLIENTE_id_cliente = ?
+           AND estado = 'ACTIVA'
+           AND (fecha_fin IS NULL OR fecha_fin > SYSDATE)
+         ORDER BY fecha_inicio DESC
+        """;
+
     private static final String SQL_UPDATE = """
         UPDATE SUSCRIPCION
            SET tipo_plan          = ?,
@@ -125,6 +138,25 @@ public class SuscripcionDAO {
             }
         } catch (SQLException e) {
             throw new ConexionException("Error al buscar suscripcion: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Devuelve la suscripcion vigente (ACTIVA y no vencida) del cliente, o
+     * {@code null} si no tiene ninguna.
+     */
+    public Suscripcion buscarActivaPorCliente(Integer idCliente) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_ACTIVA_POR_CLIENTE)) {
+            ps.setInt(1, idCliente);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearResultSet(rs);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new ConexionException("Error al buscar suscripcion activa: " + e.getMessage(), e);
         }
     }
 

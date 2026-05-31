@@ -186,15 +186,15 @@ INSERT INTO CANCION (id_cancion, titulo, duracion_seg, ruta_archivo, letra, comp
 --   demo_user1, demo_user2                  => 'Demo2026!'
 -- =====================================================================
 INSERT INTO CLIENTE (id_cliente, nombre,    apellido,    correo,                        password_hash,                                                  telefono,      direccion,        ciudad,       pais,        fecha_registro) VALUES
-  (seq_cliente.NEXTVAL, 'Yilver',  'Silva',     'yilver.test@unicesar.edu.co',  '$2b$10$opIAjfKM1yTQF1HmtYK93eFJpZe4KU4ihOcm2y6xVdTA3ee433GUe', '3001234567',  'Cra 19 # 9-50',  'Valledupar', 'Colombia',  DATE '2026-04-15');
+  (seq_cliente.NEXTVAL, 'Yilver',  'Silva',     'yilver.test@unicesar.edu.co',  '$2a$10$opIAjfKM1yTQF1HmtYK93eFJpZe4KU4ihOcm2y6xVdTA3ee433GUe', '3001234567',  'Cra 19 # 9-50',  'Valledupar', 'Colombia',  DATE '2026-04-15');
 INSERT INTO CLIENTE (id_cliente, nombre,    apellido,    correo,                        password_hash,                                                  telefono,      direccion,        ciudad,       pais,        fecha_registro) VALUES
-  (seq_cliente.NEXTVAL, 'Andres',  'Zabaleta',  'andres.test@unicesar.edu.co',  '$2b$10$PaIrDygPr4Sw6xwdG0Nv4OrtvavDi4dPoC1eRRUAZfJ9iI0xLw7LK', '3002345678',  'Calle 16 # 9-10','Valledupar', 'Colombia',  DATE '2026-04-15');
+  (seq_cliente.NEXTVAL, 'Andres',  'Zabaleta',  'andres.test@unicesar.edu.co',  '$2a$10$PaIrDygPr4Sw6xwdG0Nv4OrtvavDi4dPoC1eRRUAZfJ9iI0xLw7LK', '3002345678',  'Calle 16 # 9-10','Valledupar', 'Colombia',  DATE '2026-04-15');
 INSERT INTO CLIENTE (id_cliente, nombre,    apellido,    correo,                        password_hash,                                                  telefono,      direccion,        ciudad,       pais,        fecha_registro) VALUES
-  (seq_cliente.NEXTVAL, 'Kendrick','Sayago',    'kendrick.test@unicesar.edu.co','$2b$10$qg2zK1lLxQQfH5a6m0PxA.5pxgWZwBXLZ3nAT2RnUeDrpl85bnCo2', '3003456789',  'Diag 10 # 8-15', 'Valledupar', 'Colombia',  DATE '2026-04-15');
+  (seq_cliente.NEXTVAL, 'Kendrick','Sayago',    'kendrick.test@unicesar.edu.co','$2a$10$qg2zK1lLxQQfH5a6m0PxA.5pxgWZwBXLZ3nAT2RnUeDrpl85bnCo2', '3003456789',  'Diag 10 # 8-15', 'Valledupar', 'Colombia',  DATE '2026-04-15');
 INSERT INTO CLIENTE (id_cliente, nombre,    apellido,    correo,                        password_hash,                                                  telefono,      direccion,        ciudad,       pais,        fecha_registro) VALUES
-  (seq_cliente.NEXTVAL, 'Maria',   'Rodriguez', 'demo1@beatify.co',             '$2b$10$Xasr.R5CWbUaC.HP2Ljou.r/TxwxZmip8TVxvTeykaeS94NcaaW86', '3004567890',  'Cra 5 # 12-30',  'Barranquilla', 'Colombia',DATE '2026-04-20');
+  (seq_cliente.NEXTVAL, 'Maria',   'Rodriguez', 'demo1@beatify.co',             '$2a$10$Xasr.R5CWbUaC.HP2Ljou.r/TxwxZmip8TVxvTeykaeS94NcaaW86', '3004567890',  'Cra 5 # 12-30',  'Barranquilla', 'Colombia',DATE '2026-04-20');
 INSERT INTO CLIENTE (id_cliente, nombre,    apellido,    correo,                        password_hash,                                                  telefono,      direccion,        ciudad,       pais,        fecha_registro) VALUES
-  (seq_cliente.NEXTVAL, 'Carlos',  'Perez',     'demo2@beatify.co',             '$2b$10$EbYIPJmOnE3u7FvWH/QMuOyRCuHsnlK3jU9uiJA9mrqfMB2XlPHCW', '3005678901',  'Cl 80 # 11-15',  'Bogota',     'Colombia',  DATE '2026-04-25');
+  (seq_cliente.NEXTVAL, 'Carlos',  'Perez',     'demo2@beatify.co',             '$2a$10$EbYIPJmOnE3u7FvWH/QMuOyRCuHsnlK3jU9uiJA9mrqfMB2XlPHCW', '3005678901',  'Cl 80 # 11-15',  'Bogota',     'Colombia',  DATE '2026-04-25');
 
 -- =====================================================================
 -- 7. SUSCRIPCION (5)  — IDs 1..5  (una activa por cliente)

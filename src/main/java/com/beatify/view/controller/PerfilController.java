@@ -1,49 +1,80 @@
 package com.beatify.view.controller;
 
+import com.beatify.dao.ClienteDAO;
+import com.beatify.dao.LogroClienteDAO;
+import com.beatify.dao.LogroDAO;
+import com.beatify.dao.SuscripcionDAO;
+import com.beatify.exceptions.ConexionException;
 import com.beatify.model.Cliente;
+import com.beatify.model.Logro;
+import com.beatify.model.LogroCliente;
+import com.beatify.model.Suscripcion;
+import com.beatify.util.Conexion;
 import com.beatify.view.SessionContext;
-import com.beatify.view.component.AlbumCover;
 import com.beatify.view.component.ArtistAvatar;
+import com.beatify.view.util.HistorialNavegacion;
+import com.beatify.view.util.PlaylistUtil;
+import com.beatify.view.util.UserMenuUtil;
 import com.beatify.view.util.NavegacionUtil;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class PerfilController {
 
     private static final Logger LOG = Logger.getLogger(PerfilController.class.getName());
     private static final NumberFormat NF = NumberFormat.getInstance(new Locale("es", "CO"));
+    private static final DateTimeFormatter FMT_FECHA = DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es"));
 
-    @FXML private Button btnNotif;
-    @FXML private Button btnUserMenu;
-    @FXML private Label lblNotifCount;
+    @FXML private Button    btnNotif;
+    @FXML private Button    btnUserMenu;
+    @FXML private Label     lblNotifCount;
     @FXML private StackPane userAvatarHolder;
-    @FXML private Label lblUserNombre;
-    @FXML private VBox sidebarPlaylistsBox;
+    @FXML private Label     lblUserNombre;
+    @FXML private VBox      sidebarPlaylistsBox;
 
     @FXML private StackPane avatarHolder;
-    @FXML private Label lblNombre;
-    @FXML private Label lblUbicacion;
-    @FXML private Label lblEmail;
-    @FXML private Label lblPlanBadge;
-    @FXML private Label lblMiembroDesde;
-    @FXML private Button btnEditarPerfil;
+    @FXML private Label     lblNombre;
+    @FXML private Label     lblUbicacion;
+    @FXML private Label     lblEmail;
+    @FXML private Label     lblPlanBadge;
+    @FXML private Label     lblMiembroDesde;
+    @FXML private Button    btnEditarPerfil;
 
     @FXML private Label lblStatRep, lblStatLikes, lblStatResenas, lblStatSiguiendo, lblStatLogros;
-    @FXML private HBox logrosRecientesBox;
-    @FXML private VBox capsulasBox;
-    @FXML private VBox recienteBox;
+    @FXML private HBox  logrosRecientesBox;
+    @FXML private VBox  capsulasBox;
+    @FXML private VBox  recienteBox;
+
+    private final ClienteDAO       clienteDAO       = new ClienteDAO();
+    private final SuscripcionDAO   suscripcionDAO   = new SuscripcionDAO();
+    private final LogroDAO         logroDAO         = new LogroDAO();
+    private final LogroClienteDAO  logroClienteDAO  = new LogroClienteDAO();
 
     @FXML
     private void initialize() {
@@ -56,115 +87,365 @@ public class PerfilController {
         configurarTopBar(actual);
         configurarSidebarPlaylists();
         configurarHero(actual);
-        configurarStats();
-        configurarLogrosRecientes();
-        configurarCapsulas();
-        configurarReciente();
+        configurarStats(actual);
+        configurarLogrosRecientes(actual);
+        configurarCapsulas(actual);
+        configurarReciente(actual);
     }
 
-    private void configurarTopBar(Cliente c) {
+    // -----------------------------------------------------------------
+    // TopBar
+    // -----------------------------------------------------------------
+    private void configurarTopBar(final Cliente c) {
         userAvatarHolder.getChildren().setAll(
-                new ArtistAvatar(28, "#b794ff", "#8b5cf6", c.getNombre() + " " + c.getApellido()));
+                new ArtistAvatar(28, "#1ed760", "#1ab44e",
+                        c.getNombre() + " " + c.getApellido()));
         lblUserNombre.setText(c.getNombre());
-        lblNotifCount.setText("5");
+        com.beatify.view.util.NotificacionMenuUtil.aplicarBadge(lblNotifCount, c.getIdCliente());
     }
 
+    // -----------------------------------------------------------------
+    // Sidebar: playlists del cliente
+    // -----------------------------------------------------------------
     private void configurarSidebarPlaylists() {
-        // Placeholder
         sidebarPlaylistsBox.getChildren().clear();
-        Label lbl = new Label("Tus playlists aquí");
-        lbl.setStyle("-fx-text-fill: #8da3bd; -fx-padding: 10;");
+        final Label lbl = new Label("Tus playlists aquí");
+        lbl.setStyle("-fx-text-fill: #a7a7a7; -fx-padding: 10;");
         sidebarPlaylistsBox.getChildren().add(lbl);
     }
 
-    private void configurarHero(Cliente c) {
+    // -----------------------------------------------------------------
+    // Hero: datos del cliente + plan desde BD
+    // -----------------------------------------------------------------
+    private void configurarHero(final Cliente c) {
         avatarHolder.getChildren().setAll(
-                new ArtistAvatar(120, "#b794ff", "#8b5cf6", c.getNombre() + " " + c.getApellido()));
+                new ArtistAvatar(120, "#1ed760", "#1ab44e",
+                        c.getNombre() + " " + c.getApellido()));
         lblNombre.setText(c.getNombre() + " " + c.getApellido());
-        lblUbicacion.setText("📍 " + (c.getCiudad() == null ? "Valledupar" : c.getCiudad()));
-        lblEmail.setText(c.getCorreo() == null ? "usuario@beatify.co" : c.getCorreo());
-        lblPlanBadge.setText("PLAN: INDIVIDUAL");
-        lblMiembroDesde.setText("Miembro desde mayo 2026");
-    }
+        lblUbicacion.setText(c.getCiudad() == null ? "Valledupar" : c.getCiudad());
+        lblEmail.setText(c.getCorreo() == null ? "—" : c.getCorreo());
 
-    private void configurarStats() {
-        lblStatRep.setText(NF.format(1247));
-        lblStatLikes.setText("89");
-        lblStatResenas.setText("23");
-        lblStatSiguiendo.setText("42");
-        lblStatLogros.setText("8 / 24");
-    }
-
-    private void configurarLogrosRecientes() {
-        logrosRecientesBox.getChildren().clear();
-        String[][] logros = {{"🎵", "Primer Paso"}, {"⭐", "Vallenato de Corazón"}, {"🗺️", "Explorador"}};
-        for (String[] l : logros) {
-            VBox card = new VBox(4);
-            card.setAlignment(Pos.CENTER);
-            card.setStyle("-fx-background-color: #1c324f; -fx-background-radius: 12px; -fx-padding: 12px; -fx-pref-width: 100px;");
-            Label icono = new Label(l[0]);
-            icono.setStyle("-fx-font-size: 28px;");
-            Label nombre = new Label(l[1]);
-            nombre.setStyle("-fx-text-fill: white; -fx-font-size: 11px; -fx-wrap-text: true; -fx-alignment: center;");
-            card.getChildren().addAll(icono, nombre);
-            logrosRecientesBox.getChildren().add(card);
+        // Fecha de registro
+        if (c.getFechaRegistro() != null) {
+            lblMiembroDesde.setText("Miembro desde " + c.getFechaRegistro().format(FMT_FECHA));
+        } else {
+            lblMiembroDesde.setText("Miembro de Beatify");
         }
-        Button btn = new Button("Ver todos →");
-        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #b794ff; -fx-cursor: hand;");
-        btn.setOnAction(e -> NavegacionUtil.cambiarA("/view/logros.fxml", btnUserMenu));
+
+        // Plan activo desde SUSCRIPCION
+        String plan = "FREE";
+        if (c.getIdCliente() != null) {
+            try {
+                final List<Suscripcion> subs = suscripcionDAO.listar().stream()
+                        .filter(s -> c.getIdCliente().equals(s.getIdCliente())
+                                  && "ACTIVA".equalsIgnoreCase(s.getEstado()))
+                        .toList();
+                if (!subs.isEmpty()) plan = subs.get(0).getTipoPlan();
+            } catch (ConexionException ex) {
+                LOG.log(Level.WARNING, "Error cargando suscripción", ex);
+            }
+        }
+        lblPlanBadge.setText("PLAN: " + plan);
+    }
+
+    // -----------------------------------------------------------------
+    // Stats reales del cliente
+    // -----------------------------------------------------------------
+    private void configurarStats(final Cliente c) {
+        if (c.getIdCliente() == null) {
+            lblStatRep.setText("—"); lblStatLikes.setText("—");
+            lblStatResenas.setText("—"); lblStatSiguiendo.setText("—"); lblStatLogros.setText("—");
+            return;
+        }
+        final int id = c.getIdCliente();
+
+        final int rep = contarBD(
+                "SELECT COUNT(*) FROM REPRODUCCION WHERE CLIENTE_id_cliente = ?", id);
+        final int likes = contarBD("""
+                SELECT (SELECT COUNT(*) FROM LIKE_CANCION  WHERE CLIENTE_id_cliente = ?)
+                     + (SELECT COUNT(*) FROM LIKE_ALBUM    WHERE CLIENTE_id_cliente = ?)
+                     + (SELECT COUNT(*) FROM LIKE_PLAYLIST WHERE CLIENTE_id_cliente = ?)
+                  FROM dual""", id, id, id);
+        final int resenas   = contarBD(
+                "SELECT COUNT(*) FROM RESENA WHERE CLIENTE_id_cliente = ?", id);
+        final int siguiendo = contarBD(
+                "SELECT COUNT(*) FROM SEGUIMIENTO WHERE CLIENTE_id_cliente = ?", id);
+
+        // Logros: obtenidos / total
+        int totalLogros = 0, obtenidos = 0;
+        try {
+            totalLogros = logroDAO.listar().size();
+            obtenidos   = (int) logroClienteDAO.listar().stream()
+                    .filter(lc -> id == (lc.getIdCliente() != null ? lc.getIdCliente() : -1))
+                    .count();
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando logros para stats", ex);
+        }
+
+        lblStatRep.setText(NF.format(rep));
+        lblStatLikes.setText(String.valueOf(likes));
+        lblStatResenas.setText(String.valueOf(resenas));
+        lblStatSiguiendo.setText(String.valueOf(siguiendo));
+        lblStatLogros.setText(obtenidos + " / " + totalLogros);
+    }
+
+    // -----------------------------------------------------------------
+    // Logros recientes (últimos 3 obtenidos)
+    // -----------------------------------------------------------------
+    private void configurarLogrosRecientes(final Cliente c) {
+        logrosRecientesBox.getChildren().clear();
+        if (c.getIdCliente() == null) return;
+
+        try {
+            final List<Logro> catalogo = logroDAO.listar();
+            final List<LogroCliente> obtenidos = logroClienteDAO.listar().stream()
+                    .filter(lc -> c.getIdCliente().equals(lc.getIdCliente()))
+                    .limit(3)
+                    .collect(Collectors.toList());
+
+            for (final LogroCliente lc : obtenidos) {
+                final Logro l = catalogo.stream()
+                        .filter(x -> x.getIdLogro().equals(lc.getIdLogro()))
+                        .findFirst().orElse(null);
+                if (l == null) continue;
+
+                final VBox card = new VBox(4);
+                card.setAlignment(Pos.CENTER);
+                card.setStyle("-fx-background-color: #282828; -fx-background-radius: 12px;"
+                        + " -fx-padding: 12px; -fx-pref-width: 110px;");
+                final Label icono = new Label(emojiPorCodigo(l.getCodigo()));
+                icono.setStyle("-fx-font-size: 28px;");
+                final Label nombre = new Label(l.getNombre());
+                nombre.setStyle("-fx-text-fill: white; -fx-font-size: 11px;"
+                        + " -fx-wrap-text: true; -fx-alignment: center;");
+                nombre.setWrapText(true);
+                card.getChildren().addAll(icono, nombre);
+                logrosRecientesBox.getChildren().add(card);
+            }
+
+            if (obtenidos.isEmpty()) {
+                final Label lbl = new Label("Sin logros aún.");
+                lbl.setStyle("-fx-text-fill: #a7a7a7; -fx-padding: 8;");
+                logrosRecientesBox.getChildren().add(lbl);
+            }
+        } catch (ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando logros recientes", ex);
+        }
+
+        final Button btn = new Button("Ver todos →");
+        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #1ed760; -fx-cursor: hand;");
+        btn.setOnAction(e -> HistorialNavegacion.getInstance().navegar("/view/logros.fxml"));
         logrosRecientesBox.getChildren().add(btn);
     }
 
-    private void configurarCapsulas() {
+    // -----------------------------------------------------------------
+    // Cápsulas del tiempo (etiquetas de periodos con datos reales)
+    // -----------------------------------------------------------------
+    private void configurarCapsulas(final Cliente c) {
         capsulasBox.getChildren().clear();
-        String[] capsulas = {"Hace 1 año (mayo 2025)", "Hace 6 meses (noviembre 2025)"};
-        for (String c : capsulas) {
-            Label lbl = new Label("📅 " + c);
-            lbl.setStyle("-fx-text-fill: #8da3bd; -fx-padding: 8;");
-            capsulasBox.getChildren().add(lbl);
+        if (c.getIdCliente() == null) return;
+
+        final String sql = """
+                SELECT TO_CHAR(fecha_hora, 'YYYY-MM') periodo, COUNT(*) reproducciones
+                  FROM REPRODUCCION
+                 WHERE CLIENTE_id_cliente = ?
+                 GROUP BY TO_CHAR(fecha_hora, 'YYYY-MM')
+                 ORDER BY periodo DESC
+                 FETCH FIRST 3 ROWS ONLY""";
+
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, c.getIdCliente());
+            try (ResultSet rs = ps.executeQuery()) {
+                boolean alguno = false;
+                while (rs.next()) {
+                    final Label lbl = new Label(rs.getString(1)
+                            + "  —  " + rs.getInt(2) + " reproducciones");
+                    lbl.setStyle("-fx-text-fill: #a7a7a7; -fx-padding: 8;");
+                    capsulasBox.getChildren().add(lbl);
+                    alguno = true;
+                }
+                if (!alguno) {
+                    final Label lbl = new Label("Sin historial aún.");
+                    lbl.setStyle("-fx-text-fill: #a7a7a7; -fx-padding: 8;");
+                    capsulasBox.getChildren().add(lbl);
+                }
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando cápsulas", ex);
         }
-        Button btn = new Button("Ver todas →");
-        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #b794ff; -fx-cursor: hand;");
-        btn.setOnAction(e -> NavegacionUtil.cambiarA("/view/capsulas.fxml", btnUserMenu));
+
+        final Button btn = new Button("Ver todas →");
+        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #1ed760; -fx-cursor: hand;");
+        btn.setOnAction(e -> HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"));
         capsulasBox.getChildren().add(btn);
     }
 
-    private void configurarReciente() {
+    // -----------------------------------------------------------------
+    // Escuchado recientemente (últimas 5 canciones)
+    // -----------------------------------------------------------------
+    private void configurarReciente(final Cliente c) {
         recienteBox.getChildren().clear();
-        String[][] canciones = {{"La Gota Fría", "Carlos Vives"}, {"La Tierra del Olvido", "Carlos Vives"}};
-        for (String[] c : canciones) {
-            HBox row = new HBox(10);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setStyle("-fx-padding: 8;");
-            Label titulo = new Label("🎵 " + c[0]);
-            titulo.setStyle("-fx-text-fill: white;");
-            Label artista = new Label(c[1]);
-            artista.setStyle("-fx-text-fill: #8da3bd;");
-            row.getChildren().addAll(titulo, artista);
-            recienteBox.getChildren().add(row);
+        if (c.getIdCliente() == null) return;
+
+        final String sql = """
+                SELECT cc.titulo, a.nombre_artistico
+                  FROM REPRODUCCION r
+                  JOIN CANCION cc ON cc.id_cancion = r.CANCION_id_cancion
+                  JOIN ALBUM al   ON al.id_album = cc.ALBUM_id_album
+                  JOIN ARTISTA a  ON a.id_artista = al.ARTISTA_id_artista
+                 WHERE r.CLIENTE_id_cliente = ?
+                 ORDER BY r.fecha_hora DESC
+                 FETCH FIRST 5 ROWS ONLY""";
+
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, c.getIdCliente());
+            try (ResultSet rs = ps.executeQuery()) {
+                boolean alguno = false;
+                while (rs.next()) {
+                    final HBox row = new HBox(10);
+                    row.setAlignment(Pos.CENTER_LEFT);
+                    row.setStyle("-fx-padding: 8;");
+                    final FontIcon ic = new FontIcon("bi-music-note-beamed");
+                    ic.setIconSize(14);
+                    ic.setIconColor(javafx.scene.paint.Color.web("#1ed760"));
+                    final Label titulo  = new Label(rs.getString(1));
+                    titulo.setStyle("-fx-text-fill: white;");
+                    final Label artista = new Label(rs.getString(2));
+                    artista.setStyle("-fx-text-fill: #a7a7a7;");
+                    row.getChildren().addAll(ic, titulo, artista);
+                    recienteBox.getChildren().add(row);
+                    alguno = true;
+                }
+                if (!alguno) {
+                    final Label lbl = new Label("Sin reproducciones recientes.");
+                    lbl.setStyle("-fx-text-fill: #a7a7a7; -fx-padding: 8;");
+                    recienteBox.getChildren().add(lbl);
+                }
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error cargando reciente", ex);
         }
     }
 
-    @FXML private void onAtras() { NavegacionUtil.cambiarA("/view/home.fxml", btnUserMenu); }
-    @FXML private void onAdelante() {}
-    @FXML private void onUserMenu() {}
-    @FXML private void onIrInicio() { NavegacionUtil.cambiarA("/view/home.fxml", btnUserMenu); }
-    @FXML private void onIrExplorar() { NavegacionUtil.cambiarA("/view/catalogo.fxml", btnUserMenu); }
-    @FXML private void onIrBiblioteca() {}
-    @FXML private void onIrResenas() { NavegacionUtil.cambiarA("/view/resenas.fxml", btnUserMenu); }
-    @FXML private void onIrBarrio() { NavegacionUtil.cambiarA("/view/barrio.fxml", btnUserMenu); }
-    @FXML private void onIrCapsulas() { NavegacionUtil.cambiarA("/view/capsulas.fxml", btnUserMenu); }
-    @FXML private void onIrLogros() { NavegacionUtil.cambiarA("/view/logros.fxml", btnUserMenu); }
-    @FXML private void onIrPerfil() {}
-    @FXML private void onNuevaPlaylist() {}
+    // -----------------------------------------------------------------
+    // Navegación
+    // -----------------------------------------------------------------
+    @FXML private void onAtras()        { HistorialNavegacion.getInstance().atras(); }
+    @FXML private void onAdelante()     { HistorialNavegacion.getInstance().adelante(); }
+    @FXML private void onUserMenu()     { UserMenuUtil.mostrar(btnUserMenu); }
+    @FXML private void onNotif()        { com.beatify.view.util.NotificacionMenuUtil.mostrar(btnNotif, lblNotifCount); }
+    @FXML private void onIrInicio()     { HistorialNavegacion.getInstance().navegar("/view/home.fxml"); }
+    @FXML private void onIrExplorar()   { HistorialNavegacion.getInstance().navegar("/view/catalogo.fxml"); }
+    @FXML private void onIrBiblioteca() { HistorialNavegacion.getInstance().navegar("/view/biblioteca.fxml"); }
+    @FXML private void onIrResenas()    { HistorialNavegacion.getInstance().navegar("/view/resenas.fxml"); }
+    @FXML private void onIrBarrio()     { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
+    @FXML private void onIrCapsulas()   { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
+    @FXML private void onIrLogros()     { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onIrPerfil()     { /* ya estamos */ }
+    @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(); }); }
+    @FXML
+    private void onEditarPerfil() {
+        final Cliente c = SessionContext.getInstance().getClienteActual();
+        if (c == null) return;
 
-    @FXML private void onCerrarSesion() {
+        // ---- Campos del formulario ----
+        final TextField txtNombre   = new TextField(c.getNombre()   == null ? "" : c.getNombre());
+        final TextField txtApellido = new TextField(c.getApellido() == null ? "" : c.getApellido());
+        final TextField txtTelefono = new TextField(c.getTelefono() == null ? "" : c.getTelefono());
+        final TextField txtCiudad   = new TextField(c.getCiudad()   == null ? "" : c.getCiudad());
+
+        final GridPane grid = new GridPane();
+        grid.setHgap(12);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 20, 10, 20));
+
+        grid.add(new Label("Nombre:"),   0, 0); grid.add(txtNombre,   1, 0);
+        grid.add(new Label("Apellido:"), 0, 1); grid.add(txtApellido, 1, 1);
+        grid.add(new Label("Teléfono:"), 0, 2); grid.add(txtTelefono, 1, 2);
+        grid.add(new Label("Ciudad:"),   0, 3); grid.add(txtCiudad,   1, 3);
+
+        txtNombre.setPrefWidth(220);
+        txtApellido.setPrefWidth(220);
+
+        // ---- Diálogo ----
+        final Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Editar perfil");
+        dialog.setHeaderText("Actualiza tus datos personales");
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // Deshabilitar OK si nombre o apellido están vacíos
+        final javafx.scene.Node btnOk = dialog.getDialogPane().lookupButton(ButtonType.OK);
+        btnOk.setDisable(txtNombre.getText().isBlank() || txtApellido.getText().isBlank());
+        txtNombre.textProperty().addListener((obs, o, v) ->
+                btnOk.setDisable(v.isBlank() || txtApellido.getText().isBlank()));
+        txtApellido.textProperty().addListener((obs, o, v) ->
+                btnOk.setDisable(v.isBlank() || txtNombre.getText().isBlank()));
+
+        dialog.showAndWait().ifPresent(tipo -> {
+            if (tipo != ButtonType.OK) return;
+
+            c.setNombre(txtNombre.getText().trim());
+            c.setApellido(txtApellido.getText().trim());
+            c.setTelefono(txtTelefono.getText().isBlank() ? null : txtTelefono.getText().trim());
+            c.setCiudad(txtCiudad.getText().isBlank() ? null : txtCiudad.getText().trim());
+
+            try {
+                clienteDAO.actualizar(c);
+                SessionContext.getInstance().setClienteActual(c);
+                // Refrescar los labels del hero sin recargar la pantalla completa
+                configurarHero(c);
+                configurarTopBar(c);
+            } catch (final ConexionException ex) {
+                LOG.log(Level.WARNING, "Error al actualizar perfil", ex);
+                final Alert alert = new Alert(Alert.AlertType.ERROR,
+                        "No se pudo guardar. Verifica la conexión.", ButtonType.OK);
+                alert.setTitle("Error al guardar");
+                alert.showAndWait();
+            }
+        });
+    }
+
+    @FXML
+    private void onCerrarSesion() {
         SessionContext.getInstance().cerrarSesion();
+        HistorialNavegacion.getInstance().reset();
         NavegacionUtil.cambiarA("/view/login.fxml", btnUserMenu);
     }
 
-    private Cliente clientePlaceholder() {
-        Cliente c = new Cliente();
+    // -----------------------------------------------------------------
+    // Helper BD
+    // -----------------------------------------------------------------
+    private int contarBD(final String sql, final int... ids) {
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) ps.setInt(i + 1, ids[i]);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Error contarBD", ex);
+        }
+        return 0;
+    }
+
+    private static String emojiPorCodigo(final String codigo) {
+        return switch (codigo == null ? "" : codigo.toUpperCase()) {
+            case "PRIMER_LIKE"   -> "❤";
+            case "CRITICO"       -> "✍️";
+            case "COLECCIONISTA" -> "📚";
+            case "NOCTAMBULO"    -> "🌙";
+            case "EXP_CARIBE"    -> "🌊";
+            case "FAN_VALLENATO" -> "🎵";
+            default              -> "🏆";
+        };
+    }
+
+    private static Cliente clientePlaceholder() {
+        final Cliente c = new Cliente();
+        c.setIdCliente(1);
         c.setNombre("Yilver");
         c.setApellido("Silva");
         c.setCiudad("Valledupar");

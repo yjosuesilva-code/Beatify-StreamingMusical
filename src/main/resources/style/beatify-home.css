@@ -20,56 +20,74 @@
  */
 
 /* ================================================================
-   SIDEBAR (240px)
+   SIDEBAR (240px) — estilo Spotify (negro puro, hover sutil)
    ================================================================ */
 .bf-sidebar {
-    -fx-background-color: -bf-bg-2;
-    -fx-border-color: -bf-border;
-    -fx-border-width: 0 1 0 0;
-    -fx-padding: 14 8 14 8;
+    -fx-background-color: #000000;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 10 6 10 6;
 }
 
 .bf-side-divider {
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: -bf-text-dim;
-    -fx-padding: 14 12 6 12;
+    -fx-padding: 16 10 8 10;
 }
 
 .bf-side-item {
     -fx-background-color: transparent;
     -fx-text-fill: -bf-text-muted;
     -fx-font-size: 13.5px;
-    -fx-font-weight: 500;
-    -fx-padding: 8 12 8 12;
+    -fx-font-weight: bold;
+    -fx-padding: 9 14 9 14;
     -fx-background-radius: 6;
     -fx-border-color: transparent;
     -fx-alignment: CENTER_LEFT;
     -fx-cursor: hand;
 }
 .bf-side-item:hover {
-    -fx-background-color: -bf-border;
+    -fx-background-color: rgba(255, 255, 255, 0.07);
     -fx-text-fill: -bf-text;
 }
 .bf-side-item.is-active {
-    -fx-background-color: rgba(183, 148, 255, 0.16);
+    -fx-background-color: rgba(255, 255, 255, 0.08);
     -fx-text-fill: -bf-text;
-    -fx-border-color: -bf-accent transparent transparent transparent;
+    -fx-border-color: transparent transparent transparent -bf-accent;
     -fx-border-width: 0 0 0 3;
+}
+
+/* FontIcon dentro del sidebar — siempre visible, hereda color del item */
+.bf-side-item .ikonli-font-icon {
+    -fx-icon-color: #a7a7a7;
+    -fx-fill: #a7a7a7;
+}
+.bf-side-item:hover .ikonli-font-icon,
+.bf-side-item.is-active .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-fill: white;
+}
+
+/* FontIcon dentro del top bar */
+.bf-tb-arrow .ikonli-font-icon,
+.bf-tb-icon .ikonli-font-icon {
+    -fx-icon-color: #ffffff;
+    -fx-fill: #ffffff;
 }
 
 /* Boton + para agregar nueva playlist */
 .bf-side-plus {
     -fx-background-color: transparent;
     -fx-text-fill: -bf-text-muted;
-    -fx-pref-width: 20;
-    -fx-pref-height: 20;
+    -fx-pref-width: 24;
+    -fx-pref-height: 24;
     -fx-background-radius: 4;
     -fx-cursor: hand;
     -fx-padding: 0;
 }
 .bf-side-plus:hover {
-    -fx-background-color: -bf-border;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
     -fx-text-fill: -bf-text;
 }
 
@@ -77,12 +95,12 @@
 .bf-side-playlist {
     -fx-background-color: transparent;
     -fx-text-fill: -bf-text-muted;
-    -fx-padding: 6 12 6 12;
+    -fx-padding: 7 12 7 12;
     -fx-background-radius: 6;
     -fx-cursor: hand;
 }
 .bf-side-playlist:hover {
-    -fx-background-color: -bf-border;
+    -fx-background-color: rgba(255, 255, 255, 0.07);
     -fx-text-fill: -bf-text;
 }
 .bf-side-pl-name {
@@ -95,41 +113,46 @@
 }
 
 /* ================================================================
-   TOP BAR (56px)
+   TOP BAR (64px) — estilo Spotify
    ================================================================ */
 .bf-topbar {
     -fx-background-color: -bf-bg;
-    -fx-border-color: -bf-border;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 0 20 0 20;
-    -fx-pref-height: 56;
-    -fx-min-height: 56;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 32 0 24;
+    -fx-pref-height: 64;
+    -fx-min-height: 64;
+    -fx-spacing: 16;
 }
 
 .bf-tb-arrow {
-    -fx-background-color: -bf-bg-3;
-    -fx-text-fill: -bf-text-muted;
-    -fx-pref-width: 28;
-    -fx-pref-height: 28;
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: -bf-text;
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
     -fx-background-radius: 50%;
     -fx-cursor: hand;
     -fx-padding: 0;
 }
 .bf-tb-arrow:hover {
-    -fx-background-color: -bf-surface-2;
+    -fx-background-color: #3a3a3a;
     -fx-text-fill: -bf-text;
 }
 
 /* Search pill */
 .bf-search {
-    -fx-background-color: -bf-bg-3;
-    -fx-border-color: -bf-border;
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: transparent;
     -fx-border-width: 1;
     -fx-background-radius: 999;
     -fx-border-radius: 999;
-    -fx-padding: 0 14 0 14;
-    -fx-pref-height: 36;
-    -fx-min-height: 36;
+    -fx-padding: 0 16 0 16;
+    -fx-pref-height: 42;
+    -fx-min-height: 42;
+}
+.bf-search:focused {
+    -fx-background-color: #353535;
+    -fx-border-color: rgba(255, 255, 255, 0.25);
 }
 .bf-search-input {
     -fx-background-color: transparent;
@@ -151,8 +174,8 @@
 
 /* Icono de notificaciones */
 .bf-tb-icon {
-    -fx-background-color: -bf-bg-3;
-    -fx-text-fill: -bf-text-muted;
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: -bf-text;
     -fx-pref-width: 36;
     -fx-pref-height: 36;
     -fx-background-radius: 50%;
@@ -160,13 +183,14 @@
     -fx-padding: 0;
 }
 .bf-tb-icon:hover {
+    -fx-background-color: #3a3a3a;
     -fx-text-fill: -bf-text;
 }
 
 /* Badge con contador de notificaciones */
 .bf-tb-dot {
     -fx-background-color: -bf-accent;
-    -fx-text-fill: -bf-bg;
+    -fx-text-fill: #000000;
     -fx-background-radius: 999;
     -fx-font-size: 9.5px;
     -fx-font-weight: bold;
@@ -179,21 +203,27 @@
     -fx-border-radius: 999;
 }
 
-/* User pill */
+/* User avatar button (circular, solo iniciales) */
 .bf-tb-user {
-    -fx-background-color: -bf-bg-3;
-    -fx-border-color: -bf-border;
-    -fx-border-width: 1;
-    -fx-background-radius: 999;
-    -fx-border-radius: 999;
-    -fx-padding: 4 12 4 4;
+    -fx-background-color: #000000;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-pref-width: 36;
+    -fx-pref-height: 36;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-padding: 0;
     -fx-text-fill: -bf-text;
-    -fx-font-size: 13px;
-    -fx-font-weight: 500;
     -fx-cursor: hand;
 }
 .bf-tb-user:hover {
-    -fx-background-color: -bf-surface-2;
+    -fx-background-color: #1a1a1a;
+    -fx-scale-x: 1.04;
+    -fx-scale-y: 1.04;
 }
 
 /* ================================================================
@@ -255,14 +285,14 @@
 }
 .bf-hero-title {
     -fx-font-family: "Sora";
-    -fx-font-size: 48px;
-    -fx-font-weight: bold;
+    -fx-font-size: 52px;
+    -fx-font-weight: 800;
     -fx-text-fill: -bf-text;
 }
 .bf-hero-title-accent {
     -fx-font-family: "Sora";
-    -fx-font-size: 48px;
-    -fx-font-weight: bold;
+    -fx-font-size: 52px;
+    -fx-font-weight: 800;
     -fx-text-fill: -bf-accent;
 }
 .bf-hero-sub {
@@ -289,65 +319,65 @@
 }
 
 /* ================================================================
-   QUICK ROW (6 playlists recientes en grid 3x2)
+   QUICK ROW (6 playlists recientes en grid 3x2) — estilo Spotify
    ================================================================ */
 .bf-quick {
-    -fx-background-color: -bf-bg-2;
-    -fx-border-color: -bf-border;
-    -fx-border-width: 1;
+    -fx-background-color: #232323;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-cursor: hand;
-    -fx-min-height: 56;
+    -fx-min-height: 60;
     -fx-padding: 0;
 }
 .bf-quick:hover {
-    -fx-background-color: -bf-bg-3;
+    -fx-background-color: #353535;
 }
 .bf-quick-name {
     -fx-font-size: 13.5px;
-    -fx-font-weight: 600;
+    -fx-font-weight: bold;
     -fx-text-fill: -bf-text;
 }
 
 /* ================================================================
-   MEDIA CARD (album/playlist/artista)
+   MEDIA CARD (album/playlist/artista) — estilo Spotify
    ================================================================ */
 .bf-card {
-    -fx-background-color: -bf-bg-2;
-    -fx-border-color: -bf-border;
-    -fx-border-width: 1;
+    -fx-background-color: #181818;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
-    -fx-padding: 14;
+    -fx-padding: 16;
     -fx-cursor: hand;
 }
 .bf-card:hover {
-    -fx-background-color: -bf-bg-3;
-    -fx-border-color: -bf-border-strong;
+    -fx-background-color: #282828;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 30, 0, 0, 10);
 }
 .bf-card-title {
     -fx-font-size: 14px;
-    -fx-font-weight: 600;
+    -fx-font-weight: bold;
     -fx-text-fill: -bf-text;
 }
 .bf-card-sub {
-    -fx-font-size: 12px;
-    -fx-text-fill: -bf-text-dim;
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -bf-text-muted;
 }
 
 /* ================================================================
-   ROW LIST (continuar escuchando)
+   ROW LIST (continuar escuchando) — estilo Spotify
    ================================================================ */
 .bf-rowlist-item {
     -fx-background-color: transparent;
     -fx-text-fill: -bf-text;
-    -fx-background-radius: 6;
+    -fx-background-radius: 8;
     -fx-padding: 8 12 8 12;
     -fx-cursor: hand;
 }
 .bf-rowlist-item:hover {
-    -fx-background-color: -bf-border;
+    -fx-background-color: rgba(255, 255, 255, 0.07);
 }
 .bf-rowlist-title {
     -fx-font-size: 14px;
@@ -364,16 +394,17 @@
 }
 
 /* ================================================================
-   MUSICA DEL BARRIO — widget destacado del Home
+   MUSICA DEL BARRIO — widget destacado del Home (estilo Spotify)
    ================================================================ */
 .bf-barrio {
     -fx-background-color: linear-gradient(from 0% 0% to 100% 100%,
-                                          -bf-bg-2 0%, -bf-bg-3 100%);
-    -fx-border-color: -bf-border-strong;
-    -fx-border-width: 1;
-    -fx-background-radius: 16;
-    -fx-border-radius: 16;
-    -fx-padding: 32;
+                                          #1a1a1a 0%, #202020 100%);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-padding: 36;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 40, 0, 0, 4);
 }
 
 .bf-barrio-tag {
@@ -413,8 +444,8 @@
 }
 .bf-barrio-rank {
     -fx-font-family: "Sora";
-    -fx-font-size: 22px;
-    -fx-font-weight: bold;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
     -fx-text-fill: -bf-accent;
 }
 .bf-barrio-name {
@@ -454,80 +485,126 @@
 }
 
 /* ================================================================
-   MINI PLAYER (76px sticky abajo)
+   MINI PLAYER (80px sticky abajo) — estilo Spotify
    ================================================================ */
 .bf-miniplayer {
-    -fx-background-color: -bf-bg-2;
-    -fx-border-color: -bf-border;
+    -fx-background-color: #181818;
+    -fx-border-color: rgba(255, 255, 255, 0.06);
     -fx-border-width: 1 0 0 0;
-    -fx-padding: 0 16 0 16;
-    -fx-pref-height: 76;
-    -fx-min-height: 76;
+    -fx-padding: 0 20 0 20;
+    -fx-pref-height: 80;
+    -fx-min-height: 80;
 }
 .bf-mp-title {
     -fx-font-size: 13.5px;
-    -fx-font-weight: 600;
+    -fx-font-weight: bold;
     -fx-text-fill: -bf-text;
 }
 .bf-mp-artist {
     -fx-font-size: 11.5px;
-    -fx-text-fill: -bf-text-dim;
+    -fx-text-fill: #b3b3b3;
 }
 .bf-mp-ctrl {
     -fx-background-color: transparent;
-    -fx-text-fill: -bf-text-muted;
-    -fx-pref-width: 28;
-    -fx-pref-height: 28;
+    -fx-text-fill: #b3b3b3;
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
     -fx-background-radius: 50%;
     -fx-cursor: hand;
     -fx-padding: 0;
 }
 .bf-mp-ctrl:hover {
-    -fx-text-fill: -bf-text;
+    -fx-text-fill: #ffffff;
+    -fx-scale-x: 1.06;
+    -fx-scale-y: 1.06;
+}
+
+/* FontIcons dentro del miniplayer — visibles sobre #181818 */
+.bf-mp-ctrl .ikonli-font-icon,
+.bf-mp-like .ikonli-font-icon {
+    -fx-icon-color: #b3b3b3;
+    -fx-fill: #b3b3b3;
+}
+.bf-mp-ctrl:hover .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-fill: white;
+}
+.bf-mp-like:hover .ikonli-font-icon {
+    -fx-icon-color: #1ed760;
+    -fx-fill: #1ed760;
+}
+
+/* Estado activo de shuffle/repeat (clase aplicada desde el controller) */
+.bf-mp-ctrl.is-on {
+    -fx-text-fill: #1ed760;
+}
+.bf-mp-ctrl.is-on .ikonli-font-icon {
+    -fx-icon-color: #1ed760;
+    -fx-fill: #1ed760;
+}
+
+/* Like activado (cuando la canción está en favoritos) */
+.bf-mp-like.is-on .ikonli-font-icon {
+    -fx-icon-color: #1ed760;
+    -fx-fill: #1ed760;
 }
 .bf-mp-play {
-    -fx-background-color: -bf-accent;
-    -fx-text-fill: -bf-bg;
-    -fx-pref-width: 34;
-    -fx-pref-height: 34;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-pref-width: 38;
+    -fx-pref-height: 38;
     -fx-background-radius: 50%;
     -fx-cursor: hand;
     -fx-padding: 0;
     -fx-border-color: transparent;
 }
 .bf-mp-play:hover {
-    -fx-background-color: -bf-accent-deep;
+    -fx-background-color: #f0f0f0;
+    -fx-scale-x: 1.06;
+    -fx-scale-y: 1.06;
 }
 .bf-mp-time {
     -fx-font-family: "JetBrains Mono";
     -fx-font-size: 10.5px;
-    -fx-text-fill: -bf-text-dim;
-    -fx-min-width: 32;
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-weight: 600;
+    -fx-min-width: 34;
 }
 .bf-mp-bar {
-    -fx-background-color: -bf-border-strong;
+    -fx-background-color: rgba(255, 255, 255, 0.2);
     -fx-background-radius: 2;
     -fx-pref-height: 4;
     -fx-max-height: 4;
+    -fx-min-height: 4;
 }
 .bf-mp-bar-fill {
-    -fx-background-color: -bf-text;
+    -fx-background-color: #ffffff;
     -fx-background-radius: 2;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+    -fx-min-height: 4;
+}
+.bf-mp-bar:hover .bf-mp-bar-fill {
+    -fx-background-color: -bf-accent;
 }
 .bf-mp-vol-bar {
-    -fx-background-color: -bf-border-strong;
+    -fx-background-color: rgba(255, 255, 255, 0.2);
     -fx-background-radius: 2;
     -fx-pref-width: 90;
     -fx-pref-height: 4;
     -fx-max-height: 4;
+    -fx-min-height: 4;
 }
 .bf-mp-vol-fill {
-    -fx-background-color: -bf-text;
+    -fx-background-color: #ffffff;
     -fx-background-radius: 2;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+    -fx-min-height: 4;
 }
 .bf-mp-like {
     -fx-background-color: transparent;
-    -fx-text-fill: -bf-text-muted;
+    -fx-text-fill: #b3b3b3;
     -fx-pref-width: 32;
     -fx-pref-height: 32;
     -fx-background-radius: 50%;
@@ -535,5 +612,139 @@
     -fx-padding: 0;
 }
 .bf-mp-like:hover {
-    -fx-text-fill: #ff5a78;
+    -fx-text-fill: #1ed760;
+    -fx-scale-x: 1.06;
+    -fx-scale-y: 1.06;
+}
+
+/* ================================================================
+   FORM CONTROLS — TextArea, Spinner, ComboBox (estilo Spotify)
+   ================================================================ */
+
+/* TextArea (multi-línea) — comentario de reseña */
+.bf-textarea {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: -bf-text;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.4);
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-font-size: 13.5px;
+    -fx-padding: 0;
+}
+.bf-textarea:focused {
+    -fx-border-color: -bf-accent;
+    -fx-background-color: #353535;
+}
+.bf-textarea .content {
+    -fx-background-color: transparent;
+    -fx-padding: 10 14 10 14;
+}
+.bf-textarea .scroll-pane,
+.bf-textarea .scroll-pane .viewport,
+.bf-textarea .scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+.bf-textarea .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+.bf-textarea .scroll-bar .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 4;
+}
+.bf-textarea .scroll-bar .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Spinner (calificación 1-5) */
+.bf-spinner {
+    -fx-background-color: #2a2a2a;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-pref-height: 42;
+    -fx-min-height: 42;
+}
+.bf-spinner:focused {
+    -fx-border-color: -bf-accent;
+}
+.bf-spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.4);
+    -fx-font-size: 14px;
+    -fx-padding: 0 12 0 12;
+    -fx-alignment: CENTER_LEFT;
+}
+.bf-spinner .increment-arrow-button,
+.bf-spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 4 6 4 6;
+}
+.bf-spinner .increment-arrow-button:hover,
+.bf-spinner .decrement-arrow-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+.bf-spinner .increment-arrow,
+.bf-spinner .decrement-arrow {
+    -fx-background-color: #b3b3b3;
+    -fx-padding: 3;
+}
+.bf-spinner .increment-arrow-button:hover .increment-arrow,
+.bf-spinner .decrement-arrow-button:hover .decrement-arrow {
+    -fx-background-color: white;
+}
+
+/* ComboBox (tipo de objetivo: CANCIÓN / ÁLBUM / ARTISTA) */
+.bf-combo {
+    -fx-background-color: #2a2a2a;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-pref-height: 42;
+    -fx-min-height: 42;
+    -fx-text-fill: -bf-text;
+    -fx-font-size: 13.5px;
+}
+.bf-combo:focused, .bf-combo:hover {
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+}
+.bf-combo .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text;
+    -fx-padding: 4 12 4 12;
+}
+.bf-combo .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12 0 0;
+}
+.bf-combo .arrow {
+    -fx-background-color: #b3b3b3;
+}
+.bf-combo:hover .arrow {
+    -fx-background-color: white;
+}
+/* Dropdown del ComboBox bf-combo (popup heredando estilo) */
+.combo-box-popup .list-view {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 16, 0, 0, 4);
+}
+.combo-box-popup .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text;
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 4;
+}
+.combo-box-popup .list-cell:hover,
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: -bf-text;
 }

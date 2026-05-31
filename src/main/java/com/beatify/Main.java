@@ -96,7 +96,8 @@ public class Main extends Application {
         final String[] hojas = {
                 "/style/beatify-tokens.css",
                 "/style/beatify-auth.css",
-                "/style/beatify-home.css"
+                "/style/beatify-home.css",
+                "/style/beatify-screens.css"
         };
         for (final String hoja : hojas) {
             final var url = getClass().getResource(hoja);

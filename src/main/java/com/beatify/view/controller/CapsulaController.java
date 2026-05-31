@@ -1,10 +1,16 @@
 package com.beatify.view.controller;
 
+import com.beatify.dao.PlaylistDAO;
+import com.beatify.exceptions.ConexionException;
 import com.beatify.model.Cliente;
+import com.beatify.model.Playlist;
 import com.beatify.util.Conexion;
 import com.beatify.view.SessionContext;
 import com.beatify.view.component.AlbumCover;
 import com.beatify.view.component.ArtistAvatar;
+import com.beatify.view.util.HistorialNavegacion;
+import com.beatify.view.util.PlaylistUtil;
+import com.beatify.view.util.UserMenuUtil;
 import com.beatify.view.util.NavegacionUtil;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -12,6 +18,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -52,6 +59,7 @@ public class CapsulaController {
     @FXML private Label lblNotifCount;
     @FXML private StackPane userAvatarHolder;
     @FXML private Label lblUserNombre;
+    @FXML private TextField txtBusqueda;
 
     // ---- Sidebar ----
     @FXML private VBox sidebarPlaylistsBox;
@@ -104,33 +112,40 @@ public class CapsulaController {
     // -----------------------------------------------------------------
     private void configurarTopBar(final Cliente c) {
         userAvatarHolder.getChildren().setAll(
-                new ArtistAvatar(28, "#b794ff", "#8b5cf6",
+                new ArtistAvatar(28, "#1ed760", "#1ab44e",
                         c.getNombre() + " " + c.getApellido()));
         lblUserNombre.setText(c.getNombre());
-        lblNotifCount.setText("5");
+        com.beatify.view.util.NotificacionMenuUtil.aplicarBadge(lblNotifCount, c.getIdCliente());
     }
 
     private void configurarSidebarPlaylists() {
-        final String[][] playlists = {
-                {"Mis Vallenatos Clásicos", "Yo · 24 canc.", "#c97a1f", "#3a1a05"},
-                {"Cumbia del Caribe", "Yo · 18 canc.", "#1f7a5a", "#072a1a"},
-                {"Para escribir tesis", "Yo · 42 canc.", "#3a6a8a", "#051a2a"},
-                {"Fiesta de Sábado", "Andrés Z. · 31 canc.", "#a83232", "#3a0a0a"},
-                {"Champeta Total", "Kendrick S. · 27 canc.", "#d4a017", "#2a1a05"},
+        final Cliente c = SessionContext.getInstance().getClienteActual();
+        if (c == null || c.getIdCliente() == null) return;
+        final String[][] colores = {
+                {"#c97a1f", "#3a1a05"}, {"#1f7a5a", "#072a1a"}, {"#3a6a8a", "#051a2a"},
+                {"#a83232", "#3a0a0a"}, {"#d4a017", "#2a1a05"}, {"#7a3a8a", "#1a052a"}
         };
-        for (final String[] pl : playlists) {
-            final Button item = new Button();
-            item.getStyleClass().add("bf-side-playlist");
-            item.setMaxWidth(Double.MAX_VALUE);
-            final HBox row = new HBox(10);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.getChildren().addAll(
-                    new AlbumCover(32, pl[2], pl[3]),
-                    construirVBox(2,
-                            crearLabel(pl[0], "bf-side-pl-name"),
-                            crearLabel(pl[1], "bf-side-pl-meta")));
-            item.setGraphic(row);
-            sidebarPlaylistsBox.getChildren().add(item);
+        try {
+            final List<Playlist> mias = new PlaylistDAO().listarPorCliente(c.getIdCliente());
+            for (int i = 0; i < mias.size(); i++) {
+                final Playlist pl  = mias.get(i);
+                final String[] col = colores[i % colores.length];
+                final Button item = new Button();
+                item.getStyleClass().add("bf-side-playlist");
+                item.setMaxWidth(Double.MAX_VALUE);
+                item.setOnAction(e -> PlaylistUtil.abrir(pl.getIdPlaylist()));
+                final HBox row = new HBox(10);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.getChildren().addAll(
+                        new AlbumCover(32, col[0], col[1]),
+                        construirVBox(2,
+                                crearLabel(pl.getNombre(), "bf-side-pl-name"),
+                                crearLabel("Playlist", "bf-side-pl-meta")));
+                item.setGraphic(row);
+                sidebarPlaylistsBox.getChildren().add(item);
+            }
+        } catch (final ConexionException ex) {
+            LOG.log(Level.WARNING, "Error cargando playlists sidebar", ex);
         }
     }
 
@@ -179,12 +194,12 @@ public class CapsulaController {
             nodo.setStyle("-fx-padding: 10px; -fx-cursor: hand;");
             if (idx == capsuleSeleccionada) {
                 nodo.setStyle(nodo.getStyle()
-                        + "-fx-background-color: rgba(183, 148, 255, 0.1); -fx-background-radius: 12px;");
+                        + "-fx-background-color: rgba(30, 215, 96, 0.1); -fx-background-radius: 12px;");
             }
             final StackPane dot = new StackPane();
             dot.setPrefSize(14, 14);
             dot.setStyle(idx == capsuleSeleccionada
-                    ? "-fx-background-color: #b794ff; -fx-background-radius: 999px;"
+                    ? "-fx-background-color: #1ed760; -fx-background-radius: 999px;"
                     : "-fx-background-color: -bf-border; -fx-background-radius: 999px;");
             final Label lblFecha = new Label(n[0]);
             lblFecha.setStyle("-fx-font-family: 'JetBrains Mono'; -fx-font-size: 12px; -fx-text-fill: -bf-text-muted;");
@@ -443,21 +458,30 @@ public class CapsulaController {
     // -----------------------------------------------------------------
     // Navegación
     // -----------------------------------------------------------------
-    @FXML private void onAtras() { NavegacionUtil.cambiarA("/view/home.fxml", btnUserMenu); }
-    @FXML private void onAdelante() {}
-    @FXML private void onUserMenu() {}
-    @FXML private void onIrNotificaciones() {}
-    @FXML private void onIrInicio() { NavegacionUtil.cambiarA("/view/home.fxml", btnUserMenu); }
-    @FXML private void onIrExplorar() { NavegacionUtil.cambiarA("/view/catalogo.fxml", btnUserMenu); }
-    @FXML private void onIrBiblioteca() { LOG.info("Biblioteca — próximamente"); }
-    @FXML private void onIrResenas() { NavegacionUtil.cambiarA("/view/resenas.fxml", btnUserMenu); }
-    @FXML private void onIrBarrio() { NavegacionUtil.cambiarA("/view/barrio.fxml", btnUserMenu); }
+    @FXML private void onAtras()        { HistorialNavegacion.getInstance().atras(); }
+    @FXML private void onAdelante()     { HistorialNavegacion.getInstance().adelante(); }
+    @FXML private void onUserMenu()     { UserMenuUtil.mostrar(btnUserMenu); }
+    @FXML private void onNotif() { com.beatify.view.util.NotificacionMenuUtil.mostrar(btnNotif, lblNotifCount); }
+    @FXML private void onIrInicio() { HistorialNavegacion.getInstance().navegar("/view/home.fxml"); }
+
+    @FXML
+    private void onBuscar() {
+        final String termino = txtBusqueda == null ? null : txtBusqueda.getText();
+        if (termino == null || termino.isBlank()) return;
+        SessionContext.getInstance().setTerminoBusqueda(termino);
+        HistorialNavegacion.getInstance().navegar("/view/catalogo.fxml");
+    }
+    @FXML private void onIrExplorar() { HistorialNavegacion.getInstance().navegar("/view/catalogo.fxml"); }
+    @FXML private void onIrBiblioteca() { HistorialNavegacion.getInstance().navegar("/view/biblioteca.fxml"); }
+    @FXML private void onIrResenas() { HistorialNavegacion.getInstance().navegar("/view/resenas.fxml"); }
+    @FXML private void onIrBarrio() { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
     @FXML private void onIrCapsulas() { /* ya estamos aquí */ }
-    @FXML private void onIrLogros() { NavegacionUtil.cambiarA("/view/logros.fxml", btnUserMenu); }
-    @FXML private void onNuevaPlaylist() { LOG.info("Nueva playlist"); }
+    @FXML private void onIrLogros() { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(); }); }
     @FXML
     private void onCerrarSesion() {
         SessionContext.getInstance().cerrarSesion();
+        HistorialNavegacion.getInstance().reset();
         NavegacionUtil.cambiarA("/view/login.fxml", btnUserMenu);
     }
 

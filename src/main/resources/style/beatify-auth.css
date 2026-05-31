@@ -12,16 +12,17 @@
 
 /* ================================================================
    LAYOUT BASE — split 50/50 (lado izquierdo branding, derecho form)
+   Estilo Spotify (verde + negro)
    ================================================================ */
 .bf-auth-side {
     -fx-background-color: linear-gradient(
         from 100% 0% to 0% 100%,
-        -bf-bg-3 0%, -bf-bg-2 60%, -bf-bg 100%);
+        #181818 0%, #121212 60%, #0a0a0a 100%);
     -fx-padding: 50 56 50 56;
 }
 
 .bf-auth-form-wrap {
-    -fx-background-color: -bf-bg;
+    -fx-background-color: #121212;
     -fx-padding: 40 56 40 56;
 }
 
@@ -71,15 +72,15 @@
 
 /* Feature cards (4 diferenciadores en el Login) */
 .bf-auth-feat {
-    -fx-background-color: rgba(255, 255, 255, 0.03);
-    -fx-border-color: -bf-border;
-    -fx-border-width: 1;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-    -fx-padding: 12;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 14;
 }
 .bf-auth-feat-icon {
-    -fx-background-color: rgba(183, 148, 255, 0.18);
+    -fx-background-color: rgba(30, 215, 96, 0.18);
     -fx-text-fill: -bf-accent;
     -fx-font-family: "Sora";
     -fx-font-size: 14px;
@@ -169,20 +170,20 @@
 }
 
 .bf-field-input {
-    -fx-background-color: -bf-bg-3;
+    -fx-background-color: #2a2a2a;
     -fx-text-fill: -bf-text;
-    -fx-prompt-text-fill: -bf-text-dim;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.45);
     -fx-background-radius: 6;
-    -fx-border-color: -bf-border;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
     -fx-border-width: 1;
     -fx-border-radius: 6;
-    -fx-padding: 0 14 0 14;
-    -fx-pref-height: 42;
-    -fx-font-size: 13.5px;
+    -fx-padding: 0 16 0 16;
+    -fx-pref-height: 46;
+    -fx-font-size: 14px;
 }
 .bf-field-input:focused {
-    -fx-border-color: -bf-accent;
-    -fx-background-color: -bf-surface;
+    -fx-border-color: -bf-text;
+    -fx-background-color: #353535;
 }
 
 .bf-field-hint {
@@ -245,51 +246,57 @@
     -fx-border-color: -bf-accent;
 }
 .bf-check:selected .mark {
-    -fx-background-color: -bf-bg;
+    -fx-background-color: #000000;
 }
 
 /* ================================================================
-   BOTONES
+   BOTONES — estilo Spotify
    ================================================================ */
 .bf-btn-primary {
     -fx-background-color: -bf-accent;
-    -fx-text-fill: -bf-bg;
+    -fx-text-fill: #000000;
     -fx-background-radius: 999;
-    -fx-padding: 11 22 11 22;
+    -fx-padding: 11 28 11 28;
     -fx-font-size: 13.5px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
     -fx-border-color: transparent;
 }
 .bf-btn-primary:hover {
-    -fx-background-color: -bf-accent-deep;
+    -fx-background-color: derive(-bf-accent, 10%);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+    -fx-effect: dropshadow(gaussian, rgba(30, 215, 96, 0.4), 20, 0, 0, 6);
 }
 .bf-btn-primary:pressed {
-    -fx-background-color: derive(-bf-accent-deep, -10%);
+    -fx-background-color: -bf-accent-deep;
+    -fx-scale-x: 0.99;
+    -fx-scale-y: 0.99;
 }
 .bf-btn-primary:disabled {
     -fx-opacity: 0.4;
     -fx-cursor: default;
 }
 .bf-btn-primary-sm {
-    -fx-padding: 7 14 7 14;
-    -fx-font-size: 12px;
+    -fx-padding: 7 16 7 16;
+    -fx-font-size: 12.5px;
 }
 
 .bf-btn-ghost {
-    -fx-background-color: transparent;
+    -fx-background-color: #2a2a2a;
     -fx-text-fill: -bf-text;
-    -fx-border-color: -bf-border-strong;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
     -fx-border-width: 1;
     -fx-border-radius: 999;
     -fx-background-radius: 999;
-    -fx-padding: 10 20 10 20;
+    -fx-padding: 10 22 10 22;
     -fx-font-size: 13px;
-    -fx-font-weight: 600;
+    -fx-font-weight: bold;
     -fx-cursor: hand;
 }
 .bf-btn-ghost:hover {
-    -fx-background-color: -bf-border;
+    -fx-background-color: #3a3a3a;
+    -fx-border-color: -bf-text;
 }
 .bf-btn-ghost:disabled {
     -fx-opacity: 0.5;
@@ -347,9 +354,9 @@
    INDICADOR DE PASOS DEL WIZARD (lado izquierdo del Registro)
    ================================================================ */
 .bf-step-num {
-    -fx-background-color: -bf-bg-3;
-    -fx-border-color: -bf-border-strong;
-    -fx-border-width: 1;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-background-radius: 50%;
     -fx-border-radius: 50%;
     -fx-pref-width: 32;
@@ -364,7 +371,7 @@
 }
 .bf-step-num.is-active {
     -fx-background-color: -bf-accent;
-    -fx-text-fill: -bf-bg;
+    -fx-text-fill: #000000;
     -fx-border-color: -bf-accent;
 }
 .bf-step-title {
@@ -378,25 +385,28 @@
 }
 
 /* ================================================================
-   CHIPS DE GENERO (Registro Paso 2)
+   CHIPS DE GENERO (Registro Paso 2) — estilo Spotify
    ================================================================ */
 .bf-pref-chip {
-    -fx-background-color: -bf-bg-3;
-    -fx-border-color: -bf-border;
-    -fx-border-width: 1;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-    -fx-padding: 8 6 8 6;
-    -fx-font-size: 11.5px;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 8 14 8 14;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
     -fx-text-fill: -bf-text-muted;
     -fx-cursor: hand;
 }
 .bf-pref-chip:hover {
-    -fx-background-color: -bf-surface-2;
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+    -fx-text-fill: -bf-text;
 }
 .bf-pref-chip:selected {
-    -fx-background-color: rgba(183, 148, 255, 0.14);
+    -fx-background-color: rgba(30, 215, 96, 0.18);
     -fx-border-color: -bf-accent;
+    -fx-border-width: 1;
     -fx-text-fill: -bf-accent;
 }
 
@@ -407,22 +417,22 @@
 }
 
 /* ================================================================
-   CARDS DE PLAN (Registro Paso 3)
+   CARDS DE PLAN (Registro Paso 3) — estilo Spotify
    ================================================================ */
 .bf-plan {
-    -fx-background-color: -bf-bg-3;
-    -fx-border-color: -bf-border;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: transparent;
     -fx-border-width: 1;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-    -fx-padding: 14 16 14 16;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 16 18 16 18;
     -fx-cursor: hand;
 }
 .bf-plan:hover {
-    -fx-background-color: -bf-surface-2;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
 }
 .bf-plan:selected {
-    -fx-background-color: rgba(183, 148, 255, 0.08);
+    -fx-background-color: rgba(30, 215, 96, 0.08);
     -fx-border-color: -bf-accent;
 }
 .bf-plan-name {
@@ -432,7 +442,7 @@
 }
 .bf-plan-tag {
     -fx-background-color: -bf-accent;
-    -fx-text-fill: -bf-bg;
+    -fx-text-fill: #000000;
     -fx-font-size: 9.5px;
     -fx-font-weight: bold;
     -fx-background-radius: 999;

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.beatify.view.controller.MiniPlayerController"
+      styleClass="bf-miniplayer" alignment="CENTER">
+
+    <!-- Izquierda: cover + info + like -->
+    <HBox spacing="14" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+        <StackPane fx:id="mpCoverHolder"/>
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="mpTitulo"  text="Sin canción" styleClass="bf-mp-title"/>
+            <Label fx:id="mpArtista" text="—"           styleClass="bf-mp-artist"/>
+        </VBox>
+        <Button fx:id="btnMpLike" styleClass="bf-mp-like" onAction="#onMpLike">
+            <graphic>
+                <FontIcon fx:id="iconMpLike" iconLiteral="bi-heart" iconSize="16"/>
+            </graphic>
+        </Button>
+        <Button fx:id="btnMpDescargar" styleClass="bf-mp-like" onAction="#onMpDescargar">
+            <graphic>
+                <FontIcon fx:id="iconMpDescargar" iconLiteral="bi-download" iconSize="16"/>
+            </graphic>
+        </Button>
+    </HBox>
+
+    <!-- Centro: controles + progreso -->
+    <VBox spacing="6" alignment="CENTER" prefWidth="480">
+        <HBox spacing="12" alignment="CENTER">
+            <Button fx:id="btnMpShuffle"   styleClass="bf-mp-ctrl" onAction="#onMpShuffle">
+                <graphic><FontIcon iconLiteral="bi-shuffle" iconSize="16"/></graphic>
+            </Button>
+            <Button fx:id="btnMpAnterior"  styleClass="bf-mp-ctrl" onAction="#onMpAnterior">
+                <graphic><FontIcon iconLiteral="bi-skip-start-fill" iconSize="20"/></graphic>
+            </Button>
+            <Button fx:id="btnMpPlay"      styleClass="bf-mp-play"  onAction="#onMpPlayPause">
+                <graphic>
+                    <FontIcon fx:id="iconMpPlay" iconLiteral="bi-play-fill"
+                              iconSize="18" iconColor="#000000"/>
+                </graphic>
+            </Button>
+            <Button fx:id="btnMpSiguiente" styleClass="bf-mp-ctrl" onAction="#onMpSiguiente">
+                <graphic><FontIcon iconLiteral="bi-skip-end-fill" iconSize="20"/></graphic>
+            </Button>
+            <Button fx:id="btnMpRepeat"    styleClass="bf-mp-ctrl" onAction="#onMpRepeat">
+                <graphic><FontIcon iconLiteral="bi-arrow-repeat" iconSize="16"/></graphic>
+            </Button>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER">
+            <Label fx:id="lblMpTiempo"   text="0:00" styleClass="bf-mp-time"/>
+            <StackPane fx:id="mpBarraStack" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                       maxHeight="6" alignment="CENTER"
+                       onMouseClicked="#onMpBarraClick"
+                       onMouseDragged="#onMpBarraDrag"
+                       style="-fx-cursor: hand;">
+                <Region fx:id="mpBarraFondo" styleClass="bf-mp-bar"      maxWidth="Infinity"/>
+                <Region fx:id="mpBarraFill"  styleClass="bf-mp-bar-fill" maxWidth="0"
+                        StackPane.alignment="CENTER_LEFT"/>
+            </StackPane>
+            <Label fx:id="lblMpDuracion" text="0:00" styleClass="bf-mp-time"/>
+        </HBox>
+    </VBox>
+
+    <!-- Derecha: lista + volumen + expandir -->
+    <HBox spacing="8" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+        <Button fx:id="btnMpQueue" styleClass="bf-mp-ctrl" onAction="#onMpQueue">
+            <graphic><FontIcon iconLiteral="bi-list-ul" iconSize="16"/></graphic>
+        </Button>
+        <Button fx:id="btnMpVolumen" styleClass="bf-mp-ctrl" onAction="#onMpMute">
+            <graphic>
+                <FontIcon fx:id="iconMpVolumen" iconLiteral="bi-volume-up" iconSize="16"/>
+            </graphic>
+        </Button>
+        <StackPane fx:id="mpVolStack" maxHeight="6" alignment="CENTER"
+                   onMouseClicked="#onMpVolClick"
+                   onMouseDragged="#onMpVolDrag"
+                   style="-fx-cursor: hand;">
+            <Region styleClass="bf-mp-vol-bar"/>
+            <Region fx:id="mpVolFill" styleClass="bf-mp-vol-fill" maxWidth="56"
+                    StackPane.alignment="CENTER_LEFT"/>
+        </StackPane>
+        <Button fx:id="btnMpExpand" styleClass="bf-mp-ctrl" onAction="#onMpExpand">
+            <graphic><FontIcon iconLiteral="bi-arrows-fullscreen" iconSize="16"/></graphic>
+        </Button>
+    </HBox>
+</HBox>
