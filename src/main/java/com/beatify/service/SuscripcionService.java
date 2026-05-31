@@ -3,6 +3,7 @@ package com.beatify.service;
 import com.beatify.dao.SuscripcionDAO;
 import com.beatify.exceptions.ValidacionException;
 import com.beatify.model.Suscripcion;
+import com.beatify.model.TipoPlan;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -10,10 +11,12 @@ import java.util.Set;
 
 public class SuscripcionService implements ISuscripcionService {
 
-    private static final Set<String> PLANES_VALIDOS =
-            Set.of("FREE", "PREMIUM", "FAMILIAR", "ESTUDIANTE");
+    // Planes validos derivados del catalogo unico (TipoPlan) para que no se
+    // desincronicen del CHECK de la BD ni de la UI.
+    private static final Set<String> PLANES_VALIDOS = TipoPlan.nombresValidos();
+    // Debe coincidir con SUSCRIPCION_ESTADO_CK en 01_schema_beatify.sql.
     private static final Set<String> ESTADOS_VALIDOS =
-            Set.of("ACTIVA", "CANCELADA", "VENCIDA", "PENDIENTE");
+            Set.of("ACTIVA", "CANCELADA", "PAUSADA", "VENCIDA");
 
     private final SuscripcionDAO suscripcionDAO;
 
@@ -101,5 +104,42 @@ public class SuscripcionService implements ISuscripcionService {
                 || !hoy.isAfter(suscripcion.getFechaFin());
         return inicioValido && finValido
                 && "ACTIVA".equalsIgnoreCase(suscripcion.getEstado());
+    }
+
+    /**
+     * Plan efectivo del cliente. Busca su suscripcion vigente; si no tiene
+     * ninguna (o el id es invalido) devuelve {@link TipoPlan#FREE}.
+     */
+    public TipoPlan planActual(Integer idCliente) {
+        if (idCliente == null || idCliente <= 0) {
+            return TipoPlan.FREE;
+        }
+        Suscripcion activa = suscripcionDAO.buscarActivaPorCliente(idCliente);
+        return activa == null ? TipoPlan.FREE : TipoPlan.desdeNombreOFree(activa.getTipoPlan());
+    }
+
+    public void cambiarPlan(Integer idCliente, TipoPlan plan) {
+        if (idCliente == null || idCliente <= 0) {
+            throw new ValidacionException("El id del cliente es inválido");
+        }
+        if (plan == null) {
+            throw new ValidacionException("El plan es obligatorio");
+        }
+        LocalDate hoy = LocalDate.now();
+        LocalDate fechaFin = plan.isVenceMensual() ? hoy.plusMonths(1) : null;
+
+        Suscripcion activa = suscripcionDAO.buscarActivaPorCliente(idCliente);
+        if (activa == null) {
+            // Sin suscripción vigente: se crea una nueva activa con el plan elegido.
+            registrar(new Suscripcion(
+                    plan.getNombre(), plan.getPrecioMensual(), hoy, fechaFin, "ACTIVA", idCliente));
+        } else {
+            // Se actualiza la activa al nuevo plan (precio y vigencia del plan).
+            activa.setTipoPlan(plan.getNombre());
+            activa.setPrecio(plan.getPrecioMensual());
+            activa.setFechaInicio(hoy);
+            activa.setFechaFin(fechaFin);
+            actualizar(activa);
+        }
     }
 }

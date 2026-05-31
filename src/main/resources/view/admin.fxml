@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.beatify.view.controller.AdminController"
+      prefWidth="1280.0" prefHeight="800.0"
+      style="-fx-background-color: #0a0a0a;">
+
+    <!-- Sidebar -->
+    <VBox spacing="6" prefWidth="240"
+          style="-fx-background-color: #121212; -fx-padding: 28 16 20 16;">
+        <Label text="Beatify Admin"
+               style="-fx-text-fill: #1ed760; -fx-font-family: 'Sora'; -fx-font-size: 20px; -fx-font-weight: 800;"/>
+        <Label fx:id="lblAdminNombre" text=""
+               style="-fx-text-fill: #a7a7a7; -fx-font-family: 'Manrope'; -fx-font-size: 12px;"/>
+        <Region prefHeight="24"/>
+
+        <Button text="Usuarios" onAction="#onUsuarios" maxWidth="Infinity"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT;
+                       -fx-font-family: 'Manrope'; -fx-font-size: 14px; -fx-cursor: hand; -fx-padding: 10 14;"/>
+        <Button text="Catálogo" onAction="#onCatalogo" maxWidth="Infinity"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT;
+                       -fx-font-family: 'Manrope'; -fx-font-size: 14px; -fx-cursor: hand; -fx-padding: 10 14;"/>
+        <Button text="Suscripciones y pagos" onAction="#onSuscripciones" maxWidth="Infinity"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT;
+                       -fx-font-family: 'Manrope'; -fx-font-size: 14px; -fx-cursor: hand; -fx-padding: 10 14;"/>
+        <Button text="Notificaciones" onAction="#onNotificaciones" maxWidth="Infinity"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT;
+                       -fx-font-family: 'Manrope'; -fx-font-size: 14px; -fx-cursor: hand; -fx-padding: 10 14;"/>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <Button fx:id="btnSalir" text="Cerrar sesión" onAction="#onSalir" maxWidth="Infinity"
+                style="-fx-background-color: #232323; -fx-text-fill: #e0245e; -fx-background-radius: 8;
+                       -fx-font-family: 'Manrope'; -fx-font-size: 13px; -fx-font-weight: bold;
+                       -fx-cursor: hand; -fx-padding: 10 14;"/>
+    </VBox>
+
+    <!-- Contenido -->
+    <VBox HBox.hgrow="ALWAYS" spacing="18" style="-fx-padding: 32 36;">
+        <Label fx:id="lblTituloSeccion" text="Usuarios"
+               style="-fx-text-fill: white; -fx-font-family: 'Sora'; -fx-font-size: 26px; -fx-font-weight: 800;"/>
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                    style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox fx:id="contenido" spacing="10"/>
+        </ScrollPane>
+    </VBox>
+</HBox>

@@ -62,10 +62,10 @@
             <StackPane styleClass="bf-brand-logo" prefWidth="56" prefHeight="56">
                 <Group>
                     <Circle centerX="22" centerY="22" radius="20"
-                            stroke="#b794ff" strokeWidth="1.8" fill="transparent"/>
-                    <Circle centerX="22" centerY="22" radius="6" fill="#b794ff"/>
+                            stroke="#1ed760" strokeWidth="1.8" fill="transparent"/>
+                    <Circle centerX="22" centerY="22" radius="6" fill="#1ed760"/>
                     <SVGPath content="M22 4 L22 16 M22 28 L22 40 M4 22 L16 22 M28 22 L40 22"
-                             stroke="#b794ff" strokeWidth="1.8"
+                             stroke="#1ed760" strokeWidth="1.8"
                              strokeLineCap="ROUND" fill="transparent"/>
                 </Group>
             </StackPane>

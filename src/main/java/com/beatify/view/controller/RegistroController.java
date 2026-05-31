@@ -1,16 +1,25 @@
 package com.beatify.view.controller;
 
 import com.beatify.dao.ClienteDAO;
+import com.beatify.dao.ClienteGeneroDAO;
+import com.beatify.dao.GeneroDAO;
+import com.beatify.dao.SuscripcionDAO;
 import com.beatify.exceptions.ConexionException;
 import com.beatify.exceptions.ValidacionException;
 import com.beatify.model.Cliente;
+import com.beatify.model.Genero;
+import com.beatify.model.Suscripcion;
+import com.beatify.model.TipoPlan;
 import com.beatify.service.ClienteService;
 import com.beatify.service.IClienteService;
 import com.beatify.view.SessionContext;
+import com.beatify.view.util.HistorialNavegacion;
 import com.beatify.view.util.NavegacionUtil;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -22,9 +31,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,7 +97,12 @@ public class RegistroController {
     // ---- Botones de navegacion ----
     @FXML private Button btnAtras, btnContinuar;
 
+    // El precio y la vigencia de cada plan viven en TipoPlan (catalogo unico).
+
     private final IClienteService clienteService = new ClienteService(new ClienteDAO());
+    private final SuscripcionDAO  suscripcionDAO  = new SuscripcionDAO();
+    private final GeneroDAO       generoDAO       = new GeneroDAO();
+    private final ClienteGeneroDAO clienteGeneroDAO = new ClienteGeneroDAO();
 
     /** Paso actual (1, 2 o 3). */
     private int pasoActual = 1;
@@ -146,6 +162,7 @@ public class RegistroController {
         ocultarError();
         if (pasoActual == 1) {
             if (!validarPaso1()) return;
+            if (!verificarCorreo()) return;   // envía código y pide validarlo
             mostrarPaso(2);
         } else if (pasoActual == 2) {
             // Paso 2 no requiere validacion estricta (ciudad ya tiene default,
@@ -154,6 +171,62 @@ public class RegistroController {
         } else {
             registrar();
         }
+    }
+
+    /**
+     * Genera un código de 6 dígitos y lo ENVÍA al correo del paso 1 (Gmail SMTP).
+     * El usuario debe leer su correo e ingresar el código aquí. El código nunca
+     * se muestra en pantalla. Devuelve true si el código coincide.
+     */
+    private boolean verificarCorreo() {
+        final String correo = txtCorreo.getText() == null ? "" : txtCorreo.getText().trim().toLowerCase();
+        final String codigo = String.valueOf(100000 + new java.security.SecureRandom().nextInt(900000));
+
+        // Enviar el código al correo. Sin correo emisor configurado → no se puede continuar.
+        final boolean enviado;
+        try {
+            enviado = new com.beatify.util.EmailService().enviarCodigo(correo, codigo);
+        } catch (final RuntimeException ex) {
+            mostrarError("Email", "No se pudo enviar el código a " + correo + ". " + ex.getMessage());
+            return false;
+        }
+        if (!enviado) {
+            mostrarError("Configuración",
+                    "No hay un correo emisor configurado. Define mail.user y mail.password "
+                  + "(contraseña de aplicación de Gmail) en mail.properties.");
+            return false;
+        }
+
+        // Diálogo: solo pide el código (NO se muestra)
+        final javafx.scene.control.TextField campo = new javafx.scene.control.TextField();
+        campo.setPromptText("000000");
+        final javafx.scene.control.Label info = new javafx.scene.control.Label(
+                "Enviamos un código de 6 dígitos a:\n" + correo
+              + "\n\nRevisa tu correo (y la carpeta de spam) e ingrésalo aquí:");
+        info.setWrapText(true);
+        final javafx.scene.layout.VBox box = new javafx.scene.layout.VBox(12, info, campo);
+        box.setPadding(new javafx.geometry.Insets(16));
+
+        final javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Verifica tu correo");
+        dialog.setHeaderText("Verificación de correo");
+        dialog.getDialogPane().setContent(box);
+        dialog.getDialogPane().getButtonTypes().addAll(
+                javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+        if (btnContinuar.getScene() != null) {
+            dialog.initOwner(btnContinuar.getScene().getWindow());
+        }
+
+        final java.util.Optional<javafx.scene.control.ButtonType> res = dialog.showAndWait();
+        if (res.isEmpty() || res.get() != javafx.scene.control.ButtonType.OK) {
+            return false;  // canceló
+        }
+        final String ingresado = campo.getText() == null ? "" : campo.getText().trim();
+        if (!ingresado.equals(codigo)) {
+            mostrarError("Verificación", "El código ingresado no es correcto. Intenta de nuevo.");
+            return false;
+        }
+        return true;
     }
 
     @FXML
@@ -252,6 +325,12 @@ public class RegistroController {
     // -----------------------------------------------------------------
 
     private void registrar() {
+        // Planes que exigen verificación (ESTUDIANTE): confirmar antes de crear nada.
+        final TipoPlan planElegido = TipoPlan.desdeNombre(planSeleccionado);
+        if (planElegido.isRequiereVerificacion() && !confirmarVerificacion(planElegido)) {
+            return;   // el usuario no confirmó: no se crea la cuenta
+        }
+
         final Cliente cliente = new Cliente(
                 txtNombre.getText().trim(),
                 txtApellido.getText().trim(),
@@ -269,13 +348,33 @@ public class RegistroController {
             final Integer idCliente = clienteService.registrar(cliente);
             cliente.setIdCliente(idCliente);
 
-            // TODO bloque backend: guardar generosSeleccionados en CLIENTE_GENERO
-            //   (lista actual: ver this.generosSeleccionados)
-            // TODO bloque backend: crear SUSCRIPCION con planSeleccionado
-            //   (valor actual: ver this.planSeleccionado)
+            // Guardar géneros preferidos en CLIENTE_GENERO
+            if (!generosSeleccionados.isEmpty()) {
+                final List<Integer> idsGenero = new ArrayList<>();
+                for (final String nombreGenero : generosSeleccionados) {
+                    final Genero g = generoDAO.buscarPorNombre(nombreGenero);
+                    if (g != null) {
+                        idsGenero.add(g.getIdGenero());
+                    }
+                }
+                if (!idsGenero.isEmpty()) {
+                    clienteGeneroDAO.insertarTodos(idCliente, idsGenero);
+                }
+            }
+
+            // Crear suscripción inicial
+            final TipoPlan plan = TipoPlan.desdeNombre(planSeleccionado);
+            final LocalDate hoy = LocalDate.now();
+            final LocalDate fechaFin = plan.isVenceMensual() ? hoy.plusMonths(1) : null;
+            final Suscripcion suscripcion = new Suscripcion(
+                    plan.getNombre(), plan.getPrecioMensual(), hoy, fechaFin, "ACTIVA", idCliente);
+            suscripcionDAO.insertar(suscripcion);
 
             SessionContext.getInstance().setClienteActual(cliente);
+            final javafx.stage.Stage stageReg =
+                    (javafx.stage.Stage) btnContinuar.getScene().getWindow();
             NavegacionUtil.cambiarA("/view/home.fxml", btnContinuar);
+            HistorialNavegacion.getInstance().iniciar(stageReg, "/view/home.fxml");
 
         } catch (final ValidacionException e) {
             mostrarError("ValidacionException", e.getMessage());
@@ -293,6 +392,21 @@ public class RegistroController {
         } finally {
             btnContinuar.setDisable(false);
         }
+    }
+
+    /**
+     * Pide confirmar la condición de estudiante para planes que la exigen.
+     * Devuelve {@code true} si el usuario confirma.
+     */
+    private boolean confirmarVerificacion(final TipoPlan plan) {
+        final Alert alerta = new Alert(Alert.AlertType.CONFIRMATION,
+                "El plan " + plan.getEtiqueta() + " requiere verificar tu condición de estudiante.\n"
+                        + "¿Confirmas que eres estudiante con matrícula vigente?",
+                ButtonType.YES, ButtonType.NO);
+        alerta.setTitle("Beatify");
+        alerta.setHeaderText("Verificación de estudiante");
+        final Optional<ButtonType> respuesta = alerta.showAndWait();
+        return respuesta.isPresent() && respuesta.get() == ButtonType.YES;
     }
 
     // -----------------------------------------------------------------

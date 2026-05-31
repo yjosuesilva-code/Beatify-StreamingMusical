@@ -27,8 +27,13 @@ Thumbs.db
 # Configuración local con credenciales — NUNCA subir a Git
 src/main/resources/db.properties
 src/main/resources/api.properties
+src/main/resources/mail.properties
 
 # Backups y temporales
 *~
 *.bak
 *.tmp
+
+# Audio: pistas grandes/comerciales (~380 MB) — no versionar.
+# El reproductor cae a simulación si no están presentes.
+src/main/resources/audio/

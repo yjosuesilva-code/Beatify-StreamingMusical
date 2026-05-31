@@ -9,10 +9,12 @@ import java.util.Set;
 
 public class PagoService implements IPagoService {
 
+    // Deben coincidir con los CHECK de PAGO en 01_schema_beatify.sql
+    // (PAGO_METODO_PAGO_CK y PAGO_ESTADO_PAGO_CK).
     private static final Set<String> METODOS_VALIDOS =
-            Set.of("TARJETA_CREDITO", "TARJETA_DEBITO", "PSE", "EFECTIVO", "PAYPAL");
+            Set.of("DAVIPLATA", "NEQUI", "PAYPAL", "PSE", "TARJETA");
     private static final Set<String> ESTADOS_VALIDOS =
-            Set.of("APROBADO", "RECHAZADO", "PENDIENTE", "REEMBOLSADO");
+            Set.of("EXITOSO", "FALLIDO", "PENDIENTE", "REEMBOLSADO");
 
     private final PagoDAO pagoDAO;
 

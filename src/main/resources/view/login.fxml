@@ -46,18 +46,18 @@
     <!-- =========================================================== -->
     <VBox GridPane.columnIndex="0" styleClass="bf-auth-side" spacing="20">
 
-        <!-- Brand: logo + nombre -->
+        <!-- Brand: logo + nombre (verde Spotify) -->
         <HBox spacing="14" alignment="CENTER_LEFT">
             <StackPane styleClass="bf-brand-logo" prefWidth="56" prefHeight="56">
                 <Group>
                     <!-- Anillo exterior -->
                     <Circle centerX="22" centerY="22" radius="20"
-                            stroke="#b794ff" strokeWidth="1.8" fill="transparent"/>
+                            stroke="#1ed760" strokeWidth="1.8" fill="transparent"/>
                     <!-- Punto central -->
-                    <Circle centerX="22" centerY="22" radius="6" fill="#b794ff"/>
+                    <Circle centerX="22" centerY="22" radius="6" fill="#1ed760"/>
                     <!-- 4 lineas en cruz (norte/sur/este/oeste) -->
                     <SVGPath content="M22 4 L22 16 M22 28 L22 40 M4 22 L16 22 M28 22 L40 22"
-                             stroke="#b794ff" strokeWidth="1.8"
+                             stroke="#1ed760" strokeWidth="1.8"
                              strokeLineCap="ROUND" fill="transparent"/>
                 </Group>
             </StackPane>
@@ -98,7 +98,7 @@
                 <HBox GridPane.columnIndex="0" GridPane.rowIndex="0"
                       styleClass="bf-auth-feat" spacing="12">
                     <StackPane styleClass="bf-auth-feat-icon">
-                        <Label text="★"/>
+                        <FontIcon iconLiteral="bi-star-fill" iconSize="14"/>
                     </StackPane>
                     <VBox spacing="2">
                         <Label text="Reseñas con calificación" styleClass="bf-auth-feat-title"/>
@@ -111,7 +111,7 @@
                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="0"
                       styleClass="bf-auth-feat" spacing="12">
                     <StackPane styleClass="bf-auth-feat-icon">
-                        <Label text="▣"/>
+                        <FontIcon iconLiteral="bi-map-fill" iconSize="14"/>
                     </StackPane>
                     <VBox spacing="2">
                         <Label text="Música del Barrio" styleClass="bf-auth-feat-title"/>
@@ -124,7 +124,7 @@
                 <HBox GridPane.columnIndex="0" GridPane.rowIndex="1"
                       styleClass="bf-auth-feat" spacing="12">
                     <StackPane styleClass="bf-auth-feat-icon">
-                        <Label text="⌛"/>
+                        <FontIcon iconLiteral="bi-clock-history" iconSize="14"/>
                     </StackPane>
                     <VBox spacing="2">
                         <Label text="Cápsulas del Tiempo" styleClass="bf-auth-feat-title"/>
@@ -137,7 +137,7 @@
                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="1"
                       styleClass="bf-auth-feat" spacing="12">
                     <StackPane styleClass="bf-auth-feat-icon">
-                        <Label text="♛"/>
+                        <FontIcon iconLiteral="bi-trophy-fill" iconSize="14"/>
                     </StackPane>
                     <VBox spacing="2">
                         <Label text="Sistema de logros" styleClass="bf-auth-feat-title"/>

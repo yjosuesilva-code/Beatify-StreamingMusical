@@ -47,6 +47,13 @@ public class PlaylistDAO {
 
     private static final String SQL_DELETE = "DELETE FROM PLAYLIST WHERE id_playlist = ?";
 
+    private static final String SQL_SELECT_BY_CLIENTE = """
+        SELECT id_playlist, nombre, descripcion, fecha_creacion, publica, CLIENTE_id_cliente
+          FROM PLAYLIST
+         WHERE CLIENTE_id_cliente = ?
+         ORDER BY id_playlist
+        """;
+
     private Playlist mapearResultSet(ResultSet rs) throws SQLException {
         Integer idPlaylist  = rs.getInt("id_playlist");
         String  nombre      = rs.getString("nombre");
@@ -159,5 +166,19 @@ public class PlaylistDAO {
         } catch (SQLException e) {
             throw new ConexionException("Error al eliminar playlist: " + e.getMessage(), e);
         }
+    }
+
+    public List<Playlist> listarPorCliente(final Integer idCliente) {
+        final List<Playlist> lista = new ArrayList<>();
+        try (Connection conn = Conexion.getInstancia().obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_BY_CLIENTE)) {
+            ps.setInt(1, idCliente);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapearResultSet(rs));
+            }
+        } catch (SQLException e) {
+            throw new ConexionException("Error al listar playlists del cliente: " + e.getMessage(), e);
+        }
+        return lista;
     }
 }
