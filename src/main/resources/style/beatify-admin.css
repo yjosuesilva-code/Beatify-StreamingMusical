@@ -1,0 +1,210 @@
+/*
+ * beatify-admin.css
+ * Estilos del panel de administración (admin.fxml + AdminController).
+ * Hereda los looked-up colors y tipografía de beatify-tokens.css.
+ */
+
+/* ============================ Sidebar ============================ */
+.bf-admin-sidebar {
+    -fx-background-color: -bf-bg-2;
+    -fx-border-color: -bf-border;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 26 14 18 14;
+}
+.bf-admin-brand {
+    -fx-font-family: "Sora";
+    -fx-font-size: 19px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -bf-accent;
+}
+.bf-admin-user {
+    -fx-font-family: "Manrope";
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -bf-text-muted;
+}
+.bf-admin-navlabel {
+    -fx-font-family: "Manrope";
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -bf-text-dim;
+    -fx-padding: 8 0 2 8;
+}
+
+/* Ítems de navegación */
+.bf-admin-nav {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-text-muted;
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-family: "Manrope";
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-padding: 10 14;
+    -fx-background-radius: 8;
+    -fx-graphic-text-gap: 12;
+}
+.bf-admin-nav:hover {
+    -fx-background-color: -bf-surface;
+    -fx-text-fill: -bf-text;
+}
+.bf-admin-nav .ikonli-font-icon { -fx-icon-color: -bf-text-muted; -fx-fill: -bf-text-muted; }
+.bf-admin-nav:hover .ikonli-font-icon { -fx-icon-color: -bf-text; -fx-fill: -bf-text; }
+.bf-admin-nav.is-active {
+    -fx-background-color: -bf-surface-2;
+    -fx-text-fill: -bf-text;
+    -fx-font-weight: 800;
+}
+.bf-admin-nav.is-active .ikonli-font-icon { -fx-icon-color: -bf-accent; -fx-fill: -bf-accent; }
+
+/* Cerrar sesión */
+.bf-admin-logout {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-danger;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-family: "Manrope";
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+    -fx-padding: 9 14;
+    -fx-alignment: CENTER_LEFT;
+    -fx-graphic-text-gap: 10;
+}
+.bf-admin-logout:hover { -fx-background-color: rgba(229, 115, 115, 0.12); }
+.bf-admin-logout .ikonli-font-icon { -fx-icon-color: -bf-danger; -fx-fill: -bf-danger; }
+
+/* ============================ Contenido ============================ */
+.bf-admin-content { -fx-padding: 30 36 24 36; }
+.bf-admin-eyebrow {
+    -fx-font-family: "Manrope";
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -bf-accent;
+}
+.bf-admin-title {
+    -fx-font-family: "Sora";
+    -fx-font-size: 27px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -bf-text;
+}
+.bf-admin-muted {
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-family: "Manrope";
+    -fx-font-size: 12.5px;
+}
+.bf-admin-summary {
+    -fx-text-fill: -bf-accent;
+    -fx-font-family: "Manrope";
+    -fx-font-weight: 800;
+    -fx-font-size: 14px;
+    -fx-background-color: rgba(30, 215, 96, 0.08);
+    -fx-border-color: rgba(30, 215, 96, 0.25);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 13 16;
+}
+
+/* ============================ Tarjetas (filas) ============================ */
+.bf-admin-card {
+    -fx-background-color: -bf-surface;
+    -fx-background-radius: 12;
+    -fx-border-color: -bf-border;
+    -fx-border-radius: 12;
+    -fx-padding: 13 16;
+}
+.bf-admin-card:hover {
+    -fx-background-color: -bf-surface-2;
+    -fx-border-color: -bf-border-strong;
+}
+.bf-admin-row-title {
+    -fx-text-fill: -bf-text;
+    -fx-font-family: "Manrope";
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+}
+.bf-admin-row-sub {
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-family: "Manrope";
+    -fx-font-size: 12px;
+}
+
+/* Badges / estados */
+.bf-admin-badge {
+    -fx-font-family: "Manrope";
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -bf-text-muted;
+    -fx-background-color: -bf-surface-2;
+    -fx-background-radius: 20;
+    -fx-padding: 3 11;
+}
+.bf-admin-badge.is-accent {
+    -fx-text-fill: -bf-accent;
+    -fx-background-color: rgba(30, 215, 96, 0.12);
+}
+.bf-admin-state-on {
+    -fx-text-fill: -bf-accent;
+    -fx-font-family: "Manrope"; -fx-font-size: 12px; -fx-font-weight: 700;
+}
+.bf-admin-state-off {
+    -fx-text-fill: -bf-danger;
+    -fx-font-family: "Manrope"; -fx-font-size: 12px; -fx-font-weight: 700;
+}
+
+/* ============================ Botones ============================ */
+.bf-admin-btn-primary {
+    -fx-background-color: -bf-accent;
+    -fx-text-fill: #07120b;
+    -fx-font-family: "Manrope"; -fx-font-weight: 800; -fx-font-size: 12.5px;
+    -fx-background-radius: 8; -fx-padding: 8 18; -fx-cursor: hand;
+}
+.bf-admin-btn-primary:hover { -fx-background-color: -bf-accent-deep; }
+
+.bf-admin-btn-danger {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bf-danger;
+    -fx-border-color: rgba(229, 115, 115, 0.40);
+    -fx-border-radius: 8;
+    -fx-font-family: "Manrope"; -fx-font-weight: 700; -fx-font-size: 12px;
+    -fx-background-radius: 8; -fx-padding: 7 14; -fx-cursor: hand;
+}
+.bf-admin-btn-danger:hover { -fx-background-color: rgba(229, 115, 115, 0.14); }
+
+.bf-admin-btn-soft {
+    -fx-background-color: -bf-surface-2;
+    -fx-text-fill: -bf-text;
+    -fx-font-family: "Manrope"; -fx-font-weight: 700; -fx-font-size: 12px;
+    -fx-background-radius: 8; -fx-padding: 7 16; -fx-cursor: hand;
+}
+.bf-admin-btn-soft:hover { -fx-background-color: -bf-border-strong; }
+.bf-admin-btn-soft.is-active { -fx-background-color: -bf-accent; -fx-text-fill: #07120b; }
+
+/* ============================ Inputs ============================ */
+.bf-admin-input {
+    -fx-background-color: -bf-bg-3;
+    -fx-text-fill: -bf-text;
+    -fx-prompt-text-fill: -bf-text-dim;
+    -fx-background-radius: 8;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-radius: 8;
+    -fx-font-family: "Manrope"; -fx-font-size: 13px;
+    -fx-padding: 7 10;
+}
+.bf-admin-input:focused { -fx-border-color: -bf-accent; }
+.text-area.bf-admin-input,
+.text-area.bf-admin-input .content { -fx-background-color: -bf-bg-3; }
+.text-area.bf-admin-input .text { -fx-fill: -bf-text; }
+
+.bf-admin-input.combo-box { -fx-background-color: -bf-bg-3; }
+.bf-admin-input.combo-box > .list-cell { -fx-text-fill: -bf-text; -fx-background-color: transparent; }
+.bf-admin-input.combo-box .arrow { -fx-background-color: -bf-text-muted; }
+
+.bf-admin-field-label {
+    -fx-text-fill: -bf-text;
+    -fx-font-family: "Manrope"; -fx-font-weight: 700; -fx-font-size: 12px;
+}
+.bf-admin-feedback {
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-family: "Manrope"; -fx-font-size: 12.5px;
+}

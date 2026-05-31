@@ -36,6 +36,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -54,9 +55,8 @@ import java.util.logging.Logger;
 
 /**
  * Panel de administración (admin.fxml). Solo accesible para cuentas con
- * rol ADMIN (el login enruta aquí). Fase 1: gestión de usuarios (listar y
- * activar/desactivar). Las secciones de catálogo, suscripciones/pagos y
- * notificaciones se irán habilitando.
+ * rol ADMIN (el login enruta aquí). Gestión de usuarios, notificaciones,
+ * suscripciones/pagos y catálogo. El estilo vive en beatify-admin.css.
  */
 public class AdminController {
 
@@ -66,6 +66,10 @@ public class AdminController {
     @FXML private Label  lblTituloSeccion;
     @FXML private VBox   contenido;
     @FXML private Button btnSalir;
+    @FXML private Button btnNavUsuarios;
+    @FXML private Button btnNavCatalogo;
+    @FXML private Button btnNavSuscripciones;
+    @FXML private Button btnNavNotificaciones;
 
     private final IClienteService clienteService = new ClienteService(new ClienteDAO());
     private final INotificacionService notificacionService =
@@ -105,11 +109,25 @@ public class AdminController {
         NavegacionUtil.cambiarA("/view/login.fxml", btnSalir);
     }
 
+    /** Resalta el ítem de navegación activo en el sidebar. */
+    private void marcarActiva(final Button activa) {
+        for (final Button b : new Button[]{
+                btnNavUsuarios, btnNavCatalogo, btnNavSuscripciones, btnNavNotificaciones}) {
+            if (b != null) {
+                b.getStyleClass().remove("is-active");
+            }
+        }
+        if (activa != null && !activa.getStyleClass().contains("is-active")) {
+            activa.getStyleClass().add("is-active");
+        }
+    }
+
     // -----------------------------------------------------------------
     // Sección: Usuarios
     // -----------------------------------------------------------------
 
     private void mostrarUsuarios() {
+        marcarActiva(btnNavUsuarios);
         lblTituloSeccion.setText("Usuarios");
         contenido.getChildren().clear();
         final List<Cliente> clientes;
@@ -127,40 +145,28 @@ public class AdminController {
     }
 
     private HBox filaUsuario(final Cliente c) {
-        final VBox info = new VBox(2);
-        final Label nombre = new Label(c.getNombre() + " " + c.getApellido());
-        nombre.setStyle("-fx-text-fill: white; -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 14px;");
-        final Label correo = new Label(c.getCorreo());
-        correo.setStyle("-fx-text-fill: #a7a7a7; -fx-font-family: 'Manrope'; -fx-font-size: 12px;");
-        info.getChildren().addAll(nombre, correo);
+        final VBox info = new VBox(2, rowTitle(c.getNombre() + " " + c.getApellido()), rowSub(c.getCorreo()));
         HBox.setHgrow(info, Priority.ALWAYS);
 
-        final Label rol = new Label(c.getRol() != null ? c.getRol() : "CLIENTE");
-        rol.setMinWidth(70);
-        rol.setStyle("-fx-text-fill: " + (c.esAdmin() ? "#1ed760" : "#6a6a6a")
-                + "; -fx-font-family: 'Manrope'; -fx-font-size: 11px; -fx-font-weight: bold;");
+        final Label rol = badge(c.getRol() != null ? c.getRol() : "CLIENTE", c.esAdmin());
 
         final boolean activo = Boolean.TRUE.equals(c.getActivo());
         final Label estado = new Label(activo ? "Activo" : "Inactivo");
-        estado.setMinWidth(70);
-        estado.setStyle("-fx-text-fill: " + (activo ? "#1ed760" : "#e0245e")
-                + "; -fx-font-family: 'Manrope'; -fx-font-size: 12px;");
+        estado.setMinWidth(72);
+        estado.getStyleClass().add(activo ? "bf-admin-state-on" : "bf-admin-state-off");
 
-        final HBox fila = new HBox(16, info, rol, estado);
-        fila.setAlignment(Pos.CENTER_LEFT);
-        fila.setStyle("-fx-background-color: #181818; -fx-background-radius: 10; -fx-padding: 12 16;");
+        final HBox fila = card(info, rol, estado);
 
         if (c.esAdmin()) {
             final Label tu = new Label("(tú)");
             tu.setMinWidth(96);
-            tu.setStyle("-fx-text-fill: #6a6a6a; -fx-font-family: 'Manrope'; -fx-font-size: 11px;");
+            tu.setAlignment(Pos.CENTER);
+            tu.getStyleClass().add("bf-admin-muted");
             fila.getChildren().add(tu);
         } else {
             final Button toggle = new Button(activo ? "Desactivar" : "Activar");
             toggle.setMinWidth(96);
-            toggle.setStyle("-fx-cursor: hand; -fx-background-radius: 8; -fx-text-fill: white;"
-                    + " -fx-font-family: 'Manrope'; -fx-font-size: 12px; -fx-padding: 7 14;"
-                    + " -fx-background-color: " + (activo ? "#e0245e" : "#1ed760") + ";");
+            toggle.getStyleClass().add(activo ? "bf-admin-btn-danger" : "bf-admin-btn-primary");
             toggle.setOnAction(e -> toggleActivo(c));
             fila.getChildren().add(toggle);
         }
@@ -185,6 +191,7 @@ public class AdminController {
     // -----------------------------------------------------------------
 
     private void mostrarNotificaciones() {
+        marcarActiva(btnNavNotificaciones);
         lblTituloSeccion.setText("Notificaciones");
         contenido.getChildren().clear();
 
@@ -225,12 +232,12 @@ public class AdminController {
         });
         chkTodos.selectedProperty().addListener((o, a, sel) -> cmbUsuario.setDisable(sel));
 
-        final Label feedback = textoInfo("");
+        inputs(txtTitulo, txtMensaje, cmbTipo, cmbUsuario);
 
-        final Button btnEnviar = new Button("Enviar");
-        btnEnviar.setStyle("-fx-cursor: hand; -fx-background-radius: 8; -fx-text-fill: black;"
-                + " -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-padding: 9 22;"
-                + " -fx-background-color: #1ed760;");
+        final Label feedback = new Label("");
+        feedback.getStyleClass().add("bf-admin-feedback");
+
+        final Button btnEnviar = botonVerde("Enviar");
         btnEnviar.setOnAction(e -> enviarNotificacion(
                 txtTitulo, txtMensaje, cmbTipo, chkTodos, cmbUsuario, usuarios, feedback));
 
@@ -286,6 +293,7 @@ public class AdminController {
     // -----------------------------------------------------------------
 
     private void mostrarSuscripciones() {
+        marcarActiva(btnNavSuscripciones);
         lblTituloSeccion.setText("Suscripciones y pagos");
         contenido.getChildren().clear();
 
@@ -325,9 +333,10 @@ public class AdminController {
                 .count();
 
         final Label resumen = new Label(String.format(
-                "Ingresos (pagos exitosos): $%,.0f   ·   %d suscripciones activas   ·   %d pagos",
+                "Ingresos (pagos exitosos): $%,.0f      ·      %d suscripciones activas      ·      %d pagos",
                 totalIngresos, activas, pagos.size()));
-        resumen.setStyle("-fx-text-fill: #1ed760; -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 14px;");
+        resumen.setMaxWidth(Double.MAX_VALUE);
+        resumen.getStyleClass().add("bf-admin-summary");
         contenido.getChildren().add(resumen);
 
         for (final Cliente c : usuarios) {
@@ -337,21 +346,15 @@ public class AdminController {
     }
 
     private HBox filaSuscripcion(final Cliente c, final TipoPlan planActual, final double pagado) {
-        final VBox info = new VBox(2);
-        final Label nombre = new Label(c.getNombre() + " " + c.getApellido());
-        nombre.setStyle("-fx-text-fill: white; -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 14px;");
-        final Label correo = new Label(c.getCorreo());
-        correo.setStyle("-fx-text-fill: #a7a7a7; -fx-font-family: 'Manrope'; -fx-font-size: 12px;");
-        info.getChildren().addAll(nombre, correo);
+        final VBox info = new VBox(2, rowTitle(c.getNombre() + " " + c.getApellido()), rowSub(c.getCorreo()));
         HBox.setHgrow(info, Priority.ALWAYS);
-
-        final Label plan = new Label(planActual.getEtiqueta());
-        plan.setMinWidth(90);
-        plan.setStyle("-fx-text-fill: #1ed760; -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 13px;");
 
         final Label pagadoLbl = new Label(String.format("Pagado: $%,.0f", pagado));
         pagadoLbl.setMinWidth(120);
-        pagadoLbl.setStyle("-fx-text-fill: #a7a7a7; -fx-font-family: 'Manrope'; -fx-font-size: 12px;");
+        pagadoLbl.getStyleClass().add("bf-admin-row-sub");
+
+        final Label plan = badge(planActual.getEtiqueta(), true);
+        plan.setMinWidth(92);
 
         final ComboBox<TipoPlan> cmbPlan = new ComboBox<>();
         cmbPlan.getItems().addAll(TipoPlan.values());
@@ -362,17 +365,13 @@ public class AdminController {
             }
             @Override public TipoPlan fromString(final String s) { return null; }
         });
+        inputs(cmbPlan);
 
         final Button btnCambiar = new Button("Cambiar");
-        btnCambiar.setStyle("-fx-cursor: hand; -fx-background-radius: 8; -fx-text-fill: black;"
-                + " -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 7 14;"
-                + " -fx-background-color: #1ed760;");
+        btnCambiar.getStyleClass().add("bf-admin-btn-primary");
         btnCambiar.setOnAction(e -> cambiarPlanDe(c, cmbPlan.getValue()));
 
-        final HBox fila = new HBox(14, info, pagadoLbl, plan, cmbPlan, btnCambiar);
-        fila.setAlignment(Pos.CENTER_LEFT);
-        fila.setStyle("-fx-background-color: #181818; -fx-background-radius: 10; -fx-padding: 12 16;");
-        return fila;
+        return card(info, pagadoLbl, plan, cmbPlan, btnCambiar);
     }
 
     private void cambiarPlanDe(final Cliente c, final TipoPlan nuevo) {
@@ -415,17 +414,17 @@ public class AdminController {
 
     private Button subNavBtn(final String texto, final String clave, final String activa,
                              final Runnable accion) {
-        final boolean on = clave.equals(activa);
         final Button b = new Button(texto);
-        b.setStyle("-fx-cursor: hand; -fx-background-radius: 8; -fx-font-family: 'Manrope';"
-                + " -fx-font-size: 13px; -fx-padding: 7 16;"
-                + (on ? " -fx-background-color: #1ed760; -fx-text-fill: black; -fx-font-weight: bold;"
-                      : " -fx-background-color: #232323; -fx-text-fill: white;"));
+        b.getStyleClass().add("bf-admin-btn-soft");
+        if (clave.equals(activa)) {
+            b.getStyleClass().add("is-active");
+        }
         b.setOnAction(e -> accion.run());
         return b;
     }
 
     private void mostrarCatalogoArtistas() {
+        marcarActiva(btnNavCatalogo);
         lblTituloSeccion.setText("Catálogo");
         contenido.getChildren().clear();
         contenido.getChildren().add(subNavCatalogo("artistas"));
@@ -440,9 +439,8 @@ public class AdminController {
         final TextField txtPais = new TextField();
         txtPais.setPromptText("País");
         txtPais.setMaxWidth(140);
-        final Button btnAgregar = new Button("Agregar");
-        btnAgregar.setStyle("-fx-cursor: hand; -fx-background-radius: 8; -fx-text-fill: black;"
-                + " -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-padding: 7 16; -fx-background-color: #1ed760;");
+        inputs(txtArtistico, txtNombre, txtPais);
+        final Button btnAgregar = botonVerde("Agregar");
         final HBox form = new HBox(8, txtArtistico, txtNombre, txtPais, btnAgregar);
         form.setAlignment(Pos.CENTER_LEFT);
         btnAgregar.setOnAction(e -> {
@@ -476,6 +474,7 @@ public class AdminController {
     }
 
     private void mostrarCatalogoAlbumes() {
+        marcarActiva(btnNavCatalogo);
         lblTituloSeccion.setText("Catálogo");
         contenido.getChildren().clear();
         contenido.getChildren().add(subNavCatalogo("albumes"));
@@ -507,6 +506,7 @@ public class AdminController {
             @Override public String toString(final Artista a) { return a == null ? "" : a.getNombreArtistico(); }
             @Override public Artista fromString(final String s) { return null; }
         });
+        inputs(txtTitulo, txtAnio, cmbTipo, cmbArtista);
         final Button btnAgregar = botonVerde("Agregar");
         btnAgregar.setOnAction(e -> agregarAlbum(txtTitulo, txtAnio, cmbTipo, cmbArtista));
         final HBox form = new HBox(8, txtTitulo, txtAnio, cmbTipo, cmbArtista, btnAgregar);
@@ -549,6 +549,7 @@ public class AdminController {
     }
 
     private void mostrarCatalogoCanciones() {
+        marcarActiva(btnNavCatalogo);
         lblTituloSeccion.setText("Catálogo");
         contenido.getChildren().clear();
         contenido.getChildren().add(subNavCatalogo("canciones"));
@@ -587,6 +588,7 @@ public class AdminController {
             @Override public String toString(final Genero g) { return g == null ? "" : g.getNombre(); }
             @Override public Genero fromString(final String s) { return null; }
         });
+        inputs(txtTitulo, txtDur, txtRuta, cmbAlbum, cmbGenero);
         final Button btnAgregar = botonVerde("Agregar");
         btnAgregar.setOnAction(e -> agregarCancion(txtTitulo, txtDur, txtRuta, cmbAlbum, cmbGenero));
         final HBox form = new HBox(8, txtTitulo, txtDur, txtRuta, cmbAlbum, cmbGenero, btnAgregar);
@@ -627,24 +629,16 @@ public class AdminController {
 
     /** Fila genérica del catálogo: título + subtítulo + botón Eliminar. */
     private HBox filaCatalogo(final String titulo, final String subtitulo, final Runnable onEliminar) {
-        final VBox info = new VBox(2);
-        final Label t = new Label(titulo != null ? titulo : "(sin título)");
-        t.setStyle("-fx-text-fill: white; -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 14px;");
-        final Label s = new Label(subtitulo);
-        s.setStyle("-fx-text-fill: #a7a7a7; -fx-font-family: 'Manrope'; -fx-font-size: 12px;");
-        info.getChildren().addAll(t, s);
+        final VBox info = new VBox(2,
+                rowTitle(titulo != null ? titulo : "(sin título)"), rowSub(subtitulo));
         HBox.setHgrow(info, Priority.ALWAYS);
 
         final Button btnEliminar = new Button("Eliminar");
         btnEliminar.setMinWidth(96);
-        btnEliminar.setStyle("-fx-cursor: hand; -fx-background-radius: 8; -fx-text-fill: white;"
-                + " -fx-font-family: 'Manrope'; -fx-font-size: 12px; -fx-padding: 7 14; -fx-background-color: #e0245e;");
+        btnEliminar.getStyleClass().add("bf-admin-btn-danger");
         btnEliminar.setOnAction(e -> onEliminar.run());
 
-        final HBox fila = new HBox(16, info, btnEliminar);
-        fila.setAlignment(Pos.CENTER_LEFT);
-        fila.setStyle("-fx-background-color: #181818; -fx-background-radius: 10; -fx-padding: 12 16;");
-        return fila;
+        return card(info, btnEliminar);
     }
 
     private void eliminarCatalogo(final Runnable accionEliminar, final Runnable refrescar) {
@@ -663,27 +657,62 @@ public class AdminController {
     }
 
     // -----------------------------------------------------------------
-    // Helpers
+    // Helpers de UI (estilo vía clases CSS en beatify-admin.css)
     // -----------------------------------------------------------------
+
+    /** Tarjeta-fila contenedora con los hijos dados. */
+    private HBox card(final javafx.scene.Node... hijos) {
+        final HBox fila = new HBox(14, hijos);
+        fila.setAlignment(Pos.CENTER_LEFT);
+        fila.getStyleClass().add("bf-admin-card");
+        return fila;
+    }
+
+    private Label rowTitle(final String texto) {
+        final Label l = new Label(texto);
+        l.getStyleClass().add("bf-admin-row-title");
+        return l;
+    }
+
+    private Label rowSub(final String texto) {
+        final Label l = new Label(texto);
+        l.getStyleClass().add("bf-admin-row-sub");
+        return l;
+    }
+
+    /** Pastilla (badge); {@code acento} la pinta en verde. */
+    private Label badge(final String texto, final boolean acento) {
+        final Label l = new Label(texto);
+        l.setAlignment(Pos.CENTER);
+        l.getStyleClass().add("bf-admin-badge");
+        if (acento) {
+            l.getStyleClass().add("is-accent");
+        }
+        return l;
+    }
 
     private Label textoInfo(final String texto) {
         final Label l = new Label(texto);
-        l.setStyle("-fx-text-fill: #a7a7a7; -fx-font-family: 'Manrope'; -fx-font-size: 13px;");
+        l.getStyleClass().add("bf-admin-muted");
         return l;
     }
 
     private Label campoLabel(final String texto) {
         final Label l = new Label(texto);
-        l.setStyle("-fx-text-fill: white; -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 12px;");
+        l.getStyleClass().add("bf-admin-field-label");
         return l;
     }
 
     private Button botonVerde(final String texto) {
         final Button b = new Button(texto);
-        b.setStyle("-fx-cursor: hand; -fx-background-radius: 8; -fx-text-fill: black;"
-                + " -fx-font-family: 'Manrope'; -fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 7 16;"
-                + " -fx-background-color: #1ed760;");
+        b.getStyleClass().add("bf-admin-btn-primary");
         return b;
+    }
+
+    private static void inputs(final Control... controles) {
+        for (final Control c : controles) {
+            c.getStyleClass().add("bf-admin-input");
+        }
     }
 
     private void avisar(final String mensaje) {

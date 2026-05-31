@@ -25,7 +25,8 @@ public final class NavegacionUtil {
             "/style/beatify-tokens.css",
             "/style/beatify-auth.css",
             "/style/beatify-home.css",
-            "/style/beatify-screens.css"
+            "/style/beatify-screens.css",
+            "/style/beatify-admin.css"
     };
 
     private NavegacionUtil() {
