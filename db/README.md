@@ -13,12 +13,33 @@ Esta carpeta contiene los scripts DDL y DML para levantar la base de datos del p
 
 Los scripts deben correrse en orden numérico. Cada uno asume que el anterior se ejecutó correctamente.
 
-| # | Script | Conectado como | Qué hace |
-|---|---|---|---|
-| 00 | `00_setup_user.sql` | `SYSTEM @ XEPDB1` | Crea el usuario `BEATIFY` con los privilegios mínimos necesarios. |
-| 01 | `01_schema_beatify.sql` | `BEATIFY @ XEPDB1` | Crea las 25 tablas, secuencias y constraints del modelo. |
-| 02 | `02_seed_data.sql` | `BEATIFY @ XEPDB1` | (Pendiente) Inserta datos de prueba: géneros, artistas, álbumes, canciones, clientes. |
-| 03 | `03_cache_apis.sql` | `BEATIFY @ XEPDB1` | Crea tablas de caché para APIs externas (MusicBrainz, Last.fm) y log de llamadas. |
+Todos los scripts (excepto el 00) se ejecutan conectado como `BEATIFY @ XEPDB1`.
+
+| # | Script | Qué hace |
+|---|---|---|
+| 00 | `00_setup_user.sql` | Crea el usuario `BEATIFY` con los privilegios mínimos (conectado como `SYSTEM @ XEPDB1`). |
+| 01 | `01_schema_beatify.sql` | Crea las 25 tablas, secuencias y constraints del modelo. |
+| 02 | `02_seed_data.sql` | Inserta datos de prueba: géneros, artistas, álbumes, canciones, clientes, suscripciones, pagos. |
+| 03 | `03_cache_apis.sql` | Tablas de caché para APIs externas (MusicBrainz, Last.fm) y log de llamadas. |
+| 04 | `04_cache_lastfm_artista.sql` | Tabla de caché de artistas de Last.fm. |
+| 05 | `05_plsql_resena.sql` | Lógica PL/SQL de reseñas. |
+| 06 | `06_sp_limpiar_cache.sql` | Procedimiento para limpiar la caché de APIs. |
+| 07 | `07_sp_reset_datos.sql` | Procedimiento para resetear los datos de prueba. |
+| 08 | `08_pkg_resenas.sql` | Paquete `PKG_RESENAS`. |
+| 09 | `09_alter_cliente_activo.sql` | Agrega la columna `activo` a `CLIENTE` (soft-delete). |
+| 10 | `10_pkg_cliente.sql` | Paquete `PKG_CLIENTE`. |
+| 11 | `11_pkg_suscripcion.sql` | Paquete `PKG_SUSCRIPCION` (activar / cancelar / tiene_activa). |
+| 12 | `12_pkg_reproduccion.sql` | Paquete `PKG_REPRODUCCION`. |
+| 13 | `13_pkg_logros.sql` | Paquete `PKG_LOGROS`. |
+| 14 | `14_cliente_genero.sql` | Tabla `CLIENTE_GENERO` (preferencias de género por cliente). |
+| 15 | `15_canciones_extra.sql` | Canciones adicionales para la demo. |
+| 16 | `16_alter_cliente_rol.sql` | **Agrega la columna `rol` a `CLIENTE` (`CLIENTE`/`ADMIN`) y crea la cuenta admin.** |
+| 16 | `16_fix_encoding.sql` | Corrige el doble-encoding UTF-8 en los datos demo (idempotente). |
+| 17 | `17_audio_fallback.sql` | Apunta las canciones sin MP3 propio a otra del mismo artista (solo demo). |
+
+> ⚠️ **Crítico tras integrar `dev`:** el script **`16_alter_cliente_rol.sql` es obligatorio**. El código ya hace `SELECT ... rol` sobre `CLIENTE`, así que **si no se corre, fallan todos los logins**. También son nuevos `14`, `15`, `16_fix_encoding` y `17`. Si clonas/actualizas la BD, corre los scripts que te falten en orden.
+>
+> 🎵 Los archivos de audio (`src/main/resources/audio/*.mp3`, ~380 MB) **no están versionados** (ver `.gitignore`). Sin ellos el reproductor cae a simulación; `17_audio_fallback.sql` ayuda a que la demo suene reusando los pocos MP3 disponibles.
 ## Procedimiento de despliegue
 
 1. Abrir **SQL Developer** y crear conexión `SYSTEM @ XEPDB1`.
@@ -35,7 +56,8 @@ Los scripts deben correrse en orden numérico. Cada uno asume que el anterior se
    SELECT COUNT(*) FROM user_sequences;
    -- Esperado: 24
 ```
-7. (Cuando exista) Ejecutar `02_seed_data.sql` para poblar la BD con datos de prueba.
+7. Ejecutar `02_seed_data.sql` para poblar la BD con datos de prueba.
+8. Ejecutar en orden el resto de scripts (`03` … `17`) según la tabla de arriba. No te saltes `16_alter_cliente_rol.sql` o el login dejará de funcionar.
 
 ## Credenciales (solo para entorno de desarrollo)
 
