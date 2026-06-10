@@ -67,7 +67,7 @@
             <HBox styleClass="bf-side-divider" alignment="CENTER_LEFT">
                 <Label text="TUS PLAYLISTS" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                 <Button styleClass="bf-side-plus" onAction="#onNuevaPlaylist">
-                    <graphic><FontIcon iconLiteral="bi-plus" iconSize="14"/></graphic>
+                    <graphic><FontIcon iconLiteral="bi-plus" iconSize="16" iconColor="#a7a7a7"/></graphic>
                 </Button>
             </HBox>
 
@@ -198,7 +198,7 @@
                                 <Label text=", Cesar — Colombia" styleClass="bf-barrio-city"/>
                             </HBox>
                             <Label wrapText="true" styleClass="bf-barrio-desc"
-                                   text="Lo que se escucha ahora mismo en tu ciudad, calculado en vivo sobre la tabla REPRODUCCION cruzando CLIENTE.ciudad."/>
+                                   text="Lo que se escucha ahora mismo en tu ciudad, calculado en vivo."/>
                             <Button text="Ver ranking completo →"
                                     styleClass="bf-btn-primary, bf-btn-primary-sm" onAction="#onIrBarrio"/>
                         </VBox>

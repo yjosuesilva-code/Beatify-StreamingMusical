@@ -49,7 +49,7 @@
             <HBox styleClass="bf-side-divider" alignment="CENTER_LEFT">
                 <Label text="TUS PLAYLISTS" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                 <Button styleClass="bf-side-plus" onAction="#onNuevaPlaylist">
-                    <graphic><FontIcon iconLiteral="bi-plus" iconSize="14"/></graphic>
+                    <graphic><FontIcon iconLiteral="bi-plus" iconSize="16" iconColor="#a7a7a7"/></graphic>
                 </Button>
             </HBox>
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS"

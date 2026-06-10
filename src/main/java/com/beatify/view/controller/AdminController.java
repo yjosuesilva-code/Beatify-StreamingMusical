@@ -1,7 +1,14 @@
 package com.beatify.view.controller;
 
+import com.beatify.api.LastFmClient;
+import com.beatify.api.MusicBrainzClient;
 import com.beatify.dao.AlbumDAO;
+import com.beatify.dao.ApiCallLogDAO;
 import com.beatify.dao.ArtistaDAO;
+import com.beatify.dao.ArtistaGeneroDAO;
+import com.beatify.dao.CacheLastFmAlbumDAO;
+import com.beatify.dao.CacheLastFmArtistaDAO;
+import com.beatify.dao.CacheMusicBrainzArtistaDAO;
 import com.beatify.dao.CancionDAO;
 import com.beatify.dao.GeneroDAO;
 import com.beatify.dao.ClienteDAO;
@@ -20,16 +27,21 @@ import com.beatify.model.TipoPlan;
 import com.beatify.service.AlbumService;
 import com.beatify.service.ArtistaService;
 import com.beatify.service.CancionService;
+import com.beatify.service.EnriquecimientoService;
 import com.beatify.service.GeneroService;
 import com.beatify.service.ClienteService;
 import com.beatify.service.IClienteService;
+import com.beatify.service.IEnriquecimientoService;
 import com.beatify.service.INotificacionService;
+import com.beatify.service.LastFmCacheService;
+import com.beatify.service.MusicBrainzCacheService;
 import com.beatify.service.NotificacionService;
 import com.beatify.service.PagoService;
 import com.beatify.service.SuscripcionService;
 import com.beatify.view.SessionContext;
 import com.beatify.view.util.NavegacionUtil;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -81,6 +93,33 @@ public class AdminController {
     private final AlbumService albumService = new AlbumService(new AlbumDAO());
     private final CancionService cancionService = new CancionService(new CancionDAO());
     private final GeneroService generoService = new GeneroService(new GeneroDAO());
+
+    /**
+     * Servicio de enriquecimiento (Last.fm + MusicBrainz). Se construye de forma
+     * perezosa la primera vez que se usa, porque depende de api.properties; si
+     * ese archivo falta, no queremos romper la apertura del panel admin.
+     */
+    private IEnriquecimientoService enriquecimientoService;
+
+    private IEnriquecimientoService enriquecimiento() {
+        if (enriquecimientoService == null) {
+            final ApiCallLogDAO apiLogDAO = new ApiCallLogDAO();
+            final var lastFmCache = new LastFmCacheService(
+                    new LastFmClient(),
+                    new CacheLastFmArtistaDAO(),
+                    new CacheLastFmAlbumDAO(),
+                    apiLogDAO);
+            final var musicBrainzCache = new MusicBrainzCacheService(
+                    new MusicBrainzClient(),
+                    new CacheMusicBrainzArtistaDAO(),
+                    apiLogDAO);
+            enriquecimientoService = new EnriquecimientoService(
+                    musicBrainzCache, lastFmCache,
+                    new ArtistaDAO(), new AlbumDAO(),
+                    new GeneroDAO(), new ArtistaGeneroDAO());
+        }
+        return enriquecimientoService;
+    }
 
     private static final List<String> TIPOS_NOTIFICACION =
             List.of("INFO", "PROMO", "RECOMENDACION", "SISTEMA");
@@ -441,18 +480,43 @@ public class AdminController {
         txtPais.setMaxWidth(140);
         inputs(txtArtistico, txtNombre, txtPais);
         final Button btnAgregar = botonVerde("Agregar");
-        final HBox form = new HBox(8, txtArtistico, txtNombre, txtPais, btnAgregar);
+        final Button btnAuto = botonVerde("Auto (internet)");
+        final HBox form = new HBox(8, txtArtistico, txtNombre, txtPais, btnAgregar, btnAuto);
         form.setAlignment(Pos.CENTER_LEFT);
         btnAgregar.setOnAction(e -> {
             try {
+                final String artistico  = txtArtistico.getText() == null ? "" : txtArtistico.getText().trim();
+                final String nombreReal = txtNombre.getText()    == null ? "" : txtNombre.getText().trim();
+                final String pais       = txtPais.getText()      == null ? "" : txtPais.getText().trim();
+
+                if (artistico.isEmpty()) {
+                    avisar("El nombre artístico es obligatorio.");
+                    return;
+                }
+
+                // La tabla ARTISTA exige NOMBRE y APELLIDO (NOT NULL). Derivamos
+                // ambos del "Nombre real": primer token = nombre, resto = apellido.
+                // Si el "Nombre real" viene en blanco o sin apellido, usamos el
+                // nombre artístico como respaldo para no enviar NULL (evita ORA-01400).
+                final String base = nombreReal.isEmpty() ? artistico : nombreReal;
+                final int sep = base.indexOf(' ');
+                final String nombre = (sep > 0) ? base.substring(0, sep).trim() : base;
+                String apellido     = (sep > 0) ? base.substring(sep + 1).trim() : "";
+                if (apellido.isEmpty()) {
+                    apellido = artistico;
+                }
+
                 artistaService.registrar(new Artista(
-                        txtNombre.getText(), null, txtArtistico.getText(),
-                        null, txtPais.getText(), null, null, null));
+                        nombre, apellido, artistico,
+                        null, pais.isEmpty() ? null : pais, null, null, null));
                 mostrarCatalogoArtistas();   // refrescar
             } catch (final RuntimeException ex) {
                 avisar("No se pudo agregar el artista: " + ex.getMessage());
             }
         });
+        // "Auto": usa Last.fm + MusicBrainz para traer bio, foto, país y géneros.
+        btnAuto.setOnAction(e -> agregarArtistaAuto(
+                txtArtistico.getText(), btnAuto, btnAgregar));
         contenido.getChildren().add(form);
 
         // --- Lista ---
@@ -471,6 +535,62 @@ public class AdminController {
                     a.getNombreArtistico(), sub, () -> eliminarCatalogo(
                             () -> artistaService.eliminar(a.getIdArtista()), this::mostrarCatalogoArtistas)));
         }
+    }
+
+    /**
+     * Alta de artista trayendo datos de internet (Last.fm + MusicBrainz).
+     * Solo necesita el nombre artístico; la API completa bio, foto, país y
+     * géneros. La llamada HTTP corre en un hilo de fondo (Task) para no
+     * congelar la interfaz; al terminar se refresca la lista en el hilo de UI.
+     */
+    private void agregarArtistaAuto(final String nombreArtisticoRaw,
+                                    final Button btnAuto, final Button btnAgregar) {
+        final String nombreArtistico = nombreArtisticoRaw == null ? "" : nombreArtisticoRaw.trim();
+        if (nombreArtistico.isEmpty()) {
+            avisar("Escribe el nombre artístico para buscarlo en internet.");
+            return;
+        }
+
+        btnAuto.setDisable(true);
+        btnAgregar.setDisable(true);
+        final String textoOriginal = btnAuto.getText();
+        btnAuto.setText("Buscando…");
+
+        final Task<Artista> tarea = new Task<>() {
+            @Override protected Artista call() {
+                return enriquecimiento().enriquecerArtista(nombreArtistico);
+            }
+        };
+
+        tarea.setOnSucceeded(ev -> {
+            btnAuto.setDisable(false);
+            btnAgregar.setDisable(false);
+            btnAuto.setText(textoOriginal);
+            final Artista a = tarea.getValue();
+            final String detalle =
+                    (a.getPais() != null ? "País: " + a.getPais() + "\n" : "")
+                  + (a.getBiografia() != null && !a.getBiografia().isBlank()
+                        ? "Bio: " + recortarTexto(a.getBiografia(), 160) : "Sin biografía en las APIs.");
+            avisar("Artista \"" + a.getNombreArtistico() + "\" agregado con datos de internet.\n\n" + detalle);
+            mostrarCatalogoArtistas();   // refrescar lista
+        });
+
+        tarea.setOnFailed(ev -> {
+            btnAuto.setDisable(false);
+            btnAgregar.setDisable(false);
+            btnAuto.setText(textoOriginal);
+            final Throwable err = tarea.getException();
+            final String msg = err == null ? "error desconocido" : err.getMessage();
+            avisar("No se encontró \"" + nombreArtistico + "\" en las APIs musicales.\n"
+                 + "Puedes agregarlo manualmente con el botón \"Agregar\".\n\nDetalle: " + msg);
+        });
+
+        new Thread(tarea, "alta-artista-auto").start();
+    }
+
+    private static String recortarTexto(final String s, final int max) {
+        if (s == null) return "";
+        return s.length() <= max ? s : s.substring(0, max) + "…";
     }
 
     private void mostrarCatalogoAlbumes() {
@@ -530,18 +650,28 @@ public class AdminController {
                               final ComboBox<String> cmbTipo, final ComboBox<Artista> cmbArtista) {
         final Artista artista = cmbArtista.getValue();
         if (artista == null) { avisar("Elige un artista para el álbum."); return; }
-        Integer anio = null;
+
+        // TITULO es NOT NULL en la tabla ALBUM.
+        final String titulo = txtTitulo.getText() == null ? "" : txtTitulo.getText().trim();
+        if (titulo.isEmpty()) { avisar("El título del álbum es obligatorio."); return; }
+
+        // ANIO_LANZAMIENTO es NOT NULL y tiene CHECK (entre 1900 y 2100).
+        // Antes se permitía vacío -> null -> ORA-01400. Ahora es obligatorio.
         final String anioTxt = txtAnio.getText() == null ? "" : txtAnio.getText().trim();
-        if (!anioTxt.isEmpty()) {
-            try {
-                anio = Integer.parseInt(anioTxt);
-            } catch (final NumberFormatException ex) {
-                avisar("El año debe ser un número."); return;
-            }
+        if (anioTxt.isEmpty()) { avisar("El año de lanzamiento es obligatorio."); return; }
+        final int anio;
+        try {
+            anio = Integer.parseInt(anioTxt);
+        } catch (final NumberFormatException ex) {
+            avisar("El año debe ser un número."); return;
         }
+        if (anio < 1900 || anio > 2100) {
+            avisar("El año de lanzamiento debe estar entre 1900 y 2100."); return;
+        }
+
         try {
             albumService.registrar(new Album(
-                    txtTitulo.getText(), anio, null, cmbTipo.getValue(), null, null, artista.getIdArtista()));
+                    titulo, anio, null, cmbTipo.getValue(), null, null, artista.getIdArtista()));
             mostrarCatalogoAlbumes();
         } catch (final RuntimeException ex) {
             avisar("No se pudo agregar el álbum: " + ex.getMessage());

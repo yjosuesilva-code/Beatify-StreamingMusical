@@ -356,37 +356,47 @@ public class PerfilController {
         final TextField txtTelefono = new TextField(c.getTelefono() == null ? "" : c.getTelefono());
         final TextField txtCiudad   = new TextField(c.getCiudad()   == null ? "" : c.getCiudad());
 
-        final GridPane grid = new GridPane();
-        grid.setHgap(12);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 20, 10, 20));
-
-        grid.add(new Label("Nombre:"),   0, 0); grid.add(txtNombre,   1, 0);
-        grid.add(new Label("Apellido:"), 0, 1); grid.add(txtApellido, 1, 1);
-        grid.add(new Label("Teléfono:"), 0, 2); grid.add(txtTelefono, 1, 2);
-        grid.add(new Label("Ciudad:"),   0, 3); grid.add(txtCiudad,   1, 3);
-
         txtNombre.setPrefWidth(220);
         txtApellido.setPrefWidth(220);
 
-        // ---- Diálogo ----
-        final Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Editar perfil");
-        dialog.setHeaderText("Actualiza tus datos personales");
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        // ---- Botones ----
+        final Button btnAceptar  = new Button("Guardar");
+        btnAceptar.getStyleClass().add("bf-btn-primary");
+        final Button btnCancelar = new Button("Cancelar");
+        btnCancelar.getStyleClass().add("bf-btn-ghost");
+        final Runnable validar = () -> btnAceptar.setDisable(
+                txtNombre.getText().isBlank() || txtApellido.getText().isBlank());
+        validar.run();
+        txtNombre.textProperty().addListener((obs, o, v) -> validar.run());
+        txtApellido.textProperty().addListener((obs, o, v) -> validar.run());
 
-        // Deshabilitar OK si nombre o apellido están vacíos
-        final javafx.scene.Node btnOk = dialog.getDialogPane().lookupButton(ButtonType.OK);
-        btnOk.setDisable(txtNombre.getText().isBlank() || txtApellido.getText().isBlank());
-        txtNombre.textProperty().addListener((obs, o, v) ->
-                btnOk.setDisable(v.isBlank() || txtApellido.getText().isBlank()));
-        txtApellido.textProperty().addListener((obs, o, v) ->
-                btnOk.setDisable(v.isBlank() || txtNombre.getText().isBlank()));
+        final javafx.scene.layout.HBox acciones =
+                new javafx.scene.layout.HBox(12, btnCancelar, btnAceptar);
+        acciones.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
-        dialog.showAndWait().ifPresent(tipo -> {
-            if (tipo != ButtonType.OK) return;
+        // ---- Tarjeta (overlay in-app) ----
+        final Label titulo = new Label("Editar perfil");
+        titulo.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+        final Label sub = new Label("Actualiza tus datos personales");
+        sub.setStyle("-fx-text-fill: #b3b3b3;");
 
+        final javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(12,
+                titulo, sub,
+                etiquetaForm("Nombre"),   txtNombre,
+                etiquetaForm("Apellido"), txtApellido,
+                etiquetaForm("Teléfono"), txtTelefono,
+                etiquetaForm("Ciudad"),   txtCiudad,
+                acciones);
+        card.setPadding(new Insets(28));
+        card.setMaxWidth(440);
+        card.setMaxHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        card.setStyle("-fx-background-color: #181818; -fx-background-radius: 16px;"
+                + " -fx-border-color: #2a2a2a; -fx-border-radius: 16px;");
+
+        final Runnable cerrar = com.beatify.view.util.OverlayUtil.mostrar(btnUserMenu, card);
+        btnCancelar.setOnAction(e -> cerrar.run());
+
+        btnAceptar.setOnAction(e -> {
             c.setNombre(txtNombre.getText().trim());
             c.setApellido(txtApellido.getText().trim());
             c.setTelefono(txtTelefono.getText().isBlank() ? null : txtTelefono.getText().trim());
@@ -395,6 +405,7 @@ public class PerfilController {
             try {
                 clienteDAO.actualizar(c);
                 SessionContext.getInstance().setClienteActual(c);
+                cerrar.run();
                 // Refrescar los labels del hero sin recargar la pantalla completa
                 configurarHero(c);
                 configurarTopBar(c);
@@ -406,6 +417,12 @@ public class PerfilController {
                 alert.showAndWait();
             }
         });
+    }
+
+    private static Label etiquetaForm(final String texto) {
+        final Label l = new Label(texto);
+        l.setStyle("-fx-text-fill: #b3b3b3; -fx-font-size: 12px;");
+        return l;
     }
 
     @FXML

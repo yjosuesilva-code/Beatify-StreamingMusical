@@ -514,6 +514,7 @@ public class CatalogoController {
     @FXML private void onIrBarrio()         { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
     @FXML private void onIrCapsulas()       { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
     @FXML private void onIrLogros()         { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onIrPerfil()         { HistorialNavegacion.getInstance().navegar("/view/perfil.fxml"); }
     @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(SessionContext.getInstance().getClienteActual()); }); }
     @FXML private void onVerTodosAlbumes()  { LOG.info("Ver todos los álbumes"); }
 

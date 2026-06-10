@@ -52,6 +52,17 @@ public class CancionDAO {
 
     private static final String SQL_DELETE = "DELETE FROM CANCION WHERE id_cancion = ?";
 
+    // Borrado de registros hijos que referencian la cancion por FK (NO ACTION).
+    // Se ejecutan antes del DELETE de CANCION para evitar ORA-02292.
+    private static final String SQL_DEL_LIKE_CANCION =
+            "DELETE FROM LIKE_CANCION      WHERE CANCION_id_cancion = ?";
+    private static final String SQL_DEL_REPRODUCCION =
+            "DELETE FROM REPRODUCCION      WHERE CANCION_id_cancion = ?";
+    private static final String SQL_DEL_CANCION_PLAYLIST =
+            "DELETE FROM CANCION_PLAYLIST  WHERE CANCION_id_cancion = ?";
+    private static final String SQL_DEL_COLABORACION =
+            "DELETE FROM COLABORACION      WHERE CANCION_id_cancion = ?";
+
     private Cancion mapearResultSet(ResultSet rs) throws SQLException {
         Integer idCancion        = rs.getInt("id_cancion");
         String  titulo           = rs.getString("titulo");
@@ -162,16 +173,73 @@ public class CancionDAO {
         }
     }
 
+    /**
+     * Elimina una cancion y, en cascada, todos sus registros hijos
+     * (likes, reproducciones, presencia en playlists y colaboraciones).
+     * Todo ocurre dentro de UNA transaccion: si algun paso falla, se hace
+     * rollback y la cancion queda intacta. Esto evita el ORA-02292 que
+     * producian las FKs NO ACTION.
+     */
     public void eliminar(Integer idCancion) {
-        try (Connection conn = Conexion.getInstancia().obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
-            ps.setInt(1, idCancion);
-            int filasAfectadas = ps.executeUpdate();
+        Connection conn = null;
+        try {
+            conn = Conexion.getInstancia().obtenerConexion();
+            conn.setAutoCommit(false);
+
+            // 1) Borrar hijos que referencian la cancion
+            borrarHijos(conn, SQL_DEL_LIKE_CANCION,     idCancion);
+            borrarHijos(conn, SQL_DEL_REPRODUCCION,     idCancion);
+            borrarHijos(conn, SQL_DEL_CANCION_PLAYLIST, idCancion);
+            borrarHijos(conn, SQL_DEL_COLABORACION,     idCancion);
+
+            // 2) Borrar la cancion
+            final int filasAfectadas;
+            try (PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
+                ps.setInt(1, idCancion);
+                filasAfectadas = ps.executeUpdate();
+            }
             if (filasAfectadas == 0) {
+                conn.rollback();
                 throw new NotFoundException("Cancion con id " + idCancion + " no encontrada");
             }
+
+            conn.commit();
         } catch (SQLException e) {
+            rollbackSilencioso(conn);
             throw new ConexionException("Error al eliminar cancion: " + e.getMessage(), e);
+        } catch (RuntimeException e) {
+            rollbackSilencioso(conn);
+            throw e;
+        } finally {
+            cerrar(conn);
+        }
+    }
+
+    private void borrarHijos(Connection conn, String sql, Integer idCancion) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idCancion);
+            ps.executeUpdate();
+        }
+    }
+
+    private void rollbackSilencioso(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (SQLException ignored) {
+                // nada que hacer si el rollback falla
+            }
+        }
+    }
+
+    private void cerrar(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException ignored) {
+                // nada que hacer al cerrar
+            }
         }
     }
 }

@@ -748,3 +748,80 @@
     -fx-background-color: rgba(255, 255, 255, 0.1);
     -fx-text-fill: -bf-text;
 }
+
+/* ================================================================
+   POPUPS DEL TOPBAR — menú de usuario + panel de notificaciones
+   (ContextMenu estilizados; heredan los stylesheets de la ventana)
+   ================================================================ */
+
+/* Chrome del context-menu: fondo oscuro, borde sutil, sombra y esquinas */
+.bf-user-menu,
+.bf-notif-menu {
+    -fx-background-color: -bf-surface-2;        /* #282828 */
+    -fx-background-insets: 0;
+    -fx-background-radius: 12;
+    -fx-border-color: -bf-border-strong;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.55), 26, 0.2, 0, 10);
+}
+
+/* Separadores oscuros (en vez de la línea clara por defecto) */
+.bf-user-menu .separator .line,
+.bf-notif-menu .separator .line {
+    -fx-border-color: -bf-border;
+    -fx-border-width: 0.5 0 0 0;
+    -fx-padding: 0;
+}
+
+/* ---------- Menú de usuario ---------- */
+.bf-user-menu .menu-item {
+    -fx-background-radius: 8;
+    -fx-padding: 2 6 2 6;
+}
+.bf-user-menu .menu-item:focused,
+.bf-user-menu .menu-item:hovered {
+    -fx-background-color: rgba(255, 255, 255, 0.10);   /* reemplaza el azul de sistema */
+}
+.bf-um-header { -fx-padding: 6 10 8 10; }
+.bf-um-name   { -fx-text-fill: -bf-text;       -fx-font-size: 13.5px; -fx-font-weight: bold; }
+.bf-um-mail   { -fx-text-fill: -bf-text-muted; -fx-font-size: 11.5px; }
+.bf-um-row    { -fx-padding: 8; }
+.bf-um-lbl    { -fx-text-fill: -bf-text;        -fx-font-size: 13px; -fx-font-weight: bold; }
+.bf-um-icon   { -fx-icon-color: -bf-text-muted; }
+.bf-um-danger .bf-um-lbl  { -fx-text-fill: #ff8a8a; }
+.bf-um-danger .bf-um-icon { -fx-icon-color: #ff8a8a; }
+
+/* ---------- Panel de notificaciones ---------- */
+.bf-notif-menu .menu-item {
+    -fx-background-radius: 10;
+    -fx-padding: 2 4 2 4;
+}
+.bf-notif-menu .menu-item:focused,
+.bf-notif-menu .menu-item:hovered {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+.bf-notif-header {
+    -fx-text-fill: -bf-text-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 8 2 8;
+}
+.bf-notif-card           { -fx-padding: 8 10 8 8; -fx-background-radius: 10; }
+.bf-notif-card.is-unread {
+    -fx-border-color: -bf-accent;
+    -fx-border-width: 0 0 0 2;
+}
+.bf-notif-chip {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-radius: 9;
+    -fx-min-width: 32;  -fx-min-height: 32;
+    -fx-max-width: 32;  -fx-max-height: 32;
+    -fx-alignment: center;
+}
+.bf-notif-icon  { -fx-icon-color: -bf-accent; }
+.bf-notif-title { -fx-text-fill: -bf-text;       -fx-font-size: 13px;   -fx-font-weight: bold; }
+.bf-notif-title.is-read { -fx-text-fill: -bf-text-muted; }
+.bf-notif-msg   { -fx-text-fill: #b3b3b3;        -fx-font-size: 11.5px; }
+.bf-notif-date  { -fx-text-fill: -bf-text-dim;   -fx-font-size: 10.5px; }

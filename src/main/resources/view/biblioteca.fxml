@@ -22,43 +22,55 @@
 <HBox VBox.vgrow="ALWAYS" style="-fx-background-color: #0a0a0a;">
 
     <!-- ═══════════════ SIDEBAR ═══════════════ -->
-    <VBox styleClass="bf-sidebar" prefWidth="220" minWidth="220">
+    <VBox styleClass="bf-sidebar" prefWidth="240" minWidth="240" spacing="2">
         <VBox.margin><Insets/></VBox.margin>
 
         <Label text="beatify" styleClass="bf-logo"/>
 
-        <Button text="Inicio"            styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrInicio">
-            <graphic><FontIcon iconLiteral="bi-house"/></graphic></Button>
-        <Button text="Explorar"          styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrExplorar">
-            <graphic><FontIcon iconLiteral="bi-search"/></graphic></Button>
-        <Button text="Tu biblioteca"     styleClass="bf-side-item, is-active" maxWidth="Infinity" onAction="#onIrBiblioteca">
-            <graphic><FontIcon iconLiteral="bi-collection"/></graphic></Button>
+        <Label text="PRINCIPAL" styleClass="bf-side-divider"/>
+        <Button text="Inicio" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrInicio">
+            <graphic><FontIcon iconLiteral="bi-house" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
+        <Button text="Explorar" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrExplorar">
+            <graphic><FontIcon iconLiteral="bi-search" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
+        <Button text="Tu biblioteca" styleClass="bf-side-item, is-active" maxWidth="Infinity" onAction="#onIrBiblioteca">
+            <graphic><FontIcon iconLiteral="bi-collection" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
 
-        <Region VBox.vgrow="NEVER" prefHeight="12"/>
-
-        <Button text="Reseñas"           styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrResenas">
-            <graphic><FontIcon iconLiteral="bi-star"/></graphic></Button>
+        <Label text="DIFERENCIADORES" styleClass="bf-side-divider"/>
+        <Button text="Reseñas" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrResenas">
+            <graphic><FontIcon iconLiteral="bi-star" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
         <Button text="Música del Barrio" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrBarrio">
-            <graphic><FontIcon iconLiteral="bi-geo-alt"/></graphic></Button>
-        <Button text="Cápsulas"          styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrCapsulas">
-            <graphic><FontIcon iconLiteral="bi-clock"/></graphic></Button>
-        <Button text="Logros"            styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrLogros">
-            <graphic><FontIcon iconLiteral="bi-trophy"/></graphic></Button>
+            <graphic><FontIcon iconLiteral="bi-geo-alt" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
+        <Button text="Cápsulas del Tiempo" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrCapsulas">
+            <graphic><FontIcon iconLiteral="bi-clock" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
+        <Button text="Logros" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrLogros">
+            <graphic><FontIcon iconLiteral="bi-trophy" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
 
-        <Region VBox.vgrow="ALWAYS"/>
-
-        <HBox styleClass="bf-side-pl-header" alignment="CENTER_LEFT">
-            <Label text="PLAYLISTS" styleClass="bf-side-pl-title" HBox.hgrow="ALWAYS"/>
+        <HBox styleClass="bf-side-divider" alignment="CENTER_LEFT">
+            <Label text="TUS PLAYLISTS" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Button styleClass="bf-side-plus" onAction="#onNuevaPlaylist">
-                <graphic><FontIcon iconLiteral="bi-plus"/></graphic>
+                <graphic><FontIcon iconLiteral="bi-plus" iconSize="16" iconColor="#a7a7a7"/></graphic>
             </Button>
         </HBox>
-        <VBox fx:id="sidebarPlaylistsBox" spacing="2"/>
 
-        <Region prefHeight="12"/>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS"
+                    style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox fx:id="sidebarPlaylistsBox" spacing="2"/>
+        </ScrollPane>
+
+        <Button text="Perfil" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrPerfil">
+            <graphic><FontIcon iconLiteral="bi-person" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
+        <Region VBox.vgrow="SOMETIMES" minHeight="8"/>
         <Button text="Cerrar sesión" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onCerrarSesion">
-            <graphic><FontIcon iconLiteral="bi-box-arrow-right"/></graphic></Button>
-        <Region prefHeight="8"/>
+            <graphic><FontIcon iconLiteral="bi-box-arrow-right" iconSize="16" iconColor="#a7a7a7"/></graphic>
+        </Button>
     </VBox>
 
     <!-- ═══════════════ MAIN ═══════════════ -->

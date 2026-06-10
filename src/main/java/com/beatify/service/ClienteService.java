@@ -2,6 +2,7 @@ package com.beatify.service;
 
 import com.beatify.dao.ClienteDAO;
 import com.beatify.exceptions.AutenticacionException;
+import com.beatify.exceptions.ConexionException;
 import com.beatify.exceptions.NotFoundException;
 import com.beatify.exceptions.ValidacionException;
 import com.beatify.model.Cliente;
@@ -25,6 +26,9 @@ public class ClienteService implements IClienteService {
             throw new ValidacionException(
                     "La contraseña debe tener al menos 6 caracteres");
         }
+
+        cliente.setCorreo(cliente.getCorreo().trim().toLowerCase());
+
         try {
             clienteDAO.buscarPorCorreo(cliente.getCorreo());
 
@@ -39,7 +43,29 @@ public class ClienteService implements IClienteService {
         if (cliente.getFechaRegistro() == null) {
             cliente.setFechaRegistro(LocalDate.now());
         }
-        return clienteDAO.insertar(cliente);
+
+        try {
+            return clienteDAO.insertar(cliente);
+        } catch (ConexionException e) {
+            if (esCorreoDuplicado(e)) {
+                throw new ValidacionException("Ya existe un cliente con ese correo");
+            }
+            throw e;
+        }
+    }
+
+    private boolean esCorreoDuplicado(final Throwable e) {
+        Throwable t = e;
+        while (t != null) {
+            final String msg = t.getMessage();
+            if (msg != null
+                    && (msg.contains("ORA-00001")
+                        || msg.toUpperCase().contains("CLIENTE_CORREO_UN"))) {
+                return true;
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 
 
@@ -109,11 +135,7 @@ public class ClienteService implements IClienteService {
         clienteDAO.actualizarPassword(idCliente, PasswordUtil.hash(passwordNueva));
     }
 
-    /**
-     * Restablece la contraseña a partir del correo, sin requerir la contraseña
-     * actual (flujo "olvidé mi contraseña"). Lanza NotFoundException si el
-     * correo no existe.
-     */
+
     @Override
     public void resetearPassword(final String correo, final String passwordNueva) {
         if (correo == null || correo.isBlank()) {
@@ -126,11 +148,7 @@ public class ClienteService implements IClienteService {
         clienteDAO.actualizarPassword(cliente.getIdCliente(), PasswordUtil.hash(passwordNueva));
     }
 
-    /**
-     * Inicio de sesión vía proveedor externo (SSO). El proveedor ya validó la
-     * identidad, así que solo resolvemos el cliente por su correo — sin verificar
-     * contraseña. Lanza NotFoundException si la cuenta no existe.
-     */
+
     @Override
     public Cliente iniciarSesionSSO(final String correo) {
         if (correo == null || correo.isBlank()) {

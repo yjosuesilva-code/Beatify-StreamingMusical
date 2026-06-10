@@ -6,15 +6,19 @@ import com.beatify.model.Cliente;
 import com.beatify.model.Notificacion;
 import com.beatify.view.SessionContext;
 
+import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
+
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,7 +27,8 @@ import java.util.logging.Logger;
 
 /**
  * Construye y muestra el panel desplegable de notificaciones (campana del topbar).
- * Trae las notificaciones reales del cliente desde NOTIFICACION (no leídas primero).
+ * Diseño: tarjeta oscura con cabecera y notificaciones en formato "card"
+ * (chip de icono por tipo + título + mensaje + fecha), las no leídas resaltadas.
  * Llamar desde onNotif() en cualquier controller de app.
  */
 public final class NotificacionMenuUtil {
@@ -53,7 +58,7 @@ public final class NotificacionMenuUtil {
      * Aplica el conteo real de no leídas al badge y lo oculta si es 0.
      * Llamar desde configurarTopBar de cada controller.
      */
-    public static void aplicarBadge(final javafx.scene.control.Label badge, final Integer idCliente) {
+    public static void aplicarBadge(final Label badge, final Integer idCliente) {
         if (badge == null) return;
         final int n = contarNoLeidas(idCliente);
         badge.setText(String.valueOf(n));
@@ -73,14 +78,14 @@ public final class NotificacionMenuUtil {
      * Igual que {@link #mostrar(Button)} pero refresca el {@code badge} en vivo
      * cuando se marca una notificación como leída.
      */
-    public static void mostrar(final Button ancla, final javafx.scene.control.Label badge) {
+    public static void mostrar(final Button ancla, final Label badge) {
         final ContextMenu menu = new ContextMenu();
         menu.getStyleClass().add("bf-notif-menu");
 
         final Cliente actual = SessionContext.getInstance().getClienteActual();
         if (actual == null || actual.getIdCliente() == null) {
             menu.getItems().add(itemMensaje("Inicia sesión para ver tus notificaciones."));
-            menu.show(ancla, Side.BOTTOM, 0, 4);
+            menu.show(ancla, Side.BOTTOM, 0, 6);
             return;
         }
         final Integer idCli = actual.getIdCliente();
@@ -105,7 +110,7 @@ public final class NotificacionMenuUtil {
                 menu.getItems().add(itemMensaje("Sin notificaciones por ahora."));
             } else {
                 // Cabecera
-                menu.getItems().add(itemMensaje("NOTIFICACIONES"));
+                menu.getItems().add(itemMensaje("Notificaciones"));
                 menu.getItems().add(new SeparatorMenuItem());
 
                 for (final Notificacion n : propias) {
@@ -114,47 +119,54 @@ public final class NotificacionMenuUtil {
             }
         } catch (final ConexionException ex) {
             LOG.log(Level.WARNING, "Error cargando notificaciones", ex);
-            menu.getItems().add(itemMensaje("Error de conexión al cargar notificaciones."));
+            menu.getItems().add(itemMensaje("No se pudieron cargar las notificaciones."));
         }
 
-        menu.show(ancla, Side.BOTTOM, 0, 4);
+        menu.show(ancla, Side.BOTTOM, 0, 6);
     }
 
     /**
-     * Construye un MenuItem custom con título + mensaje + fecha,
-     * para que se vea como tarjeta y no como item de menú plano.
+     * Construye una "card" de notificación: chip de icono por tipo + título +
+     * mensaje + fecha. Las no leídas llevan título en blanco y una franja de acento.
      */
     private static CustomMenuItem construirItem(final Notificacion n,
-                                                final javafx.scene.control.Label badge,
+                                                final Label badge,
                                                 final Integer idCliente) {
-        final VBox box = new VBox(3);
-        box.setMaxWidth(320);
-        box.setStyle("-fx-padding: 2 4 4 4;");
+        final boolean noLeida = "N".equalsIgnoreCase(n.getLeida());
 
-        // Línea 1: emoji por tipo + título
-        final String emoji = emojiPorTipo(n.getTipo());
-        final Text titulo = new Text(emoji + "  " + (n.getTitulo() == null ? "Notificación" : n.getTitulo()));
-        titulo.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;"
-                + " -fx-fill: " + ("N".equalsIgnoreCase(n.getLeida()) ? "white" : "#a7a7a7") + ";");
-        final TextFlow tFlow = new TextFlow(titulo);
-        tFlow.setMaxWidth(320);
+        // Chip con el icono del tipo
+        final FontIcon icon = iconoSeguro(iconoPorTipo(n.getTipo()));
+        icon.setIconSize(15);
+        icon.getStyleClass().add("bf-notif-icon");
+        final StackPane chip = new StackPane(icon);
+        chip.getStyleClass().add("bf-notif-chip");
 
-        // Línea 2: mensaje truncado
-        final String msg = n.getMensaje() == null ? "" : n.getMensaje();
-        final String msgCorto = msg.length() > 90 ? msg.substring(0, 90) + "…" : msg;
-        final Text mensaje = new Text(msgCorto);
-        mensaje.setStyle("-fx-font-size: 11.5px; -fx-fill: #b3b3b3;");
-        final TextFlow mFlow = new TextFlow(mensaje);
-        mFlow.setMaxWidth(320);
+        // Título
+        final Label titulo = new Label(n.getTitulo() == null ? "Notificación" : n.getTitulo());
+        titulo.getStyleClass().add("bf-notif-title");
+        if (!noLeida) titulo.getStyleClass().add("is-read");
+        titulo.setWrapText(true);
+        titulo.setMaxWidth(240);
 
-        // Línea 3: fecha
-        final String fechaStr = n.getFechaEnvio() == null ? "" : n.getFechaEnvio().format(FMT);
-        final Text fecha = new Text(fechaStr);
-        fecha.setStyle("-fx-font-size: 10.5px; -fx-fill: #6a6a6a; -fx-font-family: 'JetBrains Mono';");
+        // Mensaje
+        final Label mensaje = new Label(n.getMensaje() == null ? "" : n.getMensaje());
+        mensaje.getStyleClass().add("bf-notif-msg");
+        mensaje.setWrapText(true);
+        mensaje.setMaxWidth(240);
 
-        box.getChildren().addAll(tFlow, mFlow, fecha);
+        // Fecha
+        final Label fecha = new Label(n.getFechaEnvio() == null ? "" : n.getFechaEnvio().format(FMT));
+        fecha.getStyleClass().add("bf-notif-date");
 
-        final CustomMenuItem item = new CustomMenuItem(box, false);
+        final VBox textos = new VBox(2, titulo, mensaje, fecha);
+
+        final HBox row = new HBox(11, chip, textos);
+        row.setAlignment(Pos.TOP_LEFT);
+        row.setMaxWidth(280);
+        row.getStyleClass().add("bf-notif-card");
+        if (noLeida) row.getStyleClass().add("is-unread");
+
+        final CustomMenuItem item = new CustomMenuItem(row, true);
         item.setHideOnClick(true);
         item.setOnAction(e -> {
             marcarLeida(n);
@@ -163,11 +175,11 @@ public final class NotificacionMenuUtil {
         return item;
     }
 
-    /** Item simple con texto plano (cabeceras / mensaje vacío). */
+    /** Item simple con texto plano (cabecera / mensaje vacío / error). */
     private static MenuItem itemMensaje(final String texto) {
-        final Text t = new Text(texto);
-        t.setStyle("-fx-fill: #a7a7a7; -fx-font-size: 11.5px; -fx-font-weight: bold;");
-        final CustomMenuItem item = new CustomMenuItem(t, false);
+        final Label l = new Label(texto);
+        l.getStyleClass().add("bf-notif-header");
+        final CustomMenuItem item = new CustomMenuItem(l, false);
         item.setHideOnClick(false);
         return item;
     }
@@ -183,14 +195,24 @@ public final class NotificacionMenuUtil {
         }
     }
 
-    private static String emojiPorTipo(final String tipo) {
-        if (tipo == null) return "🔔";
+    /** Crea el FontIcon; si el literal no existe en el pack, cae a la campana. */
+    private static FontIcon iconoSeguro(final String literal) {
+        try {
+            return new FontIcon(literal);
+        } catch (final RuntimeException ex) {
+            LOG.log(Level.FINE, "Icono no disponible: " + literal, ex);
+            return new FontIcon("bi-bell");
+        }
+    }
+
+    private static String iconoPorTipo(final String tipo) {
+        if (tipo == null) return "bi-bell";
         return switch (tipo.toUpperCase()) {
-            case "PROMO"         -> "🎁";
-            case "RECOMENDACION" -> "🎵";
-            case "SISTEMA"       -> "⚙";
-            case "INFO"          -> "ℹ";
-            default              -> "🔔";
+            case "PROMO"         -> "bi-gift";
+            case "RECOMENDACION" -> "bi-music-note-beamed";
+            case "SISTEMA"       -> "bi-gear";
+            case "INFO"          -> "bi-info-circle";
+            default              -> "bi-bell";
         };
     }
 }

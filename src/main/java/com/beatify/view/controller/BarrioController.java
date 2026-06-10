@@ -358,6 +358,7 @@ public class BarrioController {
     @FXML private void onIrBarrio()     { /* ya estamos */ }
     @FXML private void onIrCapsulas()   { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
     @FXML private void onIrLogros()     { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onIrPerfil()     { HistorialNavegacion.getInstance().navegar("/view/perfil.fxml"); }
     @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(SessionContext.getInstance().getClienteActual()); }); }
 
     @FXML

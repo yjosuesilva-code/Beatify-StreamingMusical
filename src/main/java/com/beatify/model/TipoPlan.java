@@ -41,27 +41,16 @@ public enum TipoPlan {
         }
     }
 
-    /** Codigo persistido en BD y en {@code Suscripcion.tipoPlan}. */
     private final String nombre;
-    /** Nombre para mostrar en la UI. */
     private final String etiqueta;
-    /** Precio mensual en COP. */
     private final double precioMensual;
-    /** Numero de perfiles/cuentas que admite el plan. */
     private final int perfiles;
-    /** Cada cuantas canciones se intercala un anuncio; 0 = sin anuncios. */
     private final int frecuenciaAnuncioCanciones;
-    /** {@code true} si permite descargar contenido para escuchar sin conexion. */
     private final boolean descargasOffline;
-    /** Maximo de saltos manuales por hora; valor negativo = ilimitado. */
     private final int maxSaltosPorHora;
-    /** Calidad de audio del plan. */
     private final CalidadAudio calidadAudio;
-    /** Numero de reproducciones simultaneas permitidas. */
     private final int reproduccionesSimultaneas;
-    /** {@code true} si requiere verificacion (p.ej. matricula de estudiante). */
     private final boolean requiereVerificacion;
-    /** {@code true} si el plan vence y debe renovarse (FREE no vence). */
     private final boolean venceMensual;
 
     TipoPlan(final String nombre, final String etiqueta, final double precioMensual,

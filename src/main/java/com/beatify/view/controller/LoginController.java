@@ -35,7 +35,8 @@ import java.util.logging.Logger;
  *   4. Si exito: guarda el Cliente en {@link SessionContext} y navega a home.fxml.
  *   5. Si {@link AutenticacionException}: muestra mensaje generico (anti-enumeracion).
  *
- * Los botones SSO (Google / GitHub / Univ. del Cesar) son stubs deshabilitados.
+ * El boton SSO de Google es un acceso rapido demo: entra a una cuenta del
+ * seed sin pedir contraseña (ver {@link #onSSO}).
  * La persistencia del checkbox "mantener sesion" es un bloque backend aparte
  * (por ahora se guarda solo en memoria via SessionContext).
  */
@@ -57,8 +58,6 @@ public class LoginController {
     @FXML private Button    btnIngresar;
     @FXML private Button    btnToggleEye;
     @FXML private Button    btnGoogle;
-    @FXML private Button    btnGitHub;
-    @FXML private Button    btnUPC;
     @FXML private Hyperlink linkRegistro;
 
     // ---- Icono del ojo (para alternar visibility/visibility-off) ----
@@ -80,13 +79,9 @@ public class LoginController {
 
     @FXML
     private void initialize() {
-        // ----- SSO (inicio rápido demo): cada proveedor mapea a una cuenta del seed -----
+        // ----- SSO (inicio rápido demo): mapea a una cuenta del seed -----
         btnGoogle.setTooltip(new Tooltip("Entrar con Google (demo)"));
-        btnGitHub.setTooltip(new Tooltip("Entrar con GitHub (demo)"));
-        btnUPC.setTooltip(new Tooltip("Entrar con SSO Universidad del Cesar (demo)"));
         btnGoogle.setOnAction(e -> onSSO("Google", "yilver.test@unicesar.edu.co"));
-        btnGitHub.setOnAction(e -> onSSO("GitHub", "andres.test@unicesar.edu.co"));
-        btnUPC.setOnAction(e    -> onSSO("Univ. del Cesar", "kendrick.test@unicesar.edu.co"));
 
         // ----- Enter en cualquier input dispara el submit -----
         txtCorreo.setOnAction(e -> onIngresar());
@@ -224,7 +219,8 @@ public class LoginController {
 
 
     private void mostrarError(final String code, final String msg) {
-        lblErrorCode.setText(code);
+        lblErrorCode.setVisible(false);
+        lblErrorCode.setManaged(false);
         lblErrorMsg.setText(msg);
         boxError.setVisible(true);
         boxError.setManaged(true);

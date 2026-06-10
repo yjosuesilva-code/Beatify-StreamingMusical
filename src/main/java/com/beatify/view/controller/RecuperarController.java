@@ -144,7 +144,8 @@ public class RecuperarController {
 
     // ----- helpers -----
     private void mostrar(final String code, final String msg) {
-        lblErrorCode.setText(code);
+        lblErrorCode.setVisible(false);
+        lblErrorCode.setManaged(false);
         lblErrorMsg.setText(msg);
         boxError.setVisible(true);
         boxError.setManaged(true);

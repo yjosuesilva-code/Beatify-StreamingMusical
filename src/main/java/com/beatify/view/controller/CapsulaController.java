@@ -477,6 +477,7 @@ public class CapsulaController {
     @FXML private void onIrBarrio() { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
     @FXML private void onIrCapsulas() { /* ya estamos aquí */ }
     @FXML private void onIrLogros() { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onIrPerfil() { HistorialNavegacion.getInstance().navegar("/view/perfil.fxml"); }
     @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(); }); }
     @FXML
     private void onCerrarSesion() {

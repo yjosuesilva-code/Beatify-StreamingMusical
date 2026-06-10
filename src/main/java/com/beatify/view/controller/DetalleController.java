@@ -1,10 +1,13 @@
 package com.beatify.view.controller;
 
 import com.beatify.dao.PlaylistDAO;
+import com.beatify.dao.SeguimientoDAO;
 import com.beatify.exceptions.ConexionException;
 import com.beatify.model.Cancion;
 import com.beatify.model.Cliente;
 import com.beatify.model.Playlist;
+import com.beatify.model.Seguimiento;
+import com.beatify.service.SeguimientoService;
 import com.beatify.util.Conexion;
 import com.beatify.view.SessionContext;
 import com.beatify.view.component.AlbumCover;
@@ -60,9 +63,14 @@ public class DetalleController {
     @FXML private Label     lblNotifCount, lblUserNombre, lblTipo, lblNombre, lblSubtitulo, lblConteo;
     @FXML private StackPane userAvatarHolder, coverHolder;
     @FXML private VBox      sidebarPlaylistsBox, tracklistBox;
+    @FXML private HBox      accionesBox;
 
     private final PlaylistDAO playlistDAO = new PlaylistDAO();
+    private final SeguimientoService seguimientoService = new SeguimientoService(new SeguimientoDAO());
     private final List<PlayerManager.SongInfo> cola = new ArrayList<>();
+
+    /** Botón de seguir/siguiendo (solo se muestra en artistas). */
+    private Button btnSeguir;
 
     @FXML
     private void initialize() {
@@ -129,6 +137,7 @@ public class DetalleController {
             lblNombre.setText(info[0]);
             lblSubtitulo.setText(info[1] != null ? info[1] : "");
             coverHolder.getChildren().setAll(new ArtistAvatar(200, col[0], col[1], info[0]));
+            configurarBotonSeguir(id);                   // botón Seguir/Siguiendo
         } else {
             lblTipo.setText("ÁLBUM");
             final String[] info = cabeceraAlbum(id);      // [titulo, "año · artista"]
@@ -188,6 +197,82 @@ public class DetalleController {
         if (total == 0) {
             tracklistBox.getChildren().add(crearLabel("Sin canciones disponibles.", "bf-rowlist-sub"));
             btnPlayAll.setDisable(true);
+        }
+    }
+
+    /**
+     * Crea el botón "Seguir / Siguiendo" para la cabecera de un artista.
+     * Si el cliente ya lo sigue, muestra "Siguiendo" y permite dejar de seguir;
+     * si no, muestra "Seguir" y lo registra (lo cual dispara los triggers de
+     * seguimiento, p.ej. el logro social).
+     */
+    private void configurarBotonSeguir(final int idArtista) {
+        // Todo el método va en try/catch: un fallo aquí NO debe impedir abrir
+        // el perfil del artista (el botón es secundario).
+        try {
+            final Cliente cli = SessionContext.getInstance().getClienteActual();
+            if (cli == null || cli.getIdCliente() == null) return;
+
+            btnSeguir = new Button();
+            btnSeguir.getStyleClass().add("bf-btn-ghost");
+            refrescarBotonSeguir(cli.getIdCliente(), idArtista);
+
+            btnSeguir.setOnAction(e -> {
+                try {
+                    final Seguimiento existente = buscarSeguimiento(cli.getIdCliente(), idArtista);
+                    if (existente != null) {
+                        // Ya lo sigue -> dejar de seguir
+                        seguimientoService.eliminar(existente.getIdSeguimiento());
+                    } else {
+                        // No lo sigue -> seguir (dispara triggers de SEGUIMIENTO)
+                        seguimientoService.registrar(new Seguimiento(
+                                java.time.LocalDate.now(), cli.getIdCliente(), idArtista));
+                    }
+                    refrescarBotonSeguir(cli.getIdCliente(), idArtista);
+                    // Seguir 5+ artistas otorga un logro (trigger) -> notificación.
+                    // Refrescamos la campana al instante.
+                    com.beatify.view.util.NotificacionMenuUtil.aplicarBadge(
+                            lblNotifCount, cli.getIdCliente());
+                } catch (final RuntimeException ex) {
+                    LOG.log(Level.WARNING, "Error al (des)seguir artista", ex);
+                    final javafx.scene.control.Alert a = new javafx.scene.control.Alert(
+                            javafx.scene.control.Alert.AlertType.WARNING,
+                            "No se pudo actualizar el seguimiento: " + ex.getMessage());
+                    a.setHeaderText(null);
+                    a.show();
+                }
+            });
+
+            accionesBox.getChildren().add(btnSeguir);
+        } catch (final RuntimeException ex) {
+            LOG.log(Level.WARNING, "No se pudo construir el botón Seguir", ex);
+        }
+    }
+
+    /** Actualiza el texto/estilo del botón según si ya sigue al artista. */
+    private void refrescarBotonSeguir(final int idCliente, final int idArtista) {
+        final boolean sigue = buscarSeguimiento(idCliente, idArtista) != null;
+        // Iconos verificados que la app ya renderiza (Ikonli Bootstrap).
+        final FontIcon icono = new FontIcon(sigue ? "bi-check-circle-fill" : "bi-person");
+        icono.setIconSize(16);
+        icono.setIconColor(Color.WHITE);
+        final Label txt = new Label(sigue ? "Siguiendo" : "Seguir");
+        txt.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        final HBox g = new HBox(8, icono, txt);
+        g.setAlignment(Pos.CENTER);
+        btnSeguir.setGraphic(g);
+    }
+
+    /** Devuelve el seguimiento del cliente hacia el artista, o null si no existe. */
+    private Seguimiento buscarSeguimiento(final int idCliente, final int idArtista) {
+        try {
+            return seguimientoService.listar().stream()
+                    .filter(s -> Integer.valueOf(idCliente).equals(s.getIdCliente())
+                            && Integer.valueOf(idArtista).equals(s.getIdArtista()))
+                    .findFirst().orElse(null);
+        } catch (final RuntimeException ex) {
+            LOG.log(Level.WARNING, "Error consultando seguimiento", ex);
+            return null;
         }
     }
 
@@ -285,6 +370,7 @@ public class DetalleController {
     @FXML private void onIrBarrio()     { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
     @FXML private void onIrCapsulas()   { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
     @FXML private void onIrLogros()     { HistorialNavegacion.getInstance().navegar("/view/logros.fxml"); }
+    @FXML private void onIrPerfil()     { HistorialNavegacion.getInstance().navegar("/view/perfil.fxml"); }
     @FXML private void onNuevaPlaylist() {
         PlaylistUtil.crearNueva(btnUserMenu, () -> {
             sidebarPlaylistsBox.getChildren().clear();

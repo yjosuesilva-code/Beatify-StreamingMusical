@@ -24,9 +24,9 @@ public class SeguimientoService implements ISeguimientoService {
         if (seguimiento.getIdArtista() == null || seguimiento.getIdArtista() <= 0) {
             throw new ValidacionException("El id del artista es obligatorio para el seguimiento");
         }
-        if (seguimiento.getIdCliente().equals(seguimiento.getIdArtista())) {
-            throw new ValidacionException("Un cliente no puede seguirse a sí mismo como artista");
-        }
+        // NOTA: NO comparar idCliente con idArtista. Son PKs de tablas distintas
+        // (CLIENTE y ARTISTA); que coincidan en número no significa "la misma
+        // persona". El cliente #1 siguiendo al artista #1 es perfectamente válido.
     }
 
     public Integer registrar(Seguimiento seguimiento) {

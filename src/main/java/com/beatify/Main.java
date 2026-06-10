@@ -11,25 +11,7 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Punto de entrada de la aplicacion JavaFX Beatify.
- *
- * Flujo de arranque:
- *   1. {@link Application#launch(String...)} llama a {@link #start(Stage)}.
- *   2. Cargamos las fuentes Manrope, Sora y JetBrains Mono desde
- *      {@code resources/fonts/} (sin esto el CSS cae a las fuentes default
- *      del sistema).
- *   3. Cargamos {@code /view/login.fxml} como escena inicial.
- *   4. Aplicamos los 3 stylesheets globales:
- *        - beatify-tokens.css  (looked-up colors + tipografia)
- *        - beatify-auth.css    (Login y Registro)
- *        - beatify-home.css    (sidebar, topbar, cards, miniplayer)
- *   5. Configuramos el Stage y lo mostramos.
- *
- * Cuando el usuario se autentica, {@code LoginController} llama a
- * {@code NavegacionUtil.cambiarA("/view/home.fxml", ...)} que reemplaza
- * la Scene del mismo Stage. No se abren ventanas nuevas.
- */
+
 public class Main extends Application {
 
     private static final Logger LOG = Logger.getLogger(Main.class.getName());

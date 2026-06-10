@@ -33,13 +33,13 @@ public final class NavegacionUtil {
     }
 
     /**
-     * Cambia la Scene del Stage al que pertenece {@code nodoActual}, cargando
+     * Cambia la Scene del Stage al que pertenece {code nodoActual}, cargando
      * el FXML indicado (ej: "/view/login.fxml") y aplicando los estilos globales.
      *
-     * @param rutaFxml   ruta absoluta dentro de resources, p.ej. "/view/login.fxml"
-     * @param nodoActual cualquier Node de la escena actual (boton, link, etc.) —
+     * param rutaFxml   ruta absoluta dentro de resources, p.ej. "/view/login.fxml"
+     * param nodoActual cualquier Node de la escena actual (boton, link, etc.) —
      *                   se usa para encontrar el Stage activo
-     * @throws RuntimeException si el FXML no se puede cargar
+     *  RuntimeException si el FXML no se puede cargar
      */
     public static void cambiarA(final String rutaFxml, final Node nodoActual) {
         try {
@@ -56,8 +56,8 @@ public final class NavegacionUtil {
             }
 
             stage.setScene(scene);
-            stage.setWidth(1280);   // ← AGREGAR ESTO
-            stage.setHeight(800);   // ← AGREGAR ESTO
+            stage.setWidth(1280);
+            stage.setHeight(800);
             stage.centerOnScreen();
 
         } catch (final IOException e) {

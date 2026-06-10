@@ -135,14 +135,14 @@
                 <Label fx:id="lblStep" text="PASO 1 DE 3" styleClass="bf-auth-step"/>
                 <Label fx:id="lblTitulo" text="Cuéntanos quién eres"
                        styleClass="bf-auth-form-title"/>
-                <Label fx:id="lblSub" text="Estos datos quedarán en la tabla CLIENTE."
+                <Label fx:id="lblSub" text="Crea tu cuenta para empezar a escuchar."
                        styleClass="bf-auth-form-sub" wrapText="true"/>
             </VBox>
 
             <!-- Banner de error compartido entre pasos -->
             <VBox fx:id="boxError" styleClass="bf-auth-error" spacing="4"
                   visible="false" managed="false">
-                <Label fx:id="lblErrorCode" text="ValidacionException"
+                <Label fx:id="lblErrorCode" text=""
                        styleClass="bf-auth-error-code"/>
                 <Label fx:id="lblErrorMsg" text="" styleClass="bf-auth-error-msg"
                        wrapText="true"/>
@@ -174,7 +174,7 @@
                         <Label text="Correo electrónico" styleClass="bf-field-lbl"/>
                         <TextField fx:id="txtCorreo" promptText="tu@correo.com"
                                    styleClass="bf-field-input"/>
-                        <Label text="Validado contra UNIQUE en CLIENTE.correo"
+                        <Label text="Usaremos este correo para iniciar tu sesión."
                                styleClass="bf-field-hint"/>
                     </VBox>
 
@@ -350,15 +350,6 @@
             </HBox>
 
             <Region VBox.vgrow="ALWAYS"/>
-
-            <!-- Debug trace -->
-            <HBox styleClass="bf-auth-debug" spacing="8" alignment="CENTER_LEFT">
-                <Label text="view.VentanaRegistro"/>
-                <Label text="·"/>
-                <Label text="service.ClienteService.registrar()"/>
-                <Label text="·"/>
-                <Label text="util.PasswordUtil.hash()"/>
-            </HBox>
 
             <padding>
                 <Insets top="40" right="56" bottom="40" left="56"/>

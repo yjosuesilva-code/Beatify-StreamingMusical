@@ -5,6 +5,7 @@ import com.beatify.dao.ClienteGeneroDAO;
 import com.beatify.dao.GeneroDAO;
 import com.beatify.dao.SuscripcionDAO;
 import com.beatify.exceptions.ConexionException;
+import com.beatify.exceptions.NotFoundException;
 import com.beatify.exceptions.ValidacionException;
 import com.beatify.model.Cliente;
 import com.beatify.model.Genero;
@@ -180,6 +181,24 @@ public class RegistroController {
      */
     private boolean verificarCorreo() {
         final String correo = txtCorreo.getText() == null ? "" : txtCorreo.getText().trim().toLowerCase();
+
+        // Validar en la BD ANTES de enviar el código: si el correo ya está
+        // registrado, no tiene sentido gastar un envío. Se aborta aquí mismo.
+        try {
+            clienteService.buscarPorCorreo(correo);
+            // No lanzó excepción => el correo SÍ existe.
+            mostrarError("Correo en uso",
+                    "El correo " + correo + " ya está registrado. Inicia sesión o usa otro correo.");
+            return false;
+        } catch (final NotFoundException ok) {
+            // Perfecto: el correo no existe, podemos continuar con el envío.
+        } catch (final RuntimeException ex) {
+            // Error de BD u otro: avisar y no continuar (no enviar el código a ciegas).
+            mostrarError("Conexión",
+                    "No se pudo verificar el correo en la base de datos: " + ex.getMessage());
+            return false;
+        }
+
         final String codigo = String.valueOf(100000 + new java.security.SecureRandom().nextInt(900000));
 
         // Enviar el código al correo. Sin correo emisor configurado → no se puede continuar.
@@ -253,7 +272,7 @@ public class RegistroController {
         switch (n) {
             case 1 -> {
                 lblTitulo.setText("Cuéntanos quién eres");
-                lblSub.setText("Estos datos quedarán en la tabla CLIENTE.");
+                lblSub.setText("Crea tu cuenta para empezar a escuchar.");
                 btnAtras.setText("Ya tengo cuenta");
                 btnContinuar.setText("Continuar →");
             }
@@ -458,7 +477,8 @@ public class RegistroController {
     }
 
     private void mostrarError(final String code, final String msg) {
-        lblErrorCode.setText(code);
+        lblErrorCode.setVisible(false);
+        lblErrorCode.setManaged(false);
         lblErrorMsg.setText(msg);
         boxError.setVisible(true);
         boxError.setManaged(true);

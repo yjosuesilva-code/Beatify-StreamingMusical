@@ -53,13 +53,17 @@
             <HBox styleClass="bf-side-divider" alignment="CENTER_LEFT">
                 <Label text="TUS PLAYLISTS" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                 <Button styleClass="bf-side-plus" onAction="#onNuevaPlaylist">
-                    <graphic><FontIcon iconLiteral="bi-plus" iconSize="14"/></graphic>
+                    <graphic><FontIcon iconLiteral="bi-plus" iconSize="16" iconColor="#a7a7a7"/></graphic>
                 </Button>
             </HBox>
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS"
                         style="-fx-background-color: transparent; -fx-background: transparent;">
                 <VBox fx:id="sidebarPlaylistsBox" spacing="2"/>
             </ScrollPane>
+
+            <Button text="Perfil" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onIrPerfil">
+                <graphic><FontIcon iconLiteral="bi-person" iconSize="16" iconColor="#a7a7a7"/></graphic>
+            </Button>
             <Region VBox.vgrow="SOMETIMES" minHeight="8"/>
             <Button text="Cerrar sesión" styleClass="bf-side-item" maxWidth="Infinity" onAction="#onCerrarSesion">
                 <graphic><FontIcon iconLiteral="bi-box-arrow-right" iconSize="16"/></graphic>
@@ -115,7 +119,7 @@
                             <FontIcon iconLiteral="bi-trophy-fill" iconSize="24" iconColor="#1ed760"/>
                             <Label text="Sistema de Logros" styleClass="bf-page-title"/>
                         </HBox>
-                        <Label text="Otorgados automáticamente cuando se cumplen las condiciones predefinidas. Tabla CLIENTE_LOGRO con CHECK constraints sobre las metas." styleClass="bf-page-meta" wrapText="true"/>
+                        <Label text="Otorgados automáticamente cuando cumples las condiciones de cada logro." styleClass="bf-page-meta" wrapText="true"/>
                     </VBox>
 
                     <HBox spacing="24">

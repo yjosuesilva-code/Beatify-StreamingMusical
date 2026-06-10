@@ -155,6 +155,20 @@ public class LogrosController {
         tabPendientes.setOnAction(e -> { filtroActivo = "pendientes"; pintarGrid(); });
     }
 
+    /**
+     * Actualiza el texto de los botones de filtro con los conteos REALES.
+     * Antes estaban fijos en el FXML ("Todos (12)" etc.) y no coincidian
+     * con el resumen "obtenidos / total".
+     */
+    private void actualizarContadoresFiltros() {
+        final int total     = catalogo.size();
+        final int obtenidos = obtenidosCliente.size();
+        final int progreso  = total - obtenidos;
+        tabTodos.setText("Todos (" + total + ")");
+        tabObtenidos.setText("Obtenidos (" + obtenidos + ")");
+        tabPendientes.setText("En progreso (" + progreso + ")");
+    }
+
     // -----------------------------------------------------------------
     // Carga desde BD
     // -----------------------------------------------------------------
@@ -171,6 +185,7 @@ public class LogrosController {
             obtenidosCliente = List.of();
         }
         actualizarResumen();
+        actualizarContadoresFiltros();
         pintarGrid();
     }
 
@@ -413,6 +428,7 @@ public class LogrosController {
     @FXML private void onIrBarrio() { HistorialNavegacion.getInstance().navegar("/view/barrio.fxml"); }
     @FXML private void onIrCapsulas() { HistorialNavegacion.getInstance().navegar("/view/capsulas.fxml"); }
     @FXML private void onIrLogros() { /* ya estamos aquí */ }
+    @FXML private void onIrPerfil() { HistorialNavegacion.getInstance().navegar("/view/perfil.fxml"); }
     @FXML private void onNuevaPlaylist() { PlaylistUtil.crearNueva(btnUserMenu, () -> { sidebarPlaylistsBox.getChildren().clear(); configurarSidebarPlaylists(); }); }
     @FXML
     private void onCerrarSesion() {

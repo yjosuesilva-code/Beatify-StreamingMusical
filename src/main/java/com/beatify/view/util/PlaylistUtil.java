@@ -7,16 +7,17 @@ import com.beatify.model.Playlist;
 import com.beatify.view.SessionContext;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import javafx.scene.Node;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 
@@ -50,7 +51,7 @@ public final class PlaylistUtil {
         // ---- Campos ----
         final TextField txtNombre = new TextField();
         txtNombre.setPromptText("Mi playlist favorita");
-        txtNombre.setPrefWidth(260);
+        txtNombre.setPrefWidth(360);
 
         final TextArea txtDescripcion = new TextArea();
         txtDescripcion.setPromptText("Descripción opcional...");
@@ -60,32 +61,41 @@ public final class PlaylistUtil {
         final CheckBox chkPublica = new CheckBox("Visible para otros usuarios");
         chkPublica.setSelected(false);
 
-        final GridPane grid = new GridPane();
-        grid.setHgap(12);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 20, 10, 20));
-        grid.add(new Label("Nombre:"),      0, 0); grid.add(txtNombre,      1, 0);
-        grid.add(new Label("Descripción:"), 0, 1); grid.add(txtDescripcion, 1, 1);
-        grid.add(chkPublica,                1, 2);
+        // ---- Botones ----
+        final Button btnAceptar  = new Button("Aceptar");
+        btnAceptar.getStyleClass().add("bf-btn-primary");
+        btnAceptar.setDisable(true);
+        final Button btnCancelar = new Button("Cancelar");
+        btnCancelar.getStyleClass().add("bf-btn-ghost");
+        txtNombre.textProperty().addListener((obs, o, v) -> btnAceptar.setDisable(v.isBlank()));
 
-        // ---- Diálogo ----
-        final Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Nueva playlist");
-        dialog.setHeaderText("Crea una nueva lista de reproducción");
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        if (ancla.getScene() != null) {
-            dialog.initOwner(ancla.getScene().getWindow());
-        }
+        final HBox acciones = new HBox(12, btnCancelar, btnAceptar);
+        acciones.setAlignment(Pos.CENTER_RIGHT);
 
-        // Deshabilitar OK si nombre vacío
-        final Node btnOk = dialog.getDialogPane().lookupButton(ButtonType.OK);
-        btnOk.setDisable(true);
-        txtNombre.textProperty().addListener((obs, o, v) -> btnOk.setDisable(v.isBlank()));
+        // ---- Tarjeta (contenido del overlay) ----
+        final Label titulo = new Label("Nueva playlist");
+        titulo.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+        final Label sub = new Label("Crea una nueva lista de reproducción");
+        sub.setStyle("-fx-text-fill: #b3b3b3;");
 
-        dialog.showAndWait().ifPresent(tipo -> {
-            if (tipo != ButtonType.OK) return;
+        final VBox card = new VBox(14,
+                titulo, sub,
+                etiqueta("Nombre"),      txtNombre,
+                etiqueta("Descripción"), txtDescripcion,
+                chkPublica,
+                acciones);
+        card.setPadding(new Insets(28));
+        card.setMaxWidth(440);
+        card.setMaxHeight(Region.USE_PREF_SIZE);
+        card.setStyle("-fx-background-color: #181818; -fx-background-radius: 16px;"
+                + " -fx-border-color: #2a2a2a; -fx-border-radius: 16px;");
 
+        // ---- Mostrar como overlay in-app ----
+        final Runnable cerrar = OverlayUtil.mostrar(ancla, card);
+
+        btnCancelar.setOnAction(e -> cerrar.run());
+
+        btnAceptar.setOnAction(e -> {
             final String nombre = txtNombre.getText().trim();
             final String desc   = txtDescripcion.getText().isBlank()
                     ? null : txtDescripcion.getText().trim();
@@ -95,6 +105,7 @@ public final class PlaylistUtil {
                     cliente.getIdCliente());
             try {
                 new PlaylistDAO().insertar(playlist);
+                cerrar.run();
                 if (onExito != null) onExito.run();
             } catch (final ConexionException ex) {
                 final Alert alert = new Alert(Alert.AlertType.ERROR,
@@ -104,5 +115,11 @@ public final class PlaylistUtil {
                 alert.showAndWait();
             }
         });
+    }
+
+    private static Label etiqueta(final String texto) {
+        final Label l = new Label(texto);
+        l.setStyle("-fx-text-fill: #b3b3b3; -fx-font-size: 12px;");
+        return l;
     }
 }

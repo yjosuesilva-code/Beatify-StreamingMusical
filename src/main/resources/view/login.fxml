@@ -174,7 +174,7 @@
             <!-- Error banner (oculto por defecto) -->
             <VBox fx:id="boxError" styleClass="bf-auth-error" spacing="4"
                   visible="false" managed="false">
-                <Label fx:id="lblErrorCode" text="AutenticacionException"
+                <Label fx:id="lblErrorCode" text=""
                        styleClass="bf-auth-error-code"/>
                 <Label fx:id="lblErrorMsg" text="" styleClass="bf-auth-error-msg"
                        wrapText="true"/>
@@ -213,8 +213,6 @@
                         </StackPane.margin>
                     </Button>
                 </StackPane>
-                <Label text="Hash BCrypt almacenado en CLIENTE.password_hash"
-                       styleClass="bf-field-hint"/>
             </VBox>
 
             <!-- Checkbox mantener sesion -->
@@ -233,13 +231,9 @@
                 <Region styleClass="bf-auth-sep-line" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             </HBox>
 
-            <!-- 3 botones SSO (stubs deshabilitados) -->
+            <!-- Acceso rápido SSO (demo): entra a una cuenta del seed sin contraseña -->
             <HBox spacing="8">
-                <Button fx:id="btnGoogle" text="Google" styleClass="bf-btn-ghost"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="btnGitHub" text="GitHub" styleClass="bf-btn-ghost"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="btnUPC" text="Univ. del Cesar" styleClass="bf-btn-ghost"
+                <Button fx:id="btnGoogle" text="Continuar con Google" styleClass="bf-btn-ghost"
                         maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
             </HBox>
 
@@ -252,15 +246,6 @@
 
             <!-- Spacer -->
             <Region VBox.vgrow="ALWAYS"/>
-
-            <!-- Debug trace inferior -->
-            <HBox styleClass="bf-auth-debug" spacing="8" alignment="CENTER_LEFT">
-                <Label text="view.VentanaLogin"/>
-                <Label text="·"/>
-                <Label text="service.ClienteService.autenticar()"/>
-                <Label text="·"/>
-                <Label text="dao.ClienteDAO.buscarPorCorreo()"/>
-            </HBox>
 
             <padding>
                 <Insets top="40" right="56" bottom="40" left="56"/>

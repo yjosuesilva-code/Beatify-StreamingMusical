@@ -23,15 +23,15 @@ import java.util.logging.Logger;
 /**
  * Gestiona las descargas offline por cliente. Una descarga real:
  *   - copia el MP3 empaquetado a {@code <user.home>/.beatify/audio/} para que
- *     quede disponible localmente (el {@link PlayerManager} lo prefiere al
+ *     quede disponible localmente (el  PlayerManager} lo prefiere al
  *     recurso empaquetado cuando existe), y
  *   - registra el id de la canción en un índice de texto por cliente
- *     ({@code <user.home>/.beatify/descargas-<idCliente>.txt}).
+ *     ({code <user.home>/.beatify/descargas idCliente>.txt}).
  *
  * Todo es best-effort: si falla el IO, la operación no rompe la app.
  *
  * La descarga está gateada por el plan: solo se permite si
- * {@link TipoPlan#isDescargasOffline()} es true (planes de pago).
+ * {link TipoPlan#isDescargasOffline()} es true (planes de pago).
  *
  * Las dependencias (directorio base, proveedor de plan y de id de cliente) se
  * inyectan por constructor para poder probar la lógica sin BD ni tocar el

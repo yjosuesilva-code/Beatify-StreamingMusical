@@ -163,6 +163,9 @@ public class HomeController {
             if (lblStatRep.getScene() == null || repCount < 0) return;  // pantalla ya no visible
             repCount++;
             lblStatRep.setText(NF_ES_CO.format(repCount));
+            // Reproducir puede otorgar un logro (trigger) -> nueva notificación.
+            // Refrescamos el badge de la campana al instante, sin cambiar de pantalla.
+            NotificacionMenuUtil.aplicarBadge(lblNotifCount, c.getIdCliente());
         });
     }
 
